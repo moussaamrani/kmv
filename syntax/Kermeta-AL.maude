@@ -1,0 +1,75 @@
+fmod EXPRESSION-SYNTAX is
+--- Exp       ::= null | scalarExp | instExp | collExp
+--- ScalarExp ::= literal | instExp instanceof pClassN
+--- InstExp   ::= self |lhs
+--- Lhs       ::= varN | paramN | target.propN
+--- Target    ::= super | instExp
+--- CollExp   ::= exp.nativeExp
+--- NativeExp ::= isEmpty() | size() at(exp) 
+--- 
+--- TODO: Need to add operations on primitive types
+	ex QID .
+	pr BOOL . 
+	pr INT . 
+	pr STRING . 
+	pr FLOAT .
+	sorts Var Param InstExp Lhs Target NativeExp CollExp Exp ExpList .
+	subsort Qid < Var .
+	subsort Qid < Param .
+	subsort Exp < ExpList .
+	subsort InstExp < Target .
+	subsorts Var Param < Lhs .
+	
+	--- Null Expression
+	op null : -> Exp .
+
+	--- Constructors for Literals
+	--- (parts of Literal)
+	op b : Bool -> Exp .
+	op i : Int -> Exp .
+	op f : Float -> Exp .
+	op s : String -> Exp .
+
+	--- Kermeta Keywords (parts of InstExp)
+	op self  : -> InstExp . 
+	op super : -> Target .
+
+	--- InstanceOf (part of ScalarExp) 
+	--- uses Qid instead of PClassN)
+	op _instanceof_ : InstExp Qid -> Exp .
+
+	--- Property Access (part of Lhs)
+	op _._ : Target Qid -> Lhs .
+
+	--- Collection Expressions (CollExp)
+	op isEmpty size : -> NativeExp .
+	op at_ : Int -> NativeExp .
+	op _._ : Exp NativeExp -> Exp .
+
+	--- Handling Expressions Lists
+	op noExp : -> ExpList .
+	op _,_ : ExpList ExpList -> ExpList [assoc id: noExp] .	
+endfm
+
+fmod STATEMENT-SYNTAX is
+	ex EXPRESSION-SYNTAX .
+	sort Lab .
+	sorts Stm Stmt StmList Block Call NativeStmt .
+	subsorts Call < Stmt .
+	subsorts Block < Stm < StmList .
+	
+	op _:_ : Lab Stmt -> Stm .
+	op {_} : StmList -> Block .
+	op __ : StmList StmList -> StmList [assoc] .
+		
+	op if__fi  : Exp Stmt -> Stmt .
+	op _=_     : Lhs Exp  -> Stmt .
+	op _=_.new : Var Qid -> Stmt . 
+	op return  : -> Stmt .
+	op return_ : Exp -> Stmt .
+	op _._(_)  : Target Qid ExpList -> Call .
+	op _=_     : Var Call -> Stmt .  
+	op add_    : Exp -> NativeStmt .
+	op del_    : Exp -> NativeStmt .
+	op _._ : Exp NativeStmt -> Stmt .
+endfm
