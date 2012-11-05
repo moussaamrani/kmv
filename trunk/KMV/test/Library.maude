@@ -1,0 +1,76 @@
+mod LIBRARY is
+	  protecting MAUDELING .
+	  
+	  op Library : -> @Metamodel .
+	  eq name(Library) = "Library" .
+	  eq packages (Library) = Lib .
+	  
+	  op Lib : -> @Package .
+	  eq name(Lib) = "Lib" .
+	  eq metamodel(Lib) = Library .
+	  eq superPackage( Lib ) = null .
+	  eq subPackages( Lib ) = nil .
+	  eq classes( Lib ) = __(Author@Lib, Book@Lib) .
+	  
+	  sort Author@Lib .
+	  subsort Author@Lib < @Class .
+	  op Author@Lib : -> Author@Lib .
+	  eq name(Author@Lib) = "Author" .
+	  eq isAbstract(Author@Lib) = false .
+	  eq package(Author@Lib) = Lib .
+	  eq superTypes (Author@Lib) = nil .
+	  eq references (Author@Lib) = 	books@Author@Lib .
+	  eq attributes (Author@Lib) =  name@Author@Lib . 
+	  
+	  sort Book@Lib .
+	  subsort Book@Lib < @Class .
+	  op Book@Lib : -> Book@Lib .
+	  eq name(Book@Lib) = "Book" .
+	  eq isAbstract(Book@Lib) = false .
+	  eq package(Book@Lib) = Lib .
+	  eq superTypes (Book@Lib) = nil .
+	  eq references (Book@Lib) = authors@Book@Lib .
+	  eq attributes (Book@Lib) =  title@Book@Lib . 
+  
+	  op books@Author@Lib : -> @Reference .
+	  eq name (books@Author@Lib) = "books" .
+	  eq opposite (books@Author@Lib) = authors@Book@Lib .
+	  eq type (books@Author@Lib) = Book@Lib .
+	  eq lowerBound (books@Author@Lib) = 1 .
+	  eq upperBound (books@Author@Lib) = * .
+	  eq containingClass (books@Author@Lib) = Author@Lib .
+	  eq isOrdered (books@Author@Lib) = false .
+	  eq isUnique (books@Author@Lib) = true .
+	  eq isContainment (books@Author@Lib) = false .
+  
+	op name@Author@Lib  : -> @Attribute .
+  	eq name (name@Author@Lib) = "name" .
+  	eq type (name@Author@Lib) = @String .
+  	eq lowerBound (name@Author@Lib) = 1 .
+  	eq upperBound (name@Author@Lib) = 1 .
+  	eq containingClass (name@Author@Lib) = Book@Lib .
+  	eq isOrdered (name@Author@Lib) = true .
+  	eq isUnique (name@Author@Lib) = true .
+  	eq isId (name@Author@Lib) = true .
+ 
+	op authors@Book@Lib : -> @Reference .
+	eq name (authors@Book@Lib) = "authors" .
+	eq opposite (authors@Book@Lib) = books@Author@Lib .
+	eq type (authors@Book@Lib) = Author@Lib .
+	eq lowerBound (authors@Book@Lib) = 1 .
+	eq upperBound (authors@Book@Lib) = * .
+	eq containingClass (authors@Book@Lib) = Book@Lib .
+	eq isOrdered (authors@Book@Lib) = false .
+	eq isUnique (authors@Book@Lib) = true .
+	eq isContainment (authors@Book@Lib) = false .
+
+  	op title@Book@Lib : -> @Attribute .
+  	eq name (title@Book@Lib) = "title" .
+  	eq type (title@Book@Lib) = @String .
+  	eq lowerBound (title@Book@Lib) = 1 .
+  	eq upperBound (title@Book@Lib) = 1 .
+  	eq containingClass (title@Book@Lib) = Book@Lib .
+  	eq isOrdered (title@Book@Lib) = true .
+  	eq isUnique (title@Book@Lib) = true .
+  	eq isId (title@Book@Lib) = true .
+endm
