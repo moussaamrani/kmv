@@ -1,0 +1,27 @@
+set trace on .
+set trace select validOpposites .
+
+red validOpposites(Sequence{'k # 'u}, authors@Book@Lib, 'ek, Library{< 'ek :
+    Author@Lib | books@Author@Lib : Set{'k ; 'u} # name@Author@Lib : "EK" > <
+    'k : Book@Lib | books@Author@Lib : Set{'ek} # title@Book@Lib : "Kritik" > <
+    'mh : Author@Lib | books@Author@Lib : Set{'sz ; 'u} # name@Author@Lib :
+    "MH" > < 'sz : Book@Lib | authors@Book@Lib : Set{'mh} # title@Book@Lib :
+    "Sein Und Zeit" > < 'u : Book@Lib | authors@Book@Lib : Set{'ek ; 'mh} #
+    title@Book@Lib : "Uber Nietsche" >}) .
+
+eof    
+red validAttributes(
+    allAttributes(Author@Lib), < 'ek : Author@Lib | name@Author@Lib : "EK" >)) .
+    
+red validModelAux(Library{< 'k : Book@Lib | books@Author@Lib : Set{
+    'ek} # title@Book@Lib : "Kritik" > < 'mh : Author@Lib | books@Author@Lib :
+    Set{'sz ; 'u} # name@Author@Lib : "MH" > < 'sz : Book@Lib |
+    authors@Book@Lib : Set{'mh} # title@Book@Lib : "Sein Und Zeit" > < 'u :
+    Book@Lib | authors@Book@Lib : Set{'ek ; 'mh} # title@Book@Lib :
+    "Uber Nietsche" >}, Library{< 'ek : Author@Lib | books@Author@Lib : Set{'k
+    ; 'u} # name@Author@Lib : "EK" > < 'k : Book@Lib | books@Author@Lib : Set{
+    'ek} # title@Book@Lib : "Kritik" > < 'mh : Author@Lib | books@Author@Lib :
+    Set{'sz ; 'u} # name@Author@Lib : "MH" > < 'sz : Book@Lib |
+    authors@Book@Lib : Set{'mh} # title@Book@Lib : "Sein Und Zeit" > < 'u :
+    Book@Lib | authors@Book@Lib : Set{'ek ; 'mh} # title@Book@Lib :
+    "Uber Nietsche" >}) .

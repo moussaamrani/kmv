@@ -1,0 +1,18 @@
+mod LIB-MODEL is
+	protecting MAUDELING .
+	protecting LIBRARY .
+	
+	op libModel : -> @Model .
+	eq libModel = Library {
+		< 'ek : Author@Lib | name@Author@Lib : "EK" # 
+							 books@Author@Lib : Set {'k ; 'u} >
+		< 'mh : Author@Lib | name@Author@Lib : "MH" # 
+							 books@Author@Lib : Set {'sz ; 'u} >
+		< 'k : Book@Lib | title@Book@Lib : "Kritik" # 
+						  authors@Book@Lib : Set {'ek} >
+		< 'sz : Book@Lib | title@Book@Lib : "Sein Und Zeit" # 
+						   authors@Book@Lib : Set {'mh} >
+		< 'u : Book@Lib | title@Book@Lib : "Uber Nietsche" # 
+						  authors@Book@Lib : Set {'ek ; 'mh}> 
+	} .
+endm

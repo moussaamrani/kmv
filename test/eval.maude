@@ -1,0 +1,15 @@
+load JT/model-checker.maude 
+load JT/mOdCL.maude
+load JT/MGDefinitions.maude
+load Library.maude
+load LibModel.maude
+
+set trace on . 
+set trace select on . 
+trace select validReferences validOpposites .
+---- set trace eq on . 
+---- set trace condition on . 
+---- set trace whole on . 
+---- set trace substitution on . 
+*** reduce validModel(FSMModel) .
+reduce validModel(libModel) .
