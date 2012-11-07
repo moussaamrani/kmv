@@ -1,13 +1,15 @@
 fmod EXPRESSION-SYNTAX is
+
 --- Exp       ::= null | scalarExp | instExp | collExp
 --- ScalarExp ::= literal | instExp instanceof pClassN
 --- InstExp   ::= self |lhs
 --- Lhs       ::= varN | paramN | target.propN
 --- Target    ::= super | instExp
 --- CollExp   ::= exp.nativeExp
---- NativeExp ::= isEmpty() | size() at(exp) 
+--- NativeExp ::= isEmpty() | size() | at(exp) 
 --- 
 --- TODO: Need to add operations on primitive types
+
 	ex QID .
 	pr BOOL . 
 	pr INT . 
@@ -72,4 +74,8 @@ fmod STATEMENT-SYNTAX is
 	op add_    : Exp -> NativeStmt .
 	op del_    : Exp -> NativeStmt .
 	op _._ : Exp NativeStmt -> Stmt .
+endfm
+
+fmod EXPRESSION-SEMANTICS is
+
 endfm
