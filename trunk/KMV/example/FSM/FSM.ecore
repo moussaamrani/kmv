@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="fsm"
+    nsURI="http://fsm/1.0" nsPrefix="fsm">
+  <eClassifiers xsi:type="ecore:EClass" name="Label" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="label" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FSM" eSuperTypes="#//Label">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="states" lowerBound="1"
+        upperBound="-1" eType="#//State" containment="true" eOpposite="#//State/fsm"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" upperBound="-1"
+        eType="#//Transition" containment="true" eOpposite="#//Transition/fsm"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="alphabet" ordered="false"
+        lowerBound="1" upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="State" eSuperTypes="#//Label">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fsm" lowerBound="1" eType="#//FSM"
+        eOpposite="#//FSM/states"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="out" upperBound="-1" eType="#//Transition"
+        eOpposite="#//Transition/src"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="in" upperBound="-1" eType="#//Transition"
+        eOpposite="#//Transition/tgt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" lowerBound="1" eType="#//Kind"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//Label">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fsm" lowerBound="1" eType="#//FSM"
+        eOpposite="#//FSM/transitions"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="src" lowerBound="1" eOpposite="#//State/out"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tgt" lowerBound="1" eType="#//State"
+        eOpposite="#//State/in"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Kind">
+    <eLiterals name="NORMAL"/>
+    <eLiterals name="START" value="1"/>
+    <eLiterals name="STOP" value="2"/>
+  </eClassifiers>
+</ecore:EPackage>
