@@ -1,0 +1,49 @@
+mod FSM-MODEL is
+	protecting MAUDELING .
+	protecting FSM-MM .
+	
+	*** Set{mt} for 
+	*** Set separator is ;
+	*** No references = nil
+	
+	op FSMModel : -> @Model .
+	eq FSMModel = FiniteStateMachine {
+		< 'fsm : FSM@FSM | label@Label@FSM : "(ab)+c" # 
+						alphabet@FSM@FSM : Set {"a" ; "b" ; "c" } #
+						states@FSM@FSM : Set {'one ; 'two ; 'three} # 
+						transitions@FSM@FSM : Set {'a ; 'b ; 'c} >
+		
+		< 'one : State@FSM | label@Label@FSM : "1" #
+						fsm@State@FSM : 'fsm #
+						kind@State@FSM : START@Kind@FSM # 
+						in@State@FSM : Set {'b} #
+						out@State@FSM : Set {'a} >
+		
+		< 'two : State@FSM | label@Label@FSM : "2" #
+						fsm@State@FSM : 'fsm #
+						kind@State@FSM : NORMAL@Kind@FSM # 
+						in@State@FSM : Set {'a} #
+						out@State@FSM : Set {'b ; 'c} >
+		
+		< 'three : State@FSM | label@Label@FSM : "3" #
+						fsm@State@FSM : 'fsm #
+						kind@State@FSM : STOP@Kind@FSM # 
+						in@State@FSM : Set {'c} #
+						out@State@FSM : Set {mt} >
+
+		< 'a : Transition@FSM | label@Label@FSM : "a" #
+						fsm@Transition@FSM : 'fsm #
+						src@Transition@FSM : 'one #
+						tgt@Transition@FSM : 'two >
+
+		< 'b : Transition@FSM | label@Label@FSM : "b" #
+						fsm@Transition@FSM : 'fsm #
+						src@Transition@FSM : 'two #
+						tgt@Transition@FSM : 'one >
+	
+		< 'c : Transition@FSM | label@Label@FSM : "c" #
+						fsm@Transition@FSM : 'fsm #
+						src@Transition@FSM : 'two #
+						tgt@Transition@FSM : 'three >
+	} .
+endm

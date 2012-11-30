@@ -1,0 +1,11 @@
+
+
+mod FSM.XMI is
+	protecting @FSM@
+	.
+	op FSM.xmi : -> @Model
+	.
+	eq FSM.xmi =
+		_`{_`}( @FSM@ , __( none , none , <_:_|_>( '/ , FSM@fsm , _`,_( _:_( label@Label@fsm , "" ) , _:_( alphabet@FSM@fsm , empty ) , _:_( states@FSM@fsm , '//@states.0 ) , _:_( transitions@FSM@fsm , mtOrdSet ) , empty , empty ) ) , <_:_|_>( '//@states.0 , State@fsm , _`,_( _:_( label@Label@fsm , "" ) , _:_( kind@State@fsm , NORMAL@Kind@fsm ) , _:_( fsm@State@fsm , '/ ) , _:_( out@State@fsm , mtOrdSet ) , _:_( in@State@fsm , mtOrdSet ) , empty , empty ) ) ) )
+	.
+endm

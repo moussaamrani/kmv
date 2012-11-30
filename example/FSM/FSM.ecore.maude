@@ -1,0 +1,410 @@
+
+
+mod KIND@FSM is
+	sort Kind@fsm
+	.
+	subsorts Kind@fsm < @EnumerationInstance
+	.
+	protecting METAMODELS
+	.
+	op NORMAL@Kind@fsm : -> Kind@fsm
+	.
+	op START@Kind@fsm : -> Kind@fsm
+	.
+	op STOP@Kind@fsm : -> Kind@fsm
+	.
+endm
+
+view Kind@fsm from TRIV to KIND@FSM is
+	sort Elt to Kind@fsm
+	.
+endv
+
+mod @FSM@ is
+	protecting @ECORE@
+	.
+	op @FSM@ : -> @Metamodel
+	.
+	eq name( @FSM@ ) =
+		"FSM"
+	.
+	eq packages( @FSM@ ) =
+		fsm
+	.
+	op fsm : -> @Package
+	.
+	eq name( fsm ) =
+		"fsm"
+	.
+	eq metamodel( fsm ) =
+		@FSM@
+	.
+	eq superPackage( fsm ) =
+		null
+	.
+	eq subPackages( fsm ) =
+		nil
+	.
+	eq classes( fsm ) =
+		__( Label@fsm , FSM@fsm , State@fsm , Transition@fsm )
+	.
+	sort Label@fsm
+	.
+	subsorts Label@fsm < @Class
+	.
+	op Label@fsm : -> Label@fsm
+	.
+	eq name( Label@fsm ) =
+		"Label"
+	.
+	eq isAbstract( Label@fsm ) =
+		true
+	.
+	eq package( Label@fsm ) =
+		fsm
+	.
+	eq superTypes( Label@fsm ) =
+		nil
+	.
+	eq references( Label@fsm ) =
+		nil
+	.
+	eq attributes( Label@fsm ) =
+		label@Label@fsm
+	.
+	sort FSM@fsm
+	.
+	subsorts FSM@fsm < Label@fsm
+	.
+	op FSM@fsm : -> FSM@fsm
+	.
+	eq name( FSM@fsm ) =
+		"FSM"
+	.
+	eq isAbstract( FSM@fsm ) =
+		false
+	.
+	eq package( FSM@fsm ) =
+		fsm
+	.
+	eq superTypes( FSM@fsm ) =
+		Label@fsm
+	.
+	eq references( FSM@fsm ) =
+		__( states@FSM@fsm , transitions@FSM@fsm )
+	.
+	eq attributes( FSM@fsm ) =
+		alphabet@FSM@fsm
+	.
+	sort State@fsm
+	.
+	subsorts State@fsm < Label@fsm
+	.
+	op State@fsm : -> State@fsm
+	.
+	eq name( State@fsm ) =
+		"State"
+	.
+	eq isAbstract( State@fsm ) =
+		false
+	.
+	eq package( State@fsm ) =
+		fsm
+	.
+	eq superTypes( State@fsm ) =
+		Label@fsm
+	.
+	eq references( State@fsm ) =
+		__( fsm@State@fsm , out@State@fsm , in@State@fsm )
+	.
+	eq attributes( State@fsm ) =
+		kind@State@fsm
+	.
+	sort Transition@fsm
+	.
+	subsorts Transition@fsm < Label@fsm
+	.
+	op Transition@fsm : -> Transition@fsm
+	.
+	eq name( Transition@fsm ) =
+		"Transition"
+	.
+	eq isAbstract( Transition@fsm ) =
+		false
+	.
+	eq package( Transition@fsm ) =
+		fsm
+	.
+	eq superTypes( Transition@fsm ) =
+		Label@fsm
+	.
+	eq references( Transition@fsm ) =
+		__( fsm@Transition@fsm , src@Transition@fsm , tgt@Transition@fsm )
+	.
+	eq attributes( Transition@fsm ) =
+		nil
+	.
+	op states@FSM@fsm : -> @ReferenceOrderedSet
+	.
+	eq name( states@FSM@fsm ) =
+		"states"
+	.
+	eq type( states@FSM@fsm ) =
+		State@fsm
+	.
+	eq opposite( states@FSM@fsm ) =
+		fsm@State@fsm
+	.
+	eq lowerBound( states@FSM@fsm ) =
+		1
+	.
+	eq upperBound( states@FSM@fsm ) =
+		*
+	.
+	eq containingClass( states@FSM@fsm ) =
+		FSM@fsm
+	.
+	eq isContainment( states@FSM@fsm ) =
+		true
+	.
+	op transitions@FSM@fsm : -> @ReferenceOrderedSet
+	.
+	eq name( transitions@FSM@fsm ) =
+		"transitions"
+	.
+	eq type( transitions@FSM@fsm ) =
+		Transition@fsm
+	.
+	eq opposite( transitions@FSM@fsm ) =
+		fsm@Transition@fsm
+	.
+	eq lowerBound( transitions@FSM@fsm ) =
+		0
+	.
+	eq upperBound( transitions@FSM@fsm ) =
+		*
+	.
+	eq containingClass( transitions@FSM@fsm ) =
+		FSM@fsm
+	.
+	eq isContainment( transitions@FSM@fsm ) =
+		true
+	.
+	op fsm@State@fsm : -> @ReferenceSimple
+	.
+	eq name( fsm@State@fsm ) =
+		"fsm"
+	.
+	eq type( fsm@State@fsm ) =
+		FSM@fsm
+	.
+	eq opposite( fsm@State@fsm ) =
+		states@FSM@fsm
+	.
+	eq lowerBound( fsm@State@fsm ) =
+		1
+	.
+	eq upperBound( fsm@State@fsm ) =
+		1
+	.
+	eq containingClass( fsm@State@fsm ) =
+		State@fsm
+	.
+	eq isContainment( fsm@State@fsm ) =
+		false
+	.
+	op out@State@fsm : -> @ReferenceOrderedSet
+	.
+	eq name( out@State@fsm ) =
+		"out"
+	.
+	eq type( out@State@fsm ) =
+		Transition@fsm
+	.
+	eq opposite( out@State@fsm ) =
+		src@Transition@fsm
+	.
+	eq lowerBound( out@State@fsm ) =
+		0
+	.
+	eq upperBound( out@State@fsm ) =
+		*
+	.
+	eq containingClass( out@State@fsm ) =
+		State@fsm
+	.
+	eq isContainment( out@State@fsm ) =
+		false
+	.
+	op in@State@fsm : -> @ReferenceOrderedSet
+	.
+	eq name( in@State@fsm ) =
+		"in"
+	.
+	eq type( in@State@fsm ) =
+		Transition@fsm
+	.
+	eq opposite( in@State@fsm ) =
+		tgt@Transition@fsm
+	.
+	eq lowerBound( in@State@fsm ) =
+		0
+	.
+	eq upperBound( in@State@fsm ) =
+		*
+	.
+	eq containingClass( in@State@fsm ) =
+		State@fsm
+	.
+	eq isContainment( in@State@fsm ) =
+		false
+	.
+	op fsm@Transition@fsm : -> @ReferenceSimple
+	.
+	eq name( fsm@Transition@fsm ) =
+		"fsm"
+	.
+	eq type( fsm@Transition@fsm ) =
+		FSM@fsm
+	.
+	eq opposite( fsm@Transition@fsm ) =
+		transitions@FSM@fsm
+	.
+	eq lowerBound( fsm@Transition@fsm ) =
+		1
+	.
+	eq upperBound( fsm@Transition@fsm ) =
+		1
+	.
+	eq containingClass( fsm@Transition@fsm ) =
+		Transition@fsm
+	.
+	eq isContainment( fsm@Transition@fsm ) =
+		false
+	.
+	op src@Transition@fsm : -> @ReferenceSimple
+	.
+	eq name( src@Transition@fsm ) =
+		"src"
+	.
+	eq type( src@Transition@fsm ) =
+		State@fsm
+	.
+	eq opposite( src@Transition@fsm ) =
+		out@State@fsm
+	.
+	eq lowerBound( src@Transition@fsm ) =
+		1
+	.
+	eq upperBound( src@Transition@fsm ) =
+		1
+	.
+	eq containingClass( src@Transition@fsm ) =
+		Transition@fsm
+	.
+	eq isContainment( src@Transition@fsm ) =
+		false
+	.
+	op tgt@Transition@fsm : -> @ReferenceSimple
+	.
+	eq name( tgt@Transition@fsm ) =
+		"tgt"
+	.
+	eq type( tgt@Transition@fsm ) =
+		State@fsm
+	.
+	eq opposite( tgt@Transition@fsm ) =
+		in@State@fsm
+	.
+	eq lowerBound( tgt@Transition@fsm ) =
+		1
+	.
+	eq upperBound( tgt@Transition@fsm ) =
+		1
+	.
+	eq containingClass( tgt@Transition@fsm ) =
+		Transition@fsm
+	.
+	eq isContainment( tgt@Transition@fsm ) =
+		false
+	.
+	op label@Label@fsm : -> @AttributeSimple
+	.
+	eq name( label@Label@fsm ) =
+		"label"
+	.
+	eq type( label@Label@fsm ) =
+		@String
+	.
+	eq lowerBound( label@Label@fsm ) =
+		1
+	.
+	eq upperBound( label@Label@fsm ) =
+		1
+	.
+	eq containingClass( label@Label@fsm ) =
+		Label@fsm
+	.
+	eq isId( label@Label@fsm ) =
+		false
+	.
+	op alphabet@FSM@fsm : -> @AttributeSet
+	.
+	eq name( alphabet@FSM@fsm ) =
+		"alphabet"
+	.
+	eq type( alphabet@FSM@fsm ) =
+		@String
+	.
+	eq lowerBound( alphabet@FSM@fsm ) =
+		1
+	.
+	eq upperBound( alphabet@FSM@fsm ) =
+		*
+	.
+	eq containingClass( alphabet@FSM@fsm ) =
+		FSM@fsm
+	.
+	eq isId( alphabet@FSM@fsm ) =
+		false
+	.
+	op kind@State@fsm : -> @AttributeSimple
+	.
+	eq name( kind@State@fsm ) =
+		"kind"
+	.
+	eq type( kind@State@fsm ) =
+		Kind@fsm
+	.
+	eq lowerBound( kind@State@fsm ) =
+		1
+	.
+	eq upperBound( kind@State@fsm ) =
+		1
+	.
+	eq containingClass( kind@State@fsm ) =
+		State@fsm
+	.
+	eq isId( kind@State@fsm ) =
+		false
+	.
+	protecting KIND@FSM
+	.
+	op Kind@fsm : -> @Enumeration
+	.
+	eq metaAux( X:Kind@fsm ) =
+		Kind@fsm
+	.
+	eq name( Kind@fsm ) =
+		"Kind"
+	.
+	eq package( Kind@fsm ) =
+		fsm
+	.
+	eq defaultValue( Kind@fsm ) =
+		NORMAL@Kind@fsm
+	.
+	eq literals( Kind@fsm ) =
+		__( NORMAL@Kind@fsm , START@Kind@fsm , STOP@Kind@fsm )
+	.
+endm
