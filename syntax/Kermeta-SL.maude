@@ -1,0 +1,87 @@
+cd /cygdrive/f/Workspace/Maude/FSM
+load JT/model-checker.maude 
+load JT/mOdCL.maude
+load JT/MGDefinitions.maude
+
+
+view @Class from TRIV to METAMODEL-CTORS is
+  sort Elt to @Class .
+endv
+
+mod KERMETA-STMT-PREP is
+	sort @Statement .
+endm
+
+mod KERMETA-SL-CTORS is
+	pr METAMODEL-PROP .
+	pr MGLIST{@NamedElement} * (sort MGList{@NamedElement} to MyList) .
+
+	pr MGMAYBE{@Class} . 
+
+	--- Operation & Parameters signature
+	sort @Operation @Parameter .
+	subsort @Operation @Parameter < @StructuralFeature .
+	op operations : @Class -> MyList . --- of @Operation
+	op isAbstract : @Operation -> Bool .
+	op from : @StructuralFeature -> Maybe{@Class} .
+	op containingOperation : @Parameter -> @Operation .
+   	op parameters : @Operation -> MyList . --- of @Parameter
+		
+	--- Label
+	sort @Label @LabelNxt .
+	op [_,_,_,_] : @Package @Class @Operation Nat -> @Label [ctor] .
+	--- default label
+	op [] : -> @Label .
+	op <_,_> : @Label @Label -> @LabelNxt [ctor] .
+	op nxt : @Label -> @LabelNxt .
+	op labels : @Operation -> MyList . --- of @Label
+endm
+
+view @Label from TRIV to KERMETA-SL-CTORS is
+  sort Elt to @Label .
+endv
+
+view @Statement from TRIV to KERMETA-STMT-PREP is
+  sort Elt to @Statement .
+endv
+
+mod KERMETA-STATEMENTS-MAP is
+	pr MAP{@Label, @Statement} .
+endm
+
+mod KERMETA-SL is
+	pr KERMETA-SL-CTORS .
+	pr KERMETA-STATEMENTS-MAP .
+	op statements : @Metamodel -> Map{@Label, @Statement} .
+endm
+
+--- ------------------------------------------------------------------------------------
+--- Action Language Syntax
+--- 
+--- Body ::= [Stm]+
+--- Stm  ::= lab: Stmt
+--- Stmt ::= condStmt 
+---       |  assignStmt | castStmt
+---       |  instanceCreationStmt 
+---       |  collStmt
+---       |  returnStmt | callStmt 
+--- CondStmt             ::= <if> exp
+--- AssignStmt           ::= lhs := exp
+--- InstanceCreationStmt ::= var := exp
+--- ReturnStmt           ::= <return> | <return> exp
+--- CallStmt             ::= call | var := call
+--- Call                 ::= target.op(exp*)
+--- ------------------------------------------------------------------------------------
+mod KERMETA-AL is
+	pr KERMETA-STMT-PREP .
+    pr METAMODEL-PROP .
+                
+	sort    @CondStmt @AssignStmt @InstanceCreationStmt @CallStmt @ReturnStmt .
+	subsort @CondStmt @AssignStmt @InstanceCreationStmt @CallStmt @ReturnStmt < @Statement .
+	
+	op if(_)     : OCL-Exp -> @CondStmt .
+   	op _:=_      : OCL-Exp OCL-Exp -> @AssignStmt .
+   	op _:=new(_) : OCL-Exp OCL-Exp -> @InstanceCreationStmt .
+   	op return    : -> @ReturnStmt .
+   	op return_   : OCL-Exp -> @ReturnStmt .
+endm
