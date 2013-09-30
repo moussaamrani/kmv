@@ -1,0 +1,19 @@
+--- load Kermeta-AL.maude
+
+set trace on . 
+set trace select on . 
+--- trace select validReferences validOpposites .
+---- set trace eq on . 
+---- set trace condition on . 
+---- set trace whole on . 
+---- set trace substitution on . 
+
+--- reduce null .
+--- reduce b(true) .
+--- reduce i(5) .
+--- reduce b(5) .
+--- reduce self .
+--- reduce super .
+--- reduce super . 'toto .
+red self . 'toto .
+red 't . 'toto .

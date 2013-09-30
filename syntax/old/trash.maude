@@ -1,0 +1,12 @@
+set trace on .
+set trace select on .
+set trace select validReferences .
+
+red validReferences(authors@Book@Lib, < 'u : Book@Lib | authors@Book@Lib : Set{'ek
+    ; 'mh} >, Library{< 'ek : Author@Lib | books@Author@Lib : Set{'k ; 'u} #
+    name@Author@Lib : "EK" > < 'k : Book@Lib | authors@Book@Lib : Set{'ek} #
+    title@Book@Lib : "Kritik" > < 'mh : Author@Lib | books@Author@Lib : Set{'sz
+    ; 'u} # name@Author@Lib : "MH" > < 'sz : Book@Lib | authors@Book@Lib : Set{
+    'mh} # title@Book@Lib : "Sein Und Zeit" > < 'u : Book@Lib |
+    authors@Book@Lib : Set{'ek ; 'mh} # title@Book@Lib : "Uber Nietsche" >}) .
+    

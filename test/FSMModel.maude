@@ -1,11 +1,8 @@
 mod FSM-MODEL is
-	protecting MAUDELING .
 	protecting FSM-MM .
+	protecting MAUDELING .
 	
-	*** Set{mt} for 
-	*** Set separator is ;
-	*** No references = nil
-	
+	op FSMModel : -> @Model .
 	op FSMModel : -> @Model .
 	eq FSMModel = FiniteStateMachine {
 		< 'fsm : FSM@FSM | label@Label@FSM : "(ab)+c" # 
@@ -29,7 +26,7 @@ mod FSM-MODEL is
 						fsm@State@FSM : 'fsm #
 						kind@State@FSM : STOP@Kind@FSM # 
 						in@State@FSM : Set {'c} #
-						out@State@FSM : Set{mt} >
+						out@State@FSM : Set {mt} >
 
 		< 'a : Transition@FSM | label@Label@FSM : "a" #
 						fsm@Transition@FSM : 'fsm #
@@ -46,4 +43,6 @@ mod FSM-MODEL is
 						src@Transition@FSM : 'two #
 						tgt@Transition@FSM : 'three >
 	} .
+
+	
 endm

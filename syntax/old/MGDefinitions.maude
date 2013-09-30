@@ -21,12 +21,12 @@ mod MGmOdCL is
 	subsort @EnumerationInstance < @DataTypeInstance . 
       
    	--- OrderedSet operations that are not defined in OCL
-	eq asSequence(OrderedSet{L:List{OclExp}}) = Sequence{L:List{OclExp}} .
-    eq exclude(I:OCL-Type, OrderedSet{L:List{OclExp}}) 
-      = OrderedSet{delete-all$L(I:OCL-Type, L:List{OclExp})} .
+	eq asSequence(OrderedSet{L:List{OCL-Exp}}) = Sequence{L:List{OCL-Exp}} .
+    eq exclude(I:OCL-Type, OrderedSet{L:List{OCL-Exp}}) 
+      = OrderedSet{delete-all$L(I:OCL-Type, L:List{OCL-Exp})} .
 
 	--- Dependency with the literals operation
-	--- op literals : @Enumeration -> List{OclExp} . --- Of @EnumerationInstance .
+	--- op literals : @Enumeration -> List{OCL-Exp} . --- Of @EnumerationInstance .
 	
 	--- Another dependency with the null value applies (see below)
 	
@@ -219,7 +219,7 @@ mod METAMODEL-PROP is
 	vars DTI DTI1 DTI2 : @DataTypeInstance .
 	vars I1 I2 : Int .
 	var L : MyList .
-	var LO : List{OclExp} .
+	var LO : List{OCL-Exp} .
 	var OCLTYPE : OCL-Type .
 	var CONF : Configuration .
 	var VALUE : OCL-Type .
@@ -270,8 +270,8 @@ mod METAMODEL-PROP is
 	
 	--- Enumerations
 	op defaultValue : @Enumeration -> @EnumerationInstance . --- [ditto] .
-	op literals : @Enumeration -> List{OclExp} . --- Of @EnumerationInstance .
-	--- List{OclExp} is taken from mOdCL 
+	op literals : @Enumeration -> List{OCL-Exp} . --- Of @EnumerationInstance .
+	--- List{OCL-Exp} is taken from mOdCL 
 		
 	--- Enumeration Instances
 	op meta : @EnumerationInstance -> @Enumeration .
@@ -521,22 +521,22 @@ mod METAMODEL-PROP is
 	*** mOdCL OPERATION ADAPTATIONS ***
 	
 	--- Eval now can be applied over @Model terms
-	op eval : OclExp Msg @Model -> OclExp .
-	eq eval( EXP:OclExp , env(VARS:Set{VarPair}) , MM { OBJSET } ) = 
+	op eval : OCL-Exp Msg @Model -> OCL-Exp .
+	eq eval( EXP:OCL-Exp , env(VARS:Set{VarPair}) , MM { OBJSET } ) = 
 		if (VARS:Set{VarPair} == empty)
-		then eval-aux(EXP:OclExp, env(self <- foo-self) OBJSET, none ) 
-		else eval-aux(EXP:OclExp, env(VARS:Set{VarPair}) OBJSET, none ) fi .
+		then eval-aux(EXP:OCL-Exp, env(self <- foo-self) OBJSET, none ) 
+		else eval-aux(EXP:OCL-Exp, env(VARS:Set{VarPair}) OBJSET, none ) fi .
 	 	
-	op <<_;_>> : OclExp @Model -> OclExp .
+	op <<_;_>> : OCL-Exp @Model -> OCL-Exp .
     --- We cannot use the same <<_:_>> mOdCL operator due to conflicts 
     --- (it returns the invalid value)
-    eq << EXP:OclExp ; MM { OBJSET } >> = ---<< EXP:OclExp : OBJSET >> .
-    	eval-aux(EXP:OclExp, env(empty) OBJSET, none ) .
+    eq << EXP:OCL-Exp ; MM { OBJSET } >> = ---<< EXP:OCL-Exp : OBJSET >> .
+    	eval-aux(EXP:OCL-Exp, env(empty) OBJSET, none ) .
 	
 	--- The second argument are the context avriables
-	op <<_;_;_>> : OclExp Msg @Model -> OclExp .
-	eq << EXP:OclExp ; env(VARS:Set{VarPair}) ; MM { OBJSET } >> = 
-		eval-aux(EXP:OclExp, env(VARS:Set{VarPair}) OBJSET, none ) .
+	op <<_;_;_>> : OCL-Exp Msg @Model -> OCL-Exp .
+	eq << EXP:OCL-Exp ; env(VARS:Set{VarPair}) ; MM { OBJSET } >> = 
+		eval-aux(EXP:OCL-Exp, env(VARS:Set{VarPair}) OBJSET, none ) .
 		
   	--- Operation required by mOdCL
 	--- Note that for this OCL operation a class is subclass of itself 
@@ -592,7 +592,7 @@ mod MODELCONFORMANCE is
 	vars ATTS REFS : MyList .
 	var VALUE : OCL-Type .
 	
-	var LO : List{OclExp} .
+	var LO : List{OCL-Exp} .
 	var SEQ : Sequence .
 	
 
@@ -733,7 +733,7 @@ mod MODELPARSER is
 	var OBJSET : Set{@Object} .
   	var MSN : Map{String, Nat} .
   	vars STRING ST1 ST2 : String .
-  	vars SS : MSet{OclExp} .
+  	vars SS : MSet{OCL-Exp} .
 	
 	--- PARSING A MODEL
 	

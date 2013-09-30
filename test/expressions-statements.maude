@@ -1,3 +1,4 @@
-load ../syntax/mOdCL.maude
-load ../syntax/Kermeta-AL.maude
+
+load /cygdrive/f/Workspace/Maude/KMV/syntax/mOdCL.maude
+load /cygdrive/f/Workspace/Maude/KMV/syntax/Kermeta-AL.maude
 
