@@ -1,0 +1,13 @@
+cd /cygdrive/f/Workspace/Maude/FSM
+load JT/mOdCL.maude
+
+mod KERMETA-SL-CTORS is			
+	--- Label
+	sort @Label @LabelNxt .
+
+endm
+
+view OclType from TRIV to mOdCL is
+    sort Elt to OclType  .
+endv
+

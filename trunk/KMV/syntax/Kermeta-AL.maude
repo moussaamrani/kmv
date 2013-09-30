@@ -42,7 +42,7 @@ mod EXPRESSION-SYNTAX is
                 op _+_  : String String -> String to _++_) .
 
 
-	pr QID .
+---	pr QID .
 	sorts Var Param Self InstExp Lhs Target NativeExp CollExp Exp ExpList .
 	subsort Qid < Var .
 	subsort Qid < Param .

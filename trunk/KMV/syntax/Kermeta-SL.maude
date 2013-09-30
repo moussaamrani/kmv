@@ -1,7 +1,7 @@
-cd /cygdrive/f/Workspace/Maude/FSM
-load JT/model-checker.maude 
-load JT/mOdCL.maude
-load JT/MGDefinitions.maude
+cd /cygdrive/f/Workspace/Maude/KMV/
+load syntax/model-checker.maude 
+load syntax/mOdCL.maude
+load syntax/MGDefinitions.maude
 
 
 view @Class from TRIV to METAMODEL-CTORS is
