@@ -10,6 +10,11 @@
 --- Previous version: 1.0.5 
 --- ------------------------------------------------------------------------------------ 
 
+--- Last changes:
+--- (09-07-2013)	
+--- 	Equations included to consider getClass on Float, String and Bool
+
+
 --- %I --------------------------------------------------------------------------------- 
 --- Avoiding preregularity warnings
 --- Because of the subsort hierarchy used, predefined Maude sorts are subsort of 
@@ -230,6 +235,7 @@ mod OCL-TYPE is
    --- the possibilities 
    subsort OclVoid < NzNat .
 
+   --- The "invalid" constant conforms with all the OCL types
    op invalid : -> OclInvalid [ctor] .
 
    --- The "null" constant is the only OclVoid value
@@ -2208,6 +2214,14 @@ mod EVAL is
    eq get-class(O:Oid , < O:Oid : C:Cid | AS:AttributeSet > Cf:Configuration) = C:Cid . 
    eq get-class(I:Int , Cf:Configuration) = Integer
    [owise]  . 
+   eq get-class(S:String , Cf:Configuration) = String
+   [owise]  . 
+   eq get-class(F:Float , Cf:Configuration) = Real
+   [owise]  . 
+   eq get-class(B::Bool , Cf:Configuration) = Boolean
+   [owise]  . 
+
+
 
    --- let
    --- Given a list of pairs with a variable name and its expression, it evaluates the

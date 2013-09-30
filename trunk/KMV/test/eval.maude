@@ -1,15 +1,23 @@
+cd /cygdrive/f/Workspace/Maude/FSM
 load JT/model-checker.maude 
 load JT/mOdCL.maude
 load JT/MGDefinitions.maude
-load Library.maude
-load LibModel.maude
+load JT/Kermeta-SL.maude
+---- load Library.maude
+---- load LibModel.maude
+load JT/FSM.maude
+--- load JT/FSMModel.maude
+--- load Library.maude
+--- load LibModel.maude
 
-set trace on . 
-set trace select on . 
-trace select validReferences validOpposites .
+
+set trace off . 
+set trace select off . 
+---- trace select validReferences validOpposites .
 ---- set trace eq on . 
 ---- set trace condition on . 
 ---- set trace whole on . 
 ---- set trace substitution on . 
-*** reduce validModel(FSMModel) .
-reduce validModel(libModel) .
+--- reduce validModel(FSMModel) .
+--- reduce validModel(libModel) .
+---- reduce validModel(FSMModel) .

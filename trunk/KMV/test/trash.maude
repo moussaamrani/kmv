@@ -1,5 +1,8 @@
 set trace on .
 set trace select validOpposites .
+red validAttributes(
+    allAttributes(Author@Lib), < 'ek : Author@Lib | name@Author@Lib : "EK" >)) .
+eof
 
 red validOpposites(Sequence{'k # 'u}, authors@Book@Lib, 'ek, Library{< 'ek :
     Author@Lib | books@Author@Lib : Set{'k ; 'u} # name@Author@Lib : "EK" > <
