@@ -1,7 +1,7 @@
 cd /cygdrive/f/Workspace/Maude/KMV/
 load syntax/model-checker.maude 
 load syntax/mOdCL.maude
-load syntax/MGDefinitions.maude
+load syntax/MGDefinitions4.maude
 
 
 view @Class from TRIV to METAMODEL-CTORS is
@@ -22,7 +22,7 @@ mod KERMETA-SL-CTORS is
 	sort @Operation @Parameter @Variable @LocalVariable .
 	subsort @Variable @Parameter < @LocalVariable < Vid .
 	subsort @Operation @Parameter @LocalVariable < @StructuralFeature .
-	op kself : -> @LocalVariable .
+	op self : -> @LocalVariable .
 	op operations : @Class -> MyList . --- of @Operation
 	op isAbstract : @Operation -> Bool .
 	op from : @StructuralFeature -> Maybe{@Class} .
@@ -53,13 +53,13 @@ view @LocalVariable from TRIV to KERMETA-SL-CTORS is
 	sort Elt to @LocalVariable .	
 endv
 
-view OCL-Type from TRIV to mOdCL is
+view OCL-Type from TRIV to MGmOdCL is
     sort Elt to OCL-Type .
 endv
 
 mod KERMETA-STATEMENTS-MAP is
 	pr MAP{@Label, @Statement} .
-	pr MAP{@LocalVariable, @LocalVariable} .
+	pr MAP{@LocalVariable, OCL-Type} .
 endm
 
 mod KERMETA-SL is
@@ -93,7 +93,7 @@ mod KERMETA-AL is
 	subsort @CondStmt @AssignStmt @InstanceCreationStmt @CallStmt @ReturnStmt < @Statement .
 	
 	op iff_      : OCL-Exp -> @CondStmt [ctor] .
-   	op _:=_      : OCL-Exp OCL-Exp -> @AssignStmt [ctor] .
+   	op _.:=._      : OCL-Exp OCL-Exp -> @AssignStmt [ctor] .
    	op _:=new(_) : OCL-Exp OCL-Exp -> @InstanceCreationStmt [ctor] .
    	op return    : -> @ReturnStmt [ctor] .
    	op return_   : OCL-Exp -> @ReturnStmt [ctor] .
@@ -107,8 +107,10 @@ mod KERMETA-DOMAIN is
 	pr KERMETA-SL-CTORS .
 	---pr MAP{@LocalVariable, OclType} .
 	sort Domain .
-	op <_,_> : @Model @LocalVariable -> Domain [ctor] .
-	
+	sort LocalEnv .
+	subsort LocalEnv < Set{VarPair} .
+	op <_##_> : @Model LocalEnv -> Domain [ctor] .
+		
 endm
 
 mod KERMETA-STACK is
@@ -116,7 +118,7 @@ mod KERMETA-STACK is
 	pr KERMETA-STATEMENTS-MAP .
 	
 	sort StackEntry .
-	op (|_,_,_|) : @Label Map{@LocalVariable, @LocalVariable} @LocalVariable -> StackEntry .
+	op `(|_,_,_|`) : @Label Map{@LocalVariable, OCL-Type} @LocalVariable -> StackEntry .
 endm
 
 fmod STACK{X :: TRIV} is
@@ -125,7 +127,7 @@ fmod STACK{X :: TRIV} is
 	sorts NeStack{X} Stack{X} .
 	subsort NeStack{X} < Stack{X} .
 
-	op empty : -> Stack{X} [ctor] .
+	op (||) : -> Stack{X} [ctor] .
 	op push : X$Elt Stack{X} -> NeStack{X} [ctor] .
 	op pop : NeStack{X} -> Stack{X} .
 	op top : NeStack{X} -> X$Elt .
@@ -135,7 +137,7 @@ fmod STACK{X :: TRIV} is
 	var E : X$Elt .
 	eq pop(push(E, S)) = S .
 	eq top(push(E, S)) = E .
-	eq isEmpty(empty) = true .
+	eq isEmpty( (||) ) = true .
 	eq isEmpty(push(E, S)) = false .
 endfm
 
@@ -159,8 +161,28 @@ mod KERMETA-CONFIGURATION is
 	eq finished(<| [], S, D |>) = isEmpty(S) .
 	eq finished(<| LAB, S, D |>) = false [owise] .
 endm
-
 mod KERMETA is
-	pr KERMETA-SL .
+
 	pr KERMETA-AL .
+	pr KERMETA-CONFIGURATION .
+	
+	vars LAB LABE LABT  : @Label .
+	vars D : Domain .
+	vars VPSET : Set{VarPair} .
+	vars M : @Model .
+	vars S : Stack{StackEntry} .
+	vars E : OCL-Exp .
+	
+	op exec_ : KConfig -> KConfig .
+	ceq exec(<| LAB, S, < M ## VPSET > |>) = <| LABT, S, < M ## VPSET > |> 
+		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
+			< LABT , LABE > := nxt(LAB) /\ false = << E ; env(VPSET) ; M >> .
+	
+	ceq exec(<| LAB, S, < M ## VPSET > |>) = <| LABE, S, < M ## VPSET > |> 
+		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
+			< LABT , LABE > := nxt(LAB) /\ true = << E ; env(VPSET) ; M >> .
+	
+	
 endm
+
+--- reduce exec <| [FSM, FSM@FSM, getStart@FSM@FSM,  2] , (||) , < FSMModel ## putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) > |> .

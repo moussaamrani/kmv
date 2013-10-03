@@ -1,13 +1,48 @@
-cd /cygdrive/f/Workspace/Maude/FSM
-load JT/mOdCL.maude
-
-mod KERMETA-SL-CTORS is			
-	--- Label
-	sort @Label @LabelNxt .
-
+mod KERMETA is
+	pr KERMETA-AL .
+	pr KERMETA-CONFIGURATION .
+	
+	vars LAB LABE LABT  : @Label .
+	vars D : Domain .
+	vars LV : @LocalVariable .
+	vars M : @Model .
+	vars S : Stack{StackEntry} .
+	vars E : OCL-Exp .
+	
+	op exec_ : KConfig -> KConfig .
+	ceq exec(<| LAB, S, < M ; LV > |>) = <| LABT, S, < M ; LV > |> 
+		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
+			< LABT , LABE > := nxt(LAB) /\ true = << E ; M >> .
 endm
 
-view OclType from TRIV to mOdCL is
-    sort Elt to OclType  .
-endv
 
+
+
+	eq statements(FiniteStateMachine) = 
+	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  1] |-> i@getStart@FSM@FSM := 0,
+	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  2] |-> iff((i@getStart@FSM@FSM .=. states@FSM@FSM . size())), --- or (states@FSM@FSM . at(i@getStart@FSM@FSM) . kind@State@FSM .=. Kind@FSM . START@Kind@FSM)),
+		 [FSM, FSM@FSM, getStart@FSM@FSM,  3] |-> i@getStart@FSM@FSM := i@getStart@FSM@FSM + 1,
+	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  4] |-> iff(i@getStart@FSM@FSM .=. states@FSM@FSM . size()),
+		 [FSM, FSM@FSM, getStart@FSM@FSM,  5] |-> return null,
+		 ---[FSM, FSM@FSM, getStart@FSM@FSM,  6] |-> return (states@FSM@FSM . at(i@getStart@FSM@FSM))
+	 	 [FSM, FSM@FSM, getFinal@FSM@FSM,  1] |-> i@getFinal@FSM@FSM := 0,
+	 	 ---[FSM, FSM@FSM, getFinal@FSM@FSM,  2] |-> if((i@getFinal@FSM@FSM .=. states@FSM@FSM  . size()) or (states . at(i@getFinal@FSM@FSM) . kind .=. Kind . START)),
+		 [FSM, FSM@FSM, getFinal@FSM@FSM,  3] |-> i@getFinal@FSM@FSM := i@getFinal@FSM@FSM + 1,
+	 	 [FSM, FSM@FSM, getFinal@FSM@FSM,  4] |-> iff(i@getFinal@FSM@FSM .=. states@FSM@FSM  . size()),
+		 [FSM, FSM@FSM, getFinal@FSM@FSM,  5] |-> return null,
+		 ---[FSM, FSM@FSM, getFinal@FSM@FSM,  6] |-> return (states@FSM@FSM . at(i@getFinal@FSM@FSM)),
+		 [FSM, FSM@FSM, accept@FSM@FSM,    1] |-> i@accept@FSM@FSM := 0,
+		 [FSM, FSM@FSM, accept@FSM@FSM,    2] |-> iff((toEval@accept@FSM@FSM . size()) or isNull@accept@FSM@FSM),
+		 ---[FSM, FSM@FSM, accept@FSM@FSM,    3] |-> current@accept@FSM@FSM := current@accept@FSM@FSM . fire@FSM@FSM (toEval@accept@FSM@FSM . at(i@accept@FSM@FSM)),   
+		 [FSM, FSM@FSM, accept@FSM@FSM,    4] |-> iff(current@accept@FSM@FSM .=. null),
+		 [FSM, FSM@FSM, accept@FSM@FSM,    5] |-> isNull@accept@FSM@FSM := true,
+		 [FSM, FSM@FSM, accept@FSM@FSM,    6] |-> i@accept@FSM@FSM := i@accept@FSM@FSM + 1,
+		 [FSM, FSM@FSM, accept@FSM@FSM,    7] |-> return (current@accept@FSM@FSM .=. final@accept@FSM@FSM)    
+	.
+	
+	var N : Nat .
+	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  2]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  3], [FSM, FSM@FSM, getStart@FSM@FSM,  4]> .
+	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  4]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  5], [FSM, FSM@FSM, getStart@FSM@FSM,  6]> .
+	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  5]) = <[], []> .
+	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  6]) = <[], []> .
+	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  N]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  (N + 1) ], []> .
