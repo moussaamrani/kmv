@@ -43,6 +43,16 @@ mod FSM-MODEL is
 						src@Transition@FSM : 'two #
 						tgt@Transition@FSM : 'three >
 	} .
-
 	
 endm
+
+
+reduce nxt([FSM, FSM@FSM, getStart@FSM@FSM,  2]) .
+
+reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, getStart@FSM@FSM,  2]] .
+
+reduce << not (i@getStart@FSM@FSM .=. self . states@FSM@FSM -> size()) ; env( putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+
+reduce exec <| [FSM, FSM@FSM, getStart@FSM@FSM,  2] , (||) , < FSMModel ## putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) > |> .
+
+reduce complete (< 'o : Transition@FSM | empty >) .
