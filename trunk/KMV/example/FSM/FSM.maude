@@ -86,7 +86,7 @@ mod FSM-MM is
 	eq lowerBound (states@FSM@FSM) = 1 .
 	eq upperBound (states@FSM@FSM) = * .
 	eq containingClass (states@FSM@FSM) = FSM@FSM .
-	eq isOrdered (states@FSM@FSM) = false .
+	eq isOrdered (states@FSM@FSM) = true .
 	eq isUnique (states@FSM@FSM) = true .
 	eq isContainment (states@FSM@FSM) = true .
 
@@ -97,7 +97,7 @@ mod FSM-MM is
 	eq lowerBound (transitions@FSM@FSM) = 0 .
 	eq upperBound (transitions@FSM@FSM) = * .
 	eq containingClass (transitions@FSM@FSM) = FSM@FSM .
-	eq isOrdered (transitions@FSM@FSM) = false .
+	eq isOrdered (transitions@FSM@FSM) = true .
 	eq isUnique (transitions@FSM@FSM) = true .
 	eq isContainment (transitions@FSM@FSM) = true .
 
@@ -123,6 +123,7 @@ mod FSM-MM is
 	sort i@getStart@FSM@FSM .
 	op i@getStart@FSM@FSM : -> i@getStart@FSM@FSM .
 	subsort i@getStart@FSM@FSM < @Variable .
+	eq name(i@getStart@FSM@FSM) = "i" .
 	eq type(i@getStart@FSM@FSM) = @Int .
 	eq lowerBound(i@getStart@FSM@FSM) = 1 .
 	eq upperBound(i@getStart@FSM@FSM) = 1 .
@@ -149,6 +150,7 @@ mod FSM-MM is
 	sort i@getFinal@FSM@FSM .
 	op i@getFinal@FSM@FSM : -> i@getFinal@FSM@FSM .
 	subsort i@getFinal@FSM@FSM < @Variable .
+	eq name(i@getFinal@FSM@FSM) = "i" .
 	eq type(i@getFinal@FSM@FSM) = @Int .
 	eq lowerBound(i@getFinal@FSM@FSM) = 1 .
 	eq upperBound(i@getFinal@FSM@FSM) = 1 .
@@ -187,6 +189,7 @@ mod FSM-MM is
 	sort i@accept@FSM@FSM .
 	op i@accept@FSM@FSM : -> i@accept@FSM@FSM .
 	subsort i@accept@FSM@FSM < @Variable .
+	eq name(i@accept@FSM@FSM) = "i" .
 	eq type(i@accept@FSM@FSM) = @Int .
 	eq lowerBound(i@accept@FSM@FSM) = 1 .
 	eq upperBound(i@accept@FSM@FSM) = 1 .
@@ -197,6 +200,7 @@ mod FSM-MM is
 	sort final@accept@FSM@FSM .
 	op final@accept@FSM@FSM : -> final@accept@FSM@FSM .
 	subsort final@accept@FSM@FSM < @Variable .
+	eq name(final@accept@FSM@FSM) = "final" .
 	eq type(final@accept@FSM@FSM) = State@FSM .
 	eq lowerBound(final@accept@FSM@FSM) = 1 .
 	eq upperBound(final@accept@FSM@FSM) = 1 .
@@ -207,6 +211,7 @@ mod FSM-MM is
 	sort current@accept@FSM@FSM .
 	op current@accept@FSM@FSM : -> current@accept@FSM@FSM .
 	subsort current@accept@FSM@FSM < @Variable .
+	eq name(current@accept@FSM@FSM) = "current" .
 	eq type(current@accept@FSM@FSM) = State@FSM .
 	eq lowerBound(current@accept@FSM@FSM) = 1 .
 	eq upperBound(current@accept@FSM@FSM) = 1 .
@@ -217,6 +222,7 @@ mod FSM-MM is
 	sort toEval@accept@FSM@FSM .
 	op toEval@accept@FSM@FSM : -> toEval@accept@FSM@FSM .
 	subsort toEval@accept@FSM@FSM < @Variable .
+	eq name(toEval@accept@FSM@FSM) = "toEval" .
 	eq type(toEval@accept@FSM@FSM) = @String .
 	eq lowerBound(toEval@accept@FSM@FSM) = 0 .
 	eq upperBound(toEval@accept@FSM@FSM) = * .
@@ -227,6 +233,7 @@ mod FSM-MM is
 	sort isNull@accept@FSM@FSM .
 	op isNull@accept@FSM@FSM : -> isNull@accept@FSM@FSM .
 	subsort isNull@accept@FSM@FSM < @Variable .
+	eq name(isNull@accept@FSM@FSM) = "isNull" .
 	eq type(isNull@accept@FSM@FSM) = @Bool .
 	eq lowerBound(isNull@accept@FSM@FSM) = 1 .
 	eq upperBound(isNull@accept@FSM@FSM) = 1 .
@@ -414,7 +421,8 @@ mod FSM-MM is
 		 [FSM, FSM@FSM, accept@FSM@FSM,    4] |-> iff(current@accept@FSM@FSM .=. null),
 		 [FSM, FSM@FSM, accept@FSM@FSM,    5] |-> isNull@accept@FSM@FSM .:=. true,
 		 [FSM, FSM@FSM, accept@FSM@FSM,    6] |-> i@accept@FSM@FSM .:=. i@accept@FSM@FSM + 1,
-		 [FSM, FSM@FSM, accept@FSM@FSM,    7] |-> return (current@accept@FSM@FSM .=. final@accept@FSM@FSM)    
+		 [FSM, FSM@FSM, accept@FSM@FSM,    7] |-> return (current@accept@FSM@FSM .=. final@accept@FSM@FSM)
+		 ---[FSM, FSM@FSM, accept@FSM@FSM,    8] |-> i@accept@FSM@FSM .:=. new (Transition@FSM)     
 	.
 	
 	var N : Nat .
@@ -422,5 +430,6 @@ mod FSM-MM is
 	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  4]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  5], [FSM, FSM@FSM, getStart@FSM@FSM,  6]> .
 	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  5]) = <[], []> .
 	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  6]) = <[], []> .
-	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  N]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  (N + 1) ], []> .
+	eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    8]) = <[], []> .
+	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  N]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  (N + 1) ], []> [owise] .
 endm
