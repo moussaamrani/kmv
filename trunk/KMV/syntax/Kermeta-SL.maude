@@ -1,7 +1,7 @@
 cd /cygdrive/f/Workspace/Maude/KMV/
 load syntax/model-checker.maude 
-load syntax/mOdCL.maude
-load syntax/MGDefinitions4.maude
+load syntax/mmOdCL.maude
+load syntax/MMGDefinitions.maude
 
 
 view @Class from TRIV to METAMODEL-CTORS is
@@ -87,6 +87,7 @@ endm
 --- ------------------------------------------------------------------------------------
 mod KERMETA-AL is
 	pr KERMETA-STMT-PREP .
+	pr KERMETA-SL .
     pr METAMODEL-PROP .
                 
 	sort    @CondStmt @AssignStmt @InstanceCreationStmt @CallStmt @ReturnStmt .
@@ -94,7 +95,7 @@ mod KERMETA-AL is
 	
 	op iff_      : OCL-Exp -> @CondStmt [ctor] .
    	op _.:=._      : OCL-Exp OCL-Exp -> @AssignStmt [ctor] .
-   	op _:=new(_) : OCL-Exp OCL-Exp -> @InstanceCreationStmt [ctor] .
+   	op _.:=. new`(_`) : @Variable @Class -> @InstanceCreationStmt [ctor] .
    	op return    : -> @ReturnStmt [ctor] .
    	op return_   : OCL-Exp -> @ReturnStmt [ctor] .
 endm
@@ -102,23 +103,22 @@ endm
 
 
 mod KERMETA-DOMAIN is
-	pr OCL-TYPE .
+	pr MGmOdCL .
 	pr METAMODEL-PROP .
 	pr KERMETA-SL-CTORS .
 	---pr MAP{@LocalVariable, OclType} .
 	sort Domain .
-	sort LocalEnv .
-	subsort LocalEnv < Set{VarPair} .
-	op <_##_> : @Model LocalEnv -> Domain [ctor] .
+	op <_##_> : @Model Set{VarPair} -> Domain [ctor] .
 		
 endm
 
 mod KERMETA-STACK is
 	pr KERMETA-SL .
 	pr KERMETA-STATEMENTS-MAP .
+	pr MGMAYBE{@LocalVariable} .	
 	
 	sort StackEntry .
-	op `(|_,_,_|`) : @Label Map{@LocalVariable, OCL-Type} @LocalVariable -> StackEntry .
+	op `(|_,_,_|`) : @Label Set{VarPair} Maybe{@LocalVariable} -> StackEntry .
 endm
 
 fmod STACK{X :: TRIV} is
@@ -127,7 +127,7 @@ fmod STACK{X :: TRIV} is
 	sorts NeStack{X} Stack{X} .
 	subsort NeStack{X} < Stack{X} .
 
-	op (||) : -> Stack{X} [ctor] .
+	op `(||`) : -> Stack{X} [ctor] .
 	op push : X$Elt Stack{X} -> NeStack{X} [ctor] .
 	op pop : NeStack{X} -> Stack{X} .
 	op top : NeStack{X} -> X$Elt .
@@ -151,38 +151,53 @@ mod KERMETA-CONFIGURATION is
 	pr KERMETA-DOMAIN .
 	
 	sort KConfig .
-	op <|_,_,_|> : @Label Stack{StackEntry} Domain -> KConfig .
+	op <|_,_,_,_|> : @Label Stack{StackEntry} Domain Nat -> KConfig .
 	
 	var LAB : @Label .
 	var S : Stack{StackEntry} .
+	var N : Nat .
 	var D : Domain .
 	
 	op finished_ : KConfig -> Bool .
-	eq finished(<| [], S, D |>) = isEmpty(S) .
-	eq finished(<| LAB, S, D |>) = false [owise] .
+	eq finished(<| [], S, D, N |>) = isEmpty(S) .
+	eq finished(<| LAB, S, D, N |>) = false [owise] .
 endm
 mod KERMETA is
 
 	pr KERMETA-AL .
 	pr KERMETA-CONFIGURATION .
 	
-	vars LAB LABE LABT  : @Label .
+	var N : Nat .
+	vars LAB LABNxt LABE LABT LABNULL : @Label .
 	vars D : Domain .
-	vars VPSET : Set{VarPair} .
-	vars M : @Model .
+	vars VPSET VPSETT : Set{VarPair} .
+	vars M MP : @Model .
+	vars MM : @Metamodel .
+	var SFIS : Set{@StructuralFeatureInstance} .
 	vars S : Stack{StackEntry} .
 	vars E : OCL-Exp .
+	vars MYVAR : @Variable .
+	var CLASS : @Class .
+	var OBJSET : Set{@Object} .
+	
+	op newOid : Nat -> Oid .
+	
+	var VAR : @Variable .
+	eq newOid(N) = qid("O" + string(N, 10)) .
+	
 	
 	op exec_ : KConfig -> KConfig .
-	ceq exec(<| LAB, S, < M ## VPSET > |>) = <| LABT, S, < M ## VPSET > |> 
+	op exec_ : KConfig -> KConfig .
+	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABT, S, < M ## VPSET >, N |> 
+		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ < LABT , LABE > := nxt(LAB)
+			 /\ false = << E ; env(VPSET) ; M >> 	
+	.
+	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABE, S, < M ## VPSET >, N |> 
 		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
-			< LABT , LABE > := nxt(LAB) /\ false = << E ; env(VPSET) ; M >> .
-	
-	ceq exec(<| LAB, S, < M ## VPSET > |>) = <| LABE, S, < M ## VPSET > |> 
-		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
-			< LABT , LABE > := nxt(LAB) /\ true = << E ; env(VPSET) ; M >> .
-	
-	
+			< LABT , LABE > := nxt(LAB) /\ true = << E ; env(VPSET) ; M >> 
+	.
+	ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { complete(< newOid(N) : CLASS | empty >) OBJSET } ## (putVar(MYVAR <- newOid(N), VPSET)) >, (N + 1) |>
+			if  MYVAR .:=. new ( CLASS ) := statements( MM ) [ LAB ] /\ 
+			< LABNxt , LABNULL > := nxt(LAB)
+	.
 endm
-
---- reduce exec <| [FSM, FSM@FSM, getStart@FSM@FSM,  2] , (||) , < FSMModel ## putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) > |> .
