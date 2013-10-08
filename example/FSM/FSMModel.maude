@@ -7,8 +7,8 @@ mod FSM-MODEL is
 	eq FSMModel = FiniteStateMachine {
 		< 'fsm : FSM@FSM | label@Label@FSM : "(ab)+c" # 
 						alphabet@FSM@FSM : Set {"a" ; "b" ; "c" } #
-						states@FSM@FSM : Set {'one ; 'two ; 'three} # 
-						transitions@FSM@FSM : Set {'a ; 'b ; 'c} >
+						states@FSM@FSM : Sequence {'one # 'two # 'three} # 
+						transitions@FSM@FSM : Sequence {'a # 'b # 'c} >
 		
 		< 'one : State@FSM | label@Label@FSM : "1" #
 						fsm@State@FSM : 'fsm #
@@ -48,11 +48,30 @@ endm
 
 
 reduce nxt([FSM, FSM@FSM, getStart@FSM@FSM,  2]) .
+---reduce 0 .
+reduce nxt([FSM, FSM@FSM, accept@FSM@FSM,    8]) .
+---reduce 0 .""
 
-reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, getStart@FSM@FSM,  2]] .
+---reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, getStart@FSM@FSM,  2]] .
+---reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, accept@FSM@FSM,    8]] .
 
-reduce << not (i@getStart@FSM@FSM .=. self . states@FSM@FSM -> size()) ; env( putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+---reduce 0 .
+reduce << i@getStart@FSM@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+reduce << states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+reduce << i@getStart@FSM@FSM .=. states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. STOP@Kind@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
 
-reduce exec <| [FSM, FSM@FSM, getStart@FSM@FSM,  2] , (||) , < FSMModel ## putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) > |> .
+reduce << (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM) ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+---reduce << i@getStart@FSM@FSM .=. states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
 
-reduce complete (< 'o : Transition@FSM | empty >) .
+---reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+---reduce << states@FSM@FSM -> at(1) . kind@State@FSM ; empty ; FSMModel >> .
+---reduce 0 .
+---reduce exec <| [FSM, FSM@FSM, getStart@FSM@FSM,  2] , (||) , < FSMModel ## putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) > , 0 |> .
+
+---reduce complete (< 'o : Transition@FSM | empty >) .
+
+---reduce 0 .
+---reduce <| [FSM, FSM@FSM, accept@FSM@FSM,    8] , (||) , < FiniteStateMachine { complete(< newOid(3) : Transition@FSM | empty >) } ## putVar(i@accept@FSM@FSM <- newOid(3), putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty))) >, 3 |> .
+---reduce exec <| [FSM, FSM@FSM, accept@FSM@FSM,    8], (||), < FSMModel ## putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) > , 0 |> .
