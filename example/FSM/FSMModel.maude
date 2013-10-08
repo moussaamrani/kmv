@@ -7,8 +7,8 @@ mod FSM-MODEL is
 	eq FSMModel = FiniteStateMachine {
 		< 'fsm : FSM@FSM | label@Label@FSM : "(ab)+c" # 
 						alphabet@FSM@FSM : Set {"a" ; "b" ; "c" } #
-						states@FSM@FSM : Sequence {'one # 'two # 'three} # 
-						transitions@FSM@FSM : Sequence {'a # 'b # 'c} >
+						states@FSM@FSM : OrderedSet {'one # 'two # 'three} # 
+						transitions@FSM@FSM : OrderedSet {'a # 'b # 'c} >
 		
 		< 'one : State@FSM | label@Label@FSM : "1" #
 						fsm@State@FSM : 'fsm #
