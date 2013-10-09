@@ -1,6 +1,6 @@
 **** Printable line length ***************************************************---thesis-------
 ******************************************************************************---thesis-------
-set show advisories on .
+set show advisories off .
 
 mod MGmOdCL is		
 	pr mOdCL * (--- Renamings of CONFIGURATION module elements
@@ -14,21 +14,19 @@ mod MGmOdCL is
 				sort Enum to @EnumerationInstance,
 				sort BasicType to @DataTypeInstance,
 				--- Renamings of _,_ due to conflict with prefix notation 
-				op _`,_ : AttributeSet AttributeSet -> AttributeSet to _#_ [prec 21 gather (e E)], 
-				op _:_ to _:_ [prec 20 gather (e E)],
-				op string : Qid -> String to qid2String, 
-                op qid : String -> Qid to string2Qid ) .	
+				op _`,_ to _#_,
+				op _:_ to _:_ [prec 20 gather (e &)] ) .	
 	
 	--- Relationship established by Ecore			
 	subsort @EnumerationInstance < @DataTypeInstance . 
       
    	--- OrderedSet operations that are not defined in OCL
-	eq asSequence(OrderedSet{L:List{OclExp}}) = Sequence{L:List{OclExp}} .
-    eq exclude(I:OclType, OrderedSet{L:List{OclExp}}) 
-      = OrderedSet{delete-all$L(I:OclType, L:List{OclExp})} .
+	eq asSequence(OrderedSet{L:List{OCL-Exp}}) = Sequence{L:List{OCL-Exp}} .
+    eq exclude(I:OCL-Type, OrderedSet{L:List{OCL-Exp}}) 
+      = OrderedSet{delete-all$L(I:OCL-Type, L:List{OCL-Exp})} .
 
 	--- Dependency with the literals operation
-	--- op literals : @Enumeration -> List{OclExp} . --- Of @EnumerationInstance .
+	--- op literals : @Enumeration -> List{OCL-Exp} . --- Of @EnumerationInstance .
 	
 	--- Another dependency with the null value applies (see below)
 	
@@ -57,33 +55,11 @@ mod METAMODEL-CTORS is
 	sort @Enumeration .
 	
 	--- Subsort relationships
-	subsorts OclVoid < @Metamodel @Package @Classifier @StructuralFeature < @NamedElement .
-	subsorts OclVoid < @Class @DataType < @Classifier .
-	subsorts OclVoid < @Attribute @Reference < @StructuralFeature .
-	subsorts OclVoid < @Enumeration < @DataType .
+	subsorts @Metamodel @Package @Classifier @StructuralFeature < @NamedElement .
+	subsorts @Class @DataType < @Classifier .
+	subsorts @Attribute @Reference < @StructuralFeature .
+	subsort @Enumeration < @DataType .
 	
-	subsorts OclVoid < Set{@StructuralFeatureInstance} 
-	                   @StructuralFeatureInstance Set{@AttributeInstance} Set{@ReferenceInstance} Vid 
-	                   LetExp @AttributeInstance @ReferenceInstance EmptySet Collection Q-Assoc Arg 
-	                   Oid Set Bag OrdSet Sequence Q-AssocPair @DataTypeInstance Float String Bool @EnumerationInstance 
-	                   FiniteFloat Char PosRat Zero NzNat .
-    op _.+._ : OclVoid OclVoid -> OclVoid [ditto] .
-    op _.-._ : OclVoid OclVoid -> OclVoid [ditto] .
-    op _.*._ : OclVoid OclVoid -> OclVoid [ditto] .
-    op _./._ : OclVoid OclVoid -> OclVoid [ditto] .
-    op _.>._ : OclVoid OclVoid -> OclVoid [ditto] .
-    op _.<._ : OclVoid OclVoid -> OclVoid [ditto] .
-    op _.>=._ : OclVoid OclVoid -> OclVoid [ditto] .
-    op _.<=._ : OclVoid OclVoid -> OclVoid [ditto] .
-    op .max. : OclVoid OclVoid -> OclVoid [ditto] .
-    op .min. : OclVoid OclVoid -> OclVoid [ditto] .
-    op _:_ : OclVoid OclType -> OclVoid [ditto] .
-    op _#_ : OclVoid OclVoid -> OclVoid [ditto] .
-    op insertAt : Int OclType OclVoid -> OclVoid .
-    
-    op type : OclVoid -> OclVoid .
-    op meta : OclVoid -> OclVoid .
-    
 	--- Basic data types
 	op @String : -> @DataType .
 	op @Int : -> @DataType .
@@ -104,11 +80,11 @@ mod METAMODEL-CTORS is
 	subsort @AttributeInstance @ReferenceInstance < @StructuralFeatureInstance .
 	
 	sort @AttributeInstance .
-	op _:_ : @Attribute OclType -> @AttributeInstance [ctor ditto] .	
+	op _:_ : @Attribute OCL-Type -> @AttributeInstance [ctor ditto] .	
 	
 	sort @ReferenceInstance .
-	--- OclType includes collections defined over BasicTypes and Oids 
-	op _:_ : @Reference OclType -> @ReferenceInstance [ctor ditto] .
+	--- OCL-Type includes collections defined over BasicTypes and Oids 
+	op _:_ : @Reference OCL-Type -> @ReferenceInstance [ctor ditto] .
 	
 	sort Set{@AttributeInstance} .
 	subsort @AttributeInstance < Set{@AttributeInstance} < Set{@StructuralFeatureInstance} .
@@ -130,25 +106,24 @@ mod METAMODEL-CTORS is
 endm
 
 mod MYQID is
-   pr MGmOdCL .
-   pr QID 
-	    * (op _xor_ : Nat Nat -> Nat to _xorN_,
-           op _|_   : Nat Nat -> Nat  to _|N_,    
-           op _+_   : Nat Nat -> Nat to _+N_,
-           op _*_   : Nat Nat -> Nat to _*N_,
-           op _<_   : Nat Nat -> Bool to _<N_,
-           op _<=_  : Nat Nat -> Bool to _<=N_,
-           op _>=_  : Nat Nat -> Bool to _>=N_,
-           op _>_   : Nat Nat -> Bool to _>N_,
-	       op _<_  : String String -> Bool to _<S_,   
-           op _<=_ : String String -> Bool to _<=S_,   
-           op _>_  : String String -> Bool to _>S_,   
-           op _>=_ : String String -> Bool to _>=S_,  
-           op _+_  : String String -> String to _+S_,
-           
-           op string : Qid -> String to qid2String, 
-           op qid : String -> Qid to string2Qid) .
-           
+	pr MGmOdCL .
+	pr QID * ( --- Same renamings as in mOdCL
+	           op _|_   : Nat Nat -> Nat  to _|N_,    
+	           op _xor_ : Nat Nat -> Nat to _nxor_,   
+	           op _<_   : Nat Nat -> Bool to _<N_,    
+	           op _<=_  : Nat Nat -> Bool to _<=N_,   
+	           op _>_   : Nat Nat -> Bool to _>N_,    
+	           op _>=_  : Nat Nat -> Bool to _>=N_,   
+	           op _*_   : Nat Nat -> Nat to _*N_,     
+	           op _+_   : Nat Nat -> Nat to _+N_,
+	           op _<_  : String String -> Bool to _lt_,   
+	           op _<=_ : String String -> Bool to _leq_,   
+	           op _>_  : String String -> Bool to _gt_,   
+	           op _>=_ : String String -> Bool to _geq_,  
+	           op _+_  : String String -> String to _++_,
+	           --- Renamings of Qid
+	           op string : Qid -> String to toString) .
+    
     --- We use quoted identifiers as object identifiers            
 	subsort Qid < Oid .
 endm
@@ -162,50 +137,37 @@ endm
 
 --- List defined for gathering the properties of metamodel elements
 fmod MGLIST{X :: TRIV} is
-    pr EXT-BOOL .
-    
-    sort MGNeList{X} MGList{X} .
-    subsort X$Elt < MGNeList{X} .
-    subsort EmptyList MGNeList{X} < MGList{X} .
-    
-    sort EmptyList .
-    op nil : -> EmptyList [ctor] .
----(
-    op __ : EmptyList EmptyList -> EmptyList [ctor assoc id: nil prec 25] .
-    op __ : MGList{X} MGList{X} -> MGList{X} [ctor ditto] .
----)
-    op __ : X$Elt MGList{X} -> MGList{X} [ctor prec 25] .
-    eq E nil = E .
-    
-    var E E' : X$Elt .
-    vars A L : MGList{X} .
+	sort MGNeList{X} MGList{X} .
+	subsort X$Elt < MGNeList{X} .
+	subsort EmptyList MGNeList{X} < MGList{X} .
+	
+	sort EmptyList .
+	op nil : -> EmptyList [ctor] .
+	op __ : EmptyList EmptyList -> EmptyList [ctor assoc id: nil prec 25] .
+ 	op __ : MGList{X} MGList{X} -> MGList{X} [ctor ditto] .
 
-    op append : EmptyList EmptyList -> EmptyList .
-    op append : MGList{X} MGList{X} -> MGList{X} .
----(
-    eq append(A, L) = A L .
----)
-    eq append(E A, L) = E append(A, L) .
-    eq append(E, L) = E L .
-    eq append(nil, L) = L .
+	var E E' : X$Elt .
+	vars A L : MGList{X} .
 
-    op occurs : X$Elt MGList{X} -> Bool .
-    eq occurs(E, nil) = false .
-    eq occurs(E, E') = E == E' .
-    eq occurs(E, E' L) = E == E' or-else occurs(E, L) .
+	op append : EmptyList EmptyList -> EmptyList .
+	op append : MGList{X} MGList{X} -> MGList{X} .
+	eq append(A, L) = A L .
 
-----    op _in_ : X$Elt MGList{X} -> Bool .
-----    eq (E in L) =  occurs(E, L) .
+	op occurs : X$Elt MGList{X} -> Bool .
+	eq occurs(E, nil) = false .
+	eq occurs(E, E' L) = if E == E' then true else occurs(E, L) fi .
+
+	op _in_ : X$Elt MGList{X} -> Bool .
+	eq (E in L) =  occurs(E, L) .
   
-    op reverse : EmptyList -> EmptyList .
-    op reverse : MGList{X} -> MGList{X} .
-    eq reverse(L) = $reverse(L, nil) .
+	op reverse : EmptyList -> EmptyList .
+	op reverse : MGList{X} -> MGList{X} .
+	eq reverse(L) = $reverse(L, nil) .
 
-    op $reverse : EmptyList EmptyList -> EmptyList .
-    op $reverse : MGList{X} MGList{X} -> MGList{X} .
-    eq $reverse(nil, A) = A .
-    eq $reverse(E, A) = E A .
-    eq $reverse(E L, A) = $reverse(L, E A).
+	op $reverse : EmptyList EmptyList -> EmptyList .
+	op $reverse : MGList{X} MGList{X} -> MGList{X} .
+	eq $reverse(nil, A) = A .
+	eq $reverse(E L, A) = $reverse(L, E A).
 endfm
 
 view @NamedElement from TRIV to METAMODEL-CTORS is
@@ -257,10 +219,10 @@ mod METAMODEL-PROP is
 	vars DTI DTI1 DTI2 : @DataTypeInstance .
 	vars I1 I2 : Int .
 	var L : MyList .
-	var LO : List{OclExp} .
-	var OCLTYPE : OclType .
+	var LO : List{OCL-Exp} .
+	var OCLTYPE : OCL-Type .
 	var CONF : Configuration .
-	var VALUE : OclType .
+	var VALUE : OCL-Type .
 	
 	*** METAMODEL PROPERTIES ***
 	
@@ -298,7 +260,7 @@ mod METAMODEL-PROP is
 	op isUnique : @StructuralFeature -> Bool .
 	
 	--- Attributes
-	op specificDefaultValue : @Attribute -> OclType . --- Of @DataTypeInstance
+	op specificDefaultValue : @Attribute -> OCL-Type . --- Of @DataTypeInstance
 	eq specificDefaultValue(ATT) = null [owise] .
 	op isId : @Attribute -> Bool .
 	
@@ -308,8 +270,8 @@ mod METAMODEL-PROP is
 	
 	--- Enumerations
 	op defaultValue : @Enumeration -> @EnumerationInstance . --- [ditto] .
-	op literals : @Enumeration -> List{OclExp} . --- Of @EnumerationInstance .
-	--- List{OclExp} is taken from mOdCL 
+	op literals : @Enumeration -> List{OCL-Exp} . --- Of @EnumerationInstance .
+	--- List{OCL-Exp} is taken from mOdCL 
 		
 	--- Enumeration Instances
 	op meta : @EnumerationInstance -> @Enumeration .
@@ -321,21 +283,20 @@ mod METAMODEL-PROP is
 	eq allClasses(MM) = classesAux(allPackages(MM)) .
 	
 	op allPackages : @Metamodel -> MyList . --- Of @Package
-	eq allPackages(MM) = append(packages(MM), allSubPackages(packages(MM))) .
+	eq allPackages(MM) = (packages(MM) allSubPackages(packages(MM))) .
 	
 	--- Packages
 	op allSubPackages : MyList -> MyList . --- Of @Package (both) .
 	eq allSubPackages(nil) = nil .
-	eq allSubPackages(P) = append(subPackages(P), allSubPackages(subPackages(P))) .
-	eq allSubPackages((P L)) = append(append(subPackages(P), allSubPackages(subPackages(P))), allSubPackages(L)) .
+	eq allSubPackages(P) = (subPackages(P) allSubPackages(subPackages(P))) .
+	eq allSubPackages((P L)) = (allSubPackages(P) allSubPackages(L)) .
 	
 	op allClasses : @Package -> MyList . --- Of @Class
-	eq allClasses(P) = append(classes(P), classesAux(allSubPackages((P nil)))) .
+	eq allClasses(P) = (classes(P) classesAux(allSubPackages(P))) .
 	
 	op classesAux : MyList -> MyList . --- Of @Package, @Class  
 	eq classesAux(nil) = nil .	
-    eq classesAux(P) = classes(P) .
-    eq classesAux(P L) = append(classes(P), classesAux(L)) .
+	eq classesAux(P L) = (classes(P) classesAux(L)) .
 
 	--- DataTypes
 	--- This operation is also defined for enumerations in the metamodels equations
@@ -367,47 +328,40 @@ mod METAMODEL-PROP is
 	
 	--- Classes
 	op structuralFeatures : @Class -> MyList . --- Of @StructuralFeature
-	eq structuralFeatures(C) = append(attributes(C), references(C)) .
+	eq structuralFeatures(C) = attributes(C) references(C) .
 	
 	op allSuperTypes : MyList -> MyList . --- Of @Class (both)
 	eq allSuperTypes(nil) = nil .
-	eq allSuperTypes(C) = append(superTypes(C), allSuperTypes(superTypes(C))) .
-	eq allSuperTypes(C L) = append(append(superTypes(C), allSuperTypes(superTypes(C))), allSuperTypes(L)) .
+	eq allSuperTypes(C) = (superTypes(C) allSuperTypes(superTypes(C))) .
+	eq allSuperTypes(C L) = (allSuperTypes(C) allSuperTypes(L)) .
 	
 	op allReferences : MyList -> MyList . --- Of @Class, @Reference
 	eq allReferences(nil) = nil .
-	eq allReferences(C) = append(references(C), allReferences(superTypes(C))) .
-	eq allReferences(C L) = append(append(references(C), allReferences(superTypes(C))), allReferences(L)) .
+	eq allReferences(C) = (references(C) allReferences(superTypes(C))) .
+	eq allReferences(C L) = (allReferences(C) allReferences(L)) .
 
 	op containmentReferences : @Class -> MyList . --- Of @References
-	eq containmentReferences(C) = containmentReferences(allReferences((C nil))) .
+	eq containmentReferences(C) = containmentReferences(allReferences(C)) .
 	op containmentReferences : MyList -> MyList . --- Of @References (both)
 	eq containmentReferences(nil) = nil .
-    eq containmentReferences(REF) 
-      = if (isContainment(REF)) 
-        then REF 
-        else nil 
-        fi .
-    eq containmentReferences(REF L) 
-      = if (isContainment(REF)) 
-        then (REF containmentReferences(L))
-        else containmentReferences(L) 
-        fi .
+	eq containmentReferences(REF L) 
+	  = if (isContainment(REF)) 
+	    then (REF containmentReferences(L))
+	    else containmentReferences(L) fi .
 		
 	op allAttributes : MyList -> MyList . --- Of @Class, @Attribute 
 	eq allAttributes(nil) = nil .
-	eq allAttributes(C) = append(attributes(C), allAttributes(superTypes(C))) .
-	eq allAttributes(C L) = append(append(attributes(C), allAttributes(superTypes(C))), allAttributes(L)) .
+	eq allAttributes(C) = (attributes(C) allAttributes(superTypes(C))) .
+	eq allAttributes(C L) = (allAttributes(C) allAttributes(L)) .
 	
 	op allStructuralFeatures : @Class -> MyList . --- Of @StructuralFeature
-	eq allStructuralFeatures(C) = append(allAttributes(C nil), allReferences(C nil)) .
+	eq allStructuralFeatures(C) = (allAttributes(C) allReferences(C)) .
 	
 	op superTypeOf : @Class @Class -> Bool .
 	eq superTypeOf(@Object, C2) = true .	
 	eq superTypeOf(C, C2) = 
 		((name(C) == "EObject" and-then name(package(C)) == "ecore") 
-		or-else (C in allSuperTypes(C2 nil))) 
-	  [owise] .
+		or-else (C in allSuperTypes(C2))) [owise] .
 	--- This equation is equivalent to:
 	--- eq subTypeOf(C, EObject@ecore) = true .
 	--- However, the Ecore Metamodel is not imported yet
@@ -416,12 +370,11 @@ mod METAMODEL-PROP is
 	eq subTypeOf(C, C2) = superTypeOf(C2, C) . 
 	
 	op idAttribute : @Class -> Maybe{@Attribute} . 
-	eq idAttribute(C) = idAttribute(allAttributes(C nil)) .
+	eq idAttribute(C) = idAttribute(allAttributes(C)) .
 	
 	op idAttribute : MyList -> Maybe{@Attribute} . --- Of @Attribute
 	eq idAttribute(nil) = null .	
-    eq idAttribute(ATT) = if isId(ATT) then ATT else null fi .
-    eq idAttribute(ATT L) = if isId(ATT) then ATT else idAttribute(L) fi .
+	eq idAttribute(ATT L)= if isId(ATT) then ATT else idAttribute(L) fi .
 		
 	--- StructuralFeatures
 	op isMany : @StructuralFeature -> Bool .
@@ -433,18 +386,18 @@ mod METAMODEL-PROP is
 	op metamodel : @StructuralFeature -> @Metamodel .
 	eq metamodel(SF) = metamodel(package(containingClass(SF))) .
 	
-	op defaultValue : @StructuralFeature -> OclType .
+	op defaultValue : @StructuralFeature -> OCL-Type .
 		
 	--- Attributes
-	op defaultValue : @Attribute -> OclType [ditto] . --- Of @DataTypeInstance
+	op defaultValue : @Attribute -> OCL-Type [ditto] . --- Of @DataTypeInstance
 	eq defaultValue(ATT) 
 	  = if not (specificDefaultValue(ATT) == null) 
 	    then specificDefaultValue(ATT)
 	    else if (isMany(ATT) and-then isRequired(ATT))
 	         then if isOrdered(ATT) 
 	              then if isUnique(ATT) 
-	                   then OrderedSet{ defaultValue(type(ATT)) # mt-ord }  
-	                   else Sequence{ defaultValue(type(ATT)) # mt-ord } fi
+	                   then OrderedSet{ defaultValue(type(ATT)) }  
+	                   else Sequence{ defaultValue(type(ATT)) } fi
 	              else if isUnique(ATT) 
                        then Set{ defaultValue(type(ATT)) }  
                        else Bag{ defaultValue(type(ATT)) } fi fi 
@@ -461,7 +414,7 @@ mod METAMODEL-PROP is
 	                   else null fi fi fi fi .
 		
 	--- References
-	op defaultValue : @Reference -> OclType [ditto] . --- Of Oid
+	op defaultValue : @Reference -> OCL-Type [ditto] . --- Of Oid
 	eq defaultValue(REF) 
 	  = if isMany(REF) 
 	    then if isOrdered(REF) 
@@ -476,15 +429,13 @@ mod METAMODEL-PROP is
 	op isContainer : @Reference -> Bool . 
 	eq isContainer(REF)= isContainment(opposite(REF)) .
 	
----(
 	--- DataType Instances
-	op meta : OclType -> Maybe{@DataType} . --- Of @DataTypeInstance 
+	op meta : OCL-Type -> Maybe{@DataType} . --- Of @DataTypeInstance 
 	eq meta(VALUE) = metaListAux(<< VALUE -> asSequence() >>) .
----)
 		
 	op metaListAux : Sequence -> Maybe{@DataType} . --- Of @DataTypeInstance
 	eq metaListAux(Sequence{mt-ord}) = null .
-	eq metaListAux(Sequence{DTI1 # mt-ord}) = metaAux(DTI1) .
+	eq metaListAux(Sequence{DTI1}) = metaAux(DTI1) .
 	eq metaListAux(Sequence{DTI1 # DTI2 # LO}) 
 	  = if (metaAux(DTI1) == metaListAux(Sequence{DTI2 # LO}))
 	    then metaAux(DTI1)
@@ -500,17 +451,17 @@ mod METAMODEL-PROP is
 	op isUnique : @StructuralFeatureInstance -> Bool .
 	eq isUnique(SFI) = isUnique(meta(SFI)) .
 	
-	op isOrdered : OclType -> Bool .
+	op isOrdered : OCL-Type -> Bool .
 	eq isOrdered(B:Bag) = false .
 	eq isOrdered(S:Set) = false .
 	eq isOrdered(VALUE) = true [owise] .
 	
-	op isUnique : OclType -> Bool .
+	op isUnique : OCL-Type -> Bool .
 	eq isUnique(S:Sequence) = false .
 	eq isUnique(B:Bag) = false .
 	eq isUnique(VALUE) = true [owise] .
 	
-	op isMany : OclType -> Bool .
+	op isMany : OCL-Type -> Bool .
 	eq isMany(COL:Collection) = true .
 	eq isMany(VALUE) = false [owise] .
 	
@@ -520,7 +471,7 @@ mod METAMODEL-PROP is
 	op refs : Set{@StructuralFeatureInstance} -> Set{@ReferenceInstance} .
 	eq refs((ATTIS # REFIS)) = REFIS .
 	
-	op get : Set{@StructuralFeatureInstance} @StructuralFeature -> OclType . 
+	op get : Set{@StructuralFeatureInstance} @StructuralFeature -> OCL-Type . 
 	eq get((SF : VALUE # SFIS), SF) = VALUE .
 	eq get(SFIS, SF) = null [owise] .
 	
@@ -528,7 +479,7 @@ mod METAMODEL-PROP is
 	op meta : @Object -> @Class .
 	eq meta(< O : C | SFIS >) = C .
 	
-	op get : @Object @StructuralFeature -> OclType . 
+	op get : @Object @StructuralFeature -> OCL-Type . 
 	eq get(< O : C | (SF : VALUE # SFIS) >, SF) = VALUE .
 	eq get(OBJ, SF) = null [owise] .
 	
@@ -537,14 +488,10 @@ mod METAMODEL-PROP is
 	op complete : @Object -> @Object .
 	eq complete(< O : C | SFIS >) = complete(< O : C | SFIS >, allStructuralFeatures(C)) .
 	op complete : @Object MyList -> @Object .
-    eq complete(< O : C | SF : VALUE # SFIS >, SF) 
-      = < O : C | SF : VALUE # SFIS > .
-    eq complete(< O : C | SF : VALUE # SFIS >, (SF L)) 
-      = complete(< O : C | SF : VALUE # SFIS >, L) .
-    eq complete(< O : C | SFIS >, SF) 
-      = < O : C | SF : defaultValue(SF) # SFIS > [owise] .
-    eq complete(< O : C | SFIS >, (SF L)) 
-      = complete(< O : C | SF : defaultValue(SF) # SFIS >, L) [owise] .
+	eq complete(< O : C | SF : VALUE # SFIS >, (SF L)) 
+	  = complete(< O : C | SF : VALUE # SFIS >, L) .
+	eq complete(< O : C | SFIS >, (SF L)) 
+	  = complete(< O : C | SF : defaultValue(SF) # SFIS >, L) [owise] .
 	eq complete(< O : C | SFIS >, nil) = < O : C | SFIS > .
 			
 	--- Model
@@ -571,26 +518,25 @@ mod METAMODEL-PROP is
 	eq -1 <=Card I2 = (I2 == -1) . 
 	eq I1 <=Card I2 = I1 <= I2 [owise] .
 	
----(
 	*** mOdCL OPERATION ADAPTATIONS ***
 	
 	--- Eval now can be applied over @Model terms
-	op eval : OclExp Msg @Model -> OclExp .
-	eq eval( EXP:OclExp , env(VARS:Set{VarPair}) , MM { OBJSET } ) = 
+	op eval : OCL-Exp Msg @Model -> OCL-Exp .
+	eq eval( EXP:OCL-Exp , env(VARS:Set{VarPair}) , MM { OBJSET } ) = 
 		if (VARS:Set{VarPair} == empty)
-		then eval-aux(EXP:OclExp, env(self <- foo-self) OBJSET, none ) 
-		else eval-aux(EXP:OclExp, env(VARS:Set{VarPair}) OBJSET, none ) fi .
+		then eval-aux(EXP:OCL-Exp, env(self <- foo-self) OBJSET, none ) 
+		else eval-aux(EXP:OCL-Exp, env(VARS:Set{VarPair}) OBJSET, none ) fi .
 	 	
-	op <<_;_>> : OclExp @Model -> OclExp .
+	op <<_;_>> : OCL-Exp @Model -> OCL-Exp .
     --- We cannot use the same <<_:_>> mOdCL operator due to conflicts 
     --- (it returns the invalid value)
-    eq << EXP:OclExp ; MM { OBJSET } >> = ---<< EXP:OclExp : OBJSET >> .
-    	eval-aux(EXP:OclExp, env(empty) OBJSET, none ) .
+    eq << EXP:OCL-Exp ; MM { OBJSET } >> = ---<< EXP:OCL-Exp : OBJSET >> .
+    	eval-aux(EXP:OCL-Exp, env(empty) OBJSET, none ) .
 	
 	--- The second argument are the context avriables
-	op <<_;_;_>> : OclExp Msg @Model -> OclExp .
-	eq << EXP:OclExp ; env(VARS:Set{VarPair}) ; MM { OBJSET } >> = 
-		eval-aux(EXP:OclExp, env(VARS:Set{VarPair}) OBJSET, none ) .
+	op <<_;_;_>> : OCL-Exp Msg @Model -> OCL-Exp .
+	eq << EXP:OCL-Exp ; env(VARS:Set{VarPair}) ; MM { OBJSET } >> = 
+		eval-aux(EXP:OCL-Exp, env(VARS:Set{VarPair}) OBJSET, none ) .
 		
   	--- Operation required by mOdCL
 	--- Note that for this OCL operation a class is subclass of itself 
@@ -599,32 +545,29 @@ mod METAMODEL-PROP is
 
 	--- To handle not (name-)qualified attributes in OCL expressions
 	--- op getAttr : Universal Configuration -> Universal [poly (1 0)] .
-	ceq get-attr(O (. SF).OclAttr, < O : C | SF2 : OCLTYPE # SFIS > CONF) 
+	ceq get-attr(O (. SF).OCL-Attr, < O : C | SF2 : OCLTYPE # SFIS > CONF) 
 	  = OCLTYPE
 	  if (name(SF) == name(SF2)) .
----)
 endm
 
-red 97 .
-
 mod MGMODEL-CHECKER is
-   pr METAMODEL-CTORS .
-   pr MODEL-CHECKER 
-	    * (op _xor_ : Nat Nat -> Nat to _xorN_,
-           op _|_   : Nat Nat -> Nat  to _|N_,    
-           op _+_   : Nat Nat -> Nat to _+N_,
-           op _*_   : Nat Nat -> Nat to _*N_,
-           op _<_   : Nat Nat -> Bool to _<N_,
-           op _<=_  : Nat Nat -> Bool to _<=N_,
-           op _>=_  : Nat Nat -> Bool to _>=N_,
-           op _>_   : Nat Nat -> Bool to _>N_,
-           op _<_  : String String -> Bool to _<S_,   
-           op _<=_ : String String -> Bool to _<=S_,   
-           op _>_  : String String -> Bool to _>S_,   
-           op _>=_ : String String -> Bool to _>=S_,  
-           op _+_  : String String -> String to _+S_,
-           op string : Qid -> String to qid2String, 
-           op qid : String -> Qid to string2Qid) .
+	pr METAMODEL-CTORS .
+	pr MODEL-CHECKER * ( --- Same renamings as in mOdCL
+                op _|_   : Nat Nat -> Nat  to _|N_,    
+                op _xor_ : Nat Nat -> Nat to _nxor_,   
+                op _<_   : Nat Nat -> Bool to _<N_,    
+                op _<=_  : Nat Nat -> Bool to _<=N_,   
+                op _>_   : Nat Nat -> Bool to _>N_,    
+                op _>=_  : Nat Nat -> Bool to _>=N_,   
+                op _*_   : Nat Nat -> Nat to _*N_,     
+                op _+_   : Nat Nat -> Nat to _+N_,
+                op _<_  : String String -> Bool to _lt_,   
+                op _<=_ : String String -> Bool to _leq_,   
+                op _>_  : String String -> Bool to _gt_,   
+                op _>=_ : String String -> Bool to _geq_,  
+                op _+_  : String String -> String to _++_,
+                --- Renamings of Qid
+                op string : Qid -> String to toString ) .
                 
 	subsort @Model < State .
 	var MODEL : @Model .
@@ -647,19 +590,18 @@ mod MODELCONFORMANCE is
 	var ATT : @Attribute .
 	var REF : @Reference .
 	vars ATTS REFS : MyList .
-	var VALUE : OclType .
+	var VALUE : OCL-Type .
 	
-	var LO : List{OclExp} .
+	var LO : List{OCL-Exp} .
 	var SEQ : Sequence .
 	
 
----(
 	op validModel : @Model -> Bool .
 	eq validModel(MODEL) = validModelAux(MODEL, MODEL) .
 	
 	op isEcore : @Metamodel -> Bool .
 	eq isEcore(MM) = name(MM) == "Ecore" .
-	op size : OclType -> Nat .
+	op size : OCL-Type -> Nat .
 	eq size(VALUE) = << VALUE -> asSequence() -> size() >> .
 	
 	op validModelAux : @Model @Model -> Bool .
@@ -678,46 +620,29 @@ mod MODELCONFORMANCE is
 	--- included in the definition of an object, and only those ones.
 	op validAttributes : MyList @Object -> Bool .
 	eq validAttributes(nil, < O : C | empty >) = true .
-    eq validAttributes(ATT, < O : C | (ATT : VALUE # ATTIS) >) = 
-        (((((((isUnique(ATT) == isUnique(VALUE)) 
-        and-then (isOrdered(ATT) == isOrdered(VALUE)))
-        and-then (isMany(ATT) == isMany(VALUE))) 
-        and-then (lowerBound(ATT) <=Card size(VALUE))) 
-        and-then (size(VALUE) <=Card upperBound(ATT))) 
-        and-then (<< VALUE -> asSequence() -> isEmpty() >> or-else  
-                   subTypeOf(meta(VALUE), type(ATT))))) .
-    eq validAttributes((ATT ATTS), < O : C | (ATT : VALUE # ATTIS) >) = 
-        (((((((isUnique(ATT) == isUnique(VALUE)) 
-        and-then (isOrdered(ATT) == isOrdered(VALUE)))
-        and-then (isMany(ATT) == isMany(VALUE))) 
-        and-then (lowerBound(ATT) <=Card size(VALUE))) 
-        and-then (size(VALUE) <=Card upperBound(ATT))) 
-        and-then (<< VALUE -> asSequence() -> isEmpty() >> or-else  
-                   subTypeOf(meta(VALUE), type(ATT)))) 
-        and-then validAttributes(ATTS, < O : C | ATTIS >)) .
+	eq validAttributes((ATT ATTS), < O : C | (ATT : VALUE # ATTIS) >) = 
+		(((((((isUnique(ATT) == isUnique(VALUE)) 
+		and-then (isOrdered(ATT) == isOrdered(VALUE)))
+		and-then (isMany(ATT) == isMany(VALUE))) 
+		and-then (lowerBound(ATT) <=Card size(VALUE))) 
+		and-then (size(VALUE) <=Card upperBound(ATT))) 
+		and-then (<< VALUE -> asSequence() -> isEmpty() >> or-else  
+			       subTypeOf(meta(VALUE), type(ATT)))) 
+		and-then validAttributes(ATTS, < O : C | ATTIS >)) .
 	eq validAttributes(ATTS, < O : C | ATTIS >) = false [owise] .
 	
 	op validReferences : MyList @Object @Model -> Bool .
 	eq validReferences(nil, < O : C | empty >, MODEL) = true .
-    eq validReferences(REF, < O : C | (REF : VALUE # REFIS) >, MODEL) = 
-        ((((((((isUnique(REF) == isUnique(VALUE)) 
-        and-then (isOrdered(REF) == isOrdered(VALUE))) 
-        and-then (isMany(REF) == isMany(VALUE)) )
-        and-then (lowerBound(REF) <=Card size(VALUE))) 
-        and-then (size(VALUE) <=Card upperBound(REF)))
-        and-then validRefType( << VALUE -> asSequence() >>, type(REF), MODEL)) 
-        and-then ((opposite(REF) == null) or-else 
-          validOpposites(<< VALUE -> asSequence() >>, opposite(REF), O, MODEL)))) .
-    eq validReferences((REF REFS), < O : C | (REF : VALUE # REFIS) >, MODEL) = 
-        ((((((((isUnique(REF) == isUnique(VALUE)) 
-        and-then (isOrdered(REF) == isOrdered(VALUE))) 
-        and-then (isMany(REF) == isMany(VALUE)) )
-        and-then (lowerBound(REF) <=Card size(VALUE))) 
-        and-then (size(VALUE) <=Card upperBound(REF)))
-        and-then validRefType( << VALUE -> asSequence() >>, type(REF), MODEL)) 
-        and-then ((opposite(REF) == null) or-else 
-          validOpposites(<< VALUE -> asSequence() >>, opposite(REF), O, MODEL))) 
-        and-then validReferences(REFS, < O : C | REFIS >, MODEL)) .
+	eq validReferences((REF REFS), < O : C | (REF : VALUE # REFIS) >, MODEL) = 
+		((((((((isUnique(REF) == isUnique(VALUE)) 
+		and-then (isOrdered(REF) == isOrdered(VALUE))) 
+		and-then (isMany(REF) == isMany(VALUE)) )
+		and-then (lowerBound(REF) <=Card size(VALUE))) 
+		and-then (size(VALUE) <=Card upperBound(REF)))
+		and-then validRefType( << VALUE -> asSequence() >>, type(REF), MODEL)) 
+		and-then ((opposite(REF) == null) or-else 
+		  validOpposites(<< VALUE -> asSequence() >>, opposite(REF), O, MODEL))) 
+		and-then validReferences(REFS, < O : C | REFIS >, MODEL)) .
 	eq validReferences(REFS, < O : C | REFIS >, MODEL) = false [owise] .
 	
 	op validRefType : Sequence @Class @Model -> Bool .
@@ -736,116 +661,67 @@ mod MODELCONFORMANCE is
 		and-then validOpposites(Sequence{LO}, REF, SRC, 
           MM { < O : C | (REF : VALUE # SFS) > OBJSET })) .
 	eq validOpposites(SEQ, REF, O, MODEL) = false [owise] .
----)
+	
 endm
 
 mod MGMETA-LEVEL is
-   pr META-LEVEL 
-        * (op _xor_ : Nat Nat -> Nat to _xorN_,
-           op _|_   : Nat Nat -> Nat  to _|N_,    
-           op _+_   : Nat Nat -> Nat to _+N_,
-           op _*_   : Nat Nat -> Nat to _*N_,
-           op _<_   : Nat Nat -> Bool to _<N_,
-           op _<=_  : Nat Nat -> Bool to _<=N_,
-           op _>=_  : Nat Nat -> Bool to _>=N_,
-           op _>_   : Nat Nat -> Bool to _>N_,
-           
-           op _<_  : String String -> Bool to _<S_,   
-           op _<=_ : String String -> Bool to _<=S_,   
-           op _>_  : String String -> Bool to _>S_,   
-           op _>=_ : String String -> Bool to _>=S_,  
-           op _+_  : String String -> String to _+S_,
-           
-           op abs   : Float -> Float to absF,
-           op -_    : Float -> Float  to -F_,
-           op _+_   : Float Float -> Float to _+F_,
-           op _-_   : Float Float -> Float to _-F_,
-           op _/_   : Float Float -> Float to _/F_,
-           op _*_   : Float Float -> Float to _*F_,
-           op min   : Float Float -> Float to minF,
-           op max   : Float Float -> Float to maxF,
-           op _rem_ : Float Float -> Float to _remF_,
-           op _^_   : Float Float -> Float to _^F_,
-           op _<_   : Float Float -> Bool  to _<F_,
-           op _<=_  : Float Float -> Bool  to _<=F_,
-           op _>_   : Float Float -> Bool  to _>F_,
-           op _>=_  : Float Float -> Bool  to _>=F_, 
-           op floor : Float -> Float to floorF,
-           op ceiling : Float -> Float to ceilingF,
-           
-           op _-_   : Int Int -> Int to _-I_,
-           op -_ : Int -> Int to -I_,
+  pr META-LEVEL * (--- Same renamings as in mOdCL
+                  op _|_   : Nat Nat -> Nat  to _|N_,    
+                  op _xor_ : Nat Nat -> Nat to _nxor_,   
+                  op _<_   : Nat Nat -> Bool to _<N_,    
+                  op _<=_  : Nat Nat -> Bool to _<=N_,   
+                  op _>_   : Nat Nat -> Bool to _>N_,    
+                  op _>=_  : Nat Nat -> Bool to _>=N_,   
+                  op _*_   : Nat Nat -> Nat to _*N_,     
+                  op _+_   : Nat Nat -> Nat to _+N_,
+                  op _<_  : String String -> Bool to _lt_,   
+                  op _<=_ : String String -> Bool to _leq_,   
+                  op _>_  : String String -> Bool to _gt_,   
+                  op _>=_ : String String -> Bool to _geq_,  
+                  op _+_  : String String -> String to _++_,
+                  --- Renamings of Qid
+                  op string : Qid -> String to toString,
+				   --- MGDefinitions renamings
+                   op _+_ : ModuleExpression ModuleExpression 
+                     -> ModuleExpression to _m_,
+                   op _:_ to _op:_,
+				   op _=_ : Term Term -> EqCondition to _=ML_,
+  				   op [_] : Qid -> Module to [_]ML,
+                   op metaNarrow : Module Term Term Qid Bound Nat 
+                     -> ResultTriple? to metaNarrow1,
+                   op metaNarrow : Module Term Qid Bound Bool Nat 
+                     -> ResultPair? to metaNarrow2,
+                   op {_,_} : Substitution Context -> MatchPair 
+                     to mp`{_`,_`},
+                   op {_,_} : Substitution Nat -> UnificationPair 
+                     to up`{_`,_`},
+                   op nil : -> NatList to nilNL,
+                   op nil : -> QidList to nilQL,
+                   op none to noneML, 
+                   op _<-_ to _<-ML_,
+                   op _:=_ : Term Term -> EqCondition to _::=_,
+                   --- Probando
+                   op _;_  to _;ML_ ) .
 
-           op _/_   : Rat Rat -> Rat  to _/R_,         
-           op floor : PosRat -> Nat to floorR,
-           op ceiling : PosRat -> Nat to ceilingR,
-           
-           op string : Qid -> String to qid2String,
-           
-           op _`,_ : TermList TermList -> TermList to _&&_ [gather (e E) prec 121],
-           op empty : -> TermList to emptyTL,
-           op _<-_ : Variable Term -> Assignment to _<-ML_,
-           op __ : NatList NatList -> NatList to _;1_,
-           op nil : -> NatList to nilNatList,
-           op append : NatList NatList -> NatList to appendNL,
-           op occurs : Nat NatList -> Bool to occursNL,
-           op reverse : NatList -> NatList to reverseNL,
-           op $reverse : NatList NatList -> NatList to $reverseNL,
-           op head : NeNatList -> Nat to headNL,
-           op tail : NeNatList -> NatList to tailNL,
-           op last : NeNatList -> Nat to lastNL,
-           op front : NeNatList -> NatList to frontNL,
-           op size : NatList -> Nat to sizeNL,
-           op $size : NatList Nat -> Nat to $sizeNL,
-           op __ : QidList QidList -> QidList to _;2_,
-           op nil : -> QidList to nilQidList,
-           op append : QidList QidList -> QidList to appendQL,
-           op occurs : Qid QidList -> Bool to occursQL,
-           op reverse : QidList -> QidList to reverseQL,
-           op $reverse : QidList QidList -> QidList to $reverseQL,
-           op head : NeQidList -> Qid to headQL,
-           op tail : NeQidList -> QidList to tailQL,
-           op last : NeQidList -> Qid to lastQL,
-           op front : NeQidList -> QidList to frontQL,
-           op size : QidList -> Qid to sizeQL,
-           op $size : QidList Qid -> Qid to $sizeQL,
-           op _+_ : ModuleExpression ModuleExpression -> ModuleExpression to _+++_,
-           op _:_ : Term Sort -> EqCondition to _:?_,
-           op _=_ : Term Term -> EqCondition to _==?_,
-           op [_] : Qid -> Module to `[`[`[_`]`]`],
-           op _;_ : QidSet QidSet -> QidSet to _U1_,
-           op _in_ : Qid QidSet -> Bool to _inQS_,
-           op |_| : QidSet -> Nat to |_|QS,
-           op union : QidSet QidSet -> QidSet to unionQS,
-           op intersection : QidSet QidSet -> QidSet to intersectionQS,
-           op metaNarrow : Module Term Term Qid Bound Nat ~> ResultTriple? to metaNarrow1,
-           op metaNarrow : Module Term Qid Bound Bool Nat ~> ResultPair? to metaNarrow2,
-           op {_,_} : Substitution Context -> MatchPair to mp`{_`,_`},
-           op {_,_} : Substitution Nat -> UnificationPair to up`{_`,_`},
-           
-           op qid : String -> Qid to string2Qid
-          ) .
 endm
 
 mod MODELPARSER is
 	pr METAMODEL-PROP .
 	pr MGMETA-LEVEL .
-    pr MAP{String, Nat} 
-        * (op _xor_ : Nat Nat -> Nat to _xorN_,
-           op _|_   : Nat Nat -> Nat  to _|N_,    
-           op _+_   : Nat Nat -> Nat to _+N_,
-           op _*_   : Nat Nat -> Nat to _*N_,
-           op _<_   : Nat Nat -> Bool to _<N_,
-           op _<=_  : Nat Nat -> Bool to _<=N_,
-           op _>=_  : Nat Nat -> Bool to _>=N_,
-           op _>_   : Nat Nat -> Bool to _>N_,
-           op _<_  : String String -> Bool to _<S_,   
-           op _<=_ : String String -> Bool to _<=S_,   
-           op _>_  : String String -> Bool to _>S_,   
-           op _>=_ : String String -> Bool to _>=S_,  
-           op _+_  : String String -> String to _+S_) .
-
----(
+	pr MAP{String, Nat} * ( --- Same renamings as in mOdCL
+                  op _|_   : Nat Nat -> Nat  to _|N_,    
+                  op _xor_ : Nat Nat -> Nat to _nxor_,   
+                  op _<_   : Nat Nat -> Bool to _<N_,    
+                  op _<=_  : Nat Nat -> Bool to _<=N_,   
+                  op _>_   : Nat Nat -> Bool to _>N_,    
+                  op _>=_  : Nat Nat -> Bool to _>=N_,   
+                  op _*_   : Nat Nat -> Nat to _*N_,     
+                  op _+_   : Nat Nat -> Nat to _+N_,
+                  op _<_  : String String -> Bool to _lt_,   
+                  op _<=_ : String String -> Bool to _leq_,   
+                  op _>_  : String String -> Bool to _gt_,   
+                  op _>=_ : String String -> Bool to _geq_,  
+                  op _+_  : String String -> String to _++_ ) .
   	
   	vars  F MMQ : Qid .
   	var  Ct : Constant .
@@ -857,8 +733,8 @@ mod MODELPARSER is
 	var OBJSET : Set{@Object} .
   	var MSN : Map{String, Nat} .
   	vars STRING ST1 ST2 : String .
-  	vars SS : MSet{OclExp} .
-
+  	vars SS : MSet{OCL-Exp} .
+	
 	--- PARSING A MODEL
 	
 	--- Partsings a @Model
@@ -893,30 +769,30 @@ mod MODELPARSER is
 			 
  	op parseModel : Term Map{String, Nat} Qid -> String .     
 	eq parseModel( _`[_`]( '_`{_`} , (Ct , T) ), MSN, MMQ)                           
-      = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +S
-          ("<xmi:XMI xmi:version=\"2.0\"\n" +S
-            (tab(1) +S ("xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +S 
-            (tab(1) +S ("xmlns=\"http://www.lcc.uma.es/MaudeMM/1.0\">\n" +S
+      = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ++
+          ("<xmi:XMI xmi:version=\"2.0\"\n" ++
+            (tab(1) ++ ("xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" ++ 
+            (tab(1) ++ ("xmlns=\"http://www.lcc.uma.es/MaudeMM/1.0\">\n" ++
 		      --- A module for the sorts of the model terms
-		      (tab(2) +S ("<SModule name=\"@AuxiliaryModule\" >\n" +S
-		        (serializeSorts(MSN, 0, 3) +S
+		      (tab(2) ++ ("<SModule name=\"@AuxiliaryModule\" >\n" ++
+		        (serializeSorts(MSN, 0, 3) ++
 			  --- A module for the model terms
-			  (tab(2) +S ("</SModule>\n" +S
-			  (tab(2) +S ("<RecTerm op=\"_`{_`}\" type=\"#/0/@els." 
-			  +S (string(MSN["@Model"], 10)  +S ("\">\n" +S
+			  (tab(2) ++ ("</SModule>\n" ++
+			  (tab(2) ++ ("<RecTerm op=\"_`{_`}\" type=\"#/0/@els." 
+			  ++ (string(MSN["@Model"], 10)  ++ ("\">\n" ++
            	    --- Metamodel constant
-			    (parseElement(Ct, 3, MSN, MMQ) +S
+			    (parseElement(Ct, 3, MSN, MMQ) ++
            		--- Set of objects
-			    (parseElement(T, 3, MSN, MMQ) +S
-			  (tab(2) +S ("</RecTerm>\n" +S
+			    (parseElement(T, 3, MSN, MMQ) ++
+			  (tab(2) ++ ("</RecTerm>\n" ++
         "</xmi:XMI>\n")))))))))))))))))) .
      	 
 	--- The second argument is the number of tabulators
 	op parseElement : Term Nat Map{String, Nat} Qid -> String .
 	eq parseElement(Ct, N, MSN, MMQ)
-		= tab(N) +S ("<args xsi:type=\"Constant\" op=\"" 
-		  +S (javaString(getName(Ct)) +S ("\" type=\"#/0/@els." 
-		  +S ( string( MSN[toString(getType(Ct))], 10) +S "\"/>\n")))) .
+		= tab(N) ++ ("<args xsi:type=\"Constant\" op=\"" 
+		  ++ (javaString(getName(Ct)) ++ ("\" type=\"#/0/@els." 
+		  ++ ( string( MSN[toString(getType(Ct))], 10) ++ "\"/>\n")))) .
 	eq parseElement(_`[_`](F, TL), N, MSN, MMQ)
 	  = if sortLeq(upModule(MMQ, false), 
 	               leastSort(upModule(MMQ, false), _`[_`](F, TL)), 
@@ -928,41 +804,41 @@ mod MODELPARSER is
 	    	 then parseElement( getTerm(metaReduce(upModule(MMQ, false), 
 	    	                                       _`[_`]('rat2float, _`[_`](F, TL)))), 
 	    	                    N, MSN, MMQ)
-	    	 else tab(N) +S ("<args xsi:type=\"RecTerm\" op=\"" 
-	         	  +S (javaString(F) +S ("\" type=\"#/0/@els." 
-	         	  +S ( string( MSN[ toString( leastSort(upModule(MMQ, false) ,
+	    	 else tab(N) ++ ("<args xsi:type=\"RecTerm\" op=\"" 
+	         	  ++ (javaString(F) ++ ("\" type=\"#/0/@els." 
+	         	  ++ ( string( MSN[ toString( leastSort(upModule(MMQ, false) ,
 	                                          _`[_`](F, TL)))], 10) 
-	         	  +S ("\">\n" +S (parseElements(TL, s N, MSN, MMQ) 
-	         	  +S (tab(N) +S "</args>\n")))))))
+	         	  ++ ("\">\n" ++ (parseElements(TL, s N, MSN, MMQ) 
+	         	  ++ (tab(N) ++ "</args>\n")))))))
 	         fi
 	    fi .
 
 	--- Parsing a list of terms 
 	op parseElements : TermList Nat Map{String, Nat} Qid -> String .
 	eq parseElements((T , TL), N, MSN, MMQ)  
-      = parseElement(T, N, MSN, MMQ) +S parseElements(TL, N, MSN, MMQ) .
+      = parseElement(T, N, MSN, MMQ) ++ parseElements(TL, N, MSN, MMQ) .
 	eq parseElements(empty, N, MSN, MMQ) = "" .
 	        
     --- Transforming natural (and ints) number to the same format 
     --- as the other data types
 	op parseIntElement : Term Nat Map{String, Nat} Qid -> String .
 	eq parseIntElement(_`[_`]('-_ , _`[_`](F, '0.Zero)), N, MSN, MMQ)
-	  = tab(N) +S ("<args xsi:type=\"Constant\" op=\"" 
-	    +S ( ("-" +S qidToNat(F)) +S ("\" type=\"#/0/@els." 
-	    +S ( string( MSN["NzInt"], 10) +S "\"/>\n")))) .
+	  = tab(N) ++ ("<args xsi:type=\"Constant\" op=\"" 
+	    ++ ( ("-" ++ qidToNat(F)) ++ ("\" type=\"#/0/@els." 
+	    ++ ( string( MSN["NzInt"], 10) ++ "\"/>\n")))) .
 	eq parseIntElement(_`[_`]('-I_ , _`[_`](F, '0.Zero)), N, MSN, MMQ)
-	  = tab(N) +S ("<args xsi:type=\"Constant\" op=\"" 
-	    +S ( ("-" +S qidToNat(F)) +S ("\" type=\"#/0/@els." 
-	    +S ( string( MSN["NzInt"], 10) +S "\"/>\n")))) .
+	  = tab(N) ++ ("<args xsi:type=\"Constant\" op=\"" 
+	    ++ ( ("-" ++ qidToNat(F)) ++ ("\" type=\"#/0/@els." 
+	    ++ ( string( MSN["NzInt"], 10) ++ "\"/>\n")))) .
 	eq parseIntElement(_`[_`](F, '0.Zero), N, MSN, MMQ)
-	  = tab(N) +S ("<args xsi:type=\"Constant\" op=\"" +S ( qidToNat(F) 
-	    +S ("\" type=\"#/0/@els." +S ( string( MSN["NzNat"], 10) 
-	    +S "\"/>\n")))) .
+	  = tab(N) ++ ("<args xsi:type=\"Constant\" op=\"" ++ ( qidToNat(F) 
+	    ++ ("\" type=\"#/0/@els." ++ ( string( MSN["NzNat"], 10) 
+	    ++ "\"/>\n")))) .
 		  	
  	op serializeSorts : Map{String, Nat} Nat Nat -> String .
  	eq serializeSorts((ST1 |-> CNT, MSN), CNT, N) = 
- 		tab(N) +S ("<els xsi:type=\"Sort\" name=\"" +S ( javaString(ST1) 
- 		+S ("\"/>\n" +S serializeSorts((ST1 |-> CNT, MSN), CNT + 1, N)))) .
+ 		tab(N) ++ ("<els xsi:type=\"Sort\" name=\"" ++ ( javaString(ST1) 
+ 		++ ("\"/>\n" ++ serializeSorts((ST1 |-> CNT, MSN), CNT + 1, N)))) .
  	eq serializeSorts(MSN, CNT, N) = "" [owise] . 
 
 	--- OBTAINING TERMS TYPES 
@@ -1010,7 +886,7 @@ mod MODELPARSER is
 	--- Add n tabulators
 	op tab : Nat -> String .
 	eq tab(0) = "" .
-	eq tab(s N) = "\t" +S tab(N) .
+	eq tab(s N) = "\t" ++ tab(N) .
 	
 	--- Map function
 	op $hasMapping : Map{String, Nat} String -> Bool .
@@ -1035,7 +911,7 @@ mod MODELPARSER is
  	eq replaceAll(STRING, ST1, ST2)
  	  = if (find(STRING, ST1,0) == notFound) 
  		then STRING
- 		else substr(STRING,0,find(STRING, ST1,0)) +S (ST2 +S 
+ 		else substr(STRING,0,find(STRING, ST1,0)) ++ (ST2 ++ 
  			 replaceAll(substr(STRING,find(STRING, ST1,0) + length(ST1), 
  			                   length(STRING)), ST1, ST2)) 
  		fi .
@@ -1048,11 +924,9 @@ mod MODELPARSER is
  	            and-then (97 <= ascii(substr(ST1,0,1))))
  		     then char(_-_(ascii(substr(ST1,0,1)),32)) --- lower case
  		     else substr(ST1,0,1) fi 				   --- owise
-		     +S toUpper(substr(ST1,1,length(ST1))) fi .
----)
-endm
+		     ++ toUpper(substr(ST1,1,length(ST1))) fi .
 
-red 99 .
+endm
 
 mod MAUDELING is
   pr MGMODEL-CHECKER * (
