@@ -95,7 +95,7 @@ mod KERMETA-AL is
 	
 	op iff_      : OCL-Exp -> @CondStmt [ctor] .
    	op _.:=._      : OCL-Exp OCL-Exp -> @AssignStmt [ctor] .
-   	op _.:=. new`(_`) : @Variable @Class -> @InstanceCreationStmt [ctor] .
+   	op _ .:=. new`(_`) : @Variable @Class -> @InstanceCreationStmt [ctor] .
    	op return    : -> @ReturnStmt [ctor] .
    	op return_   : OCL-Exp -> @ReturnStmt [ctor] .
 endm
@@ -125,21 +125,22 @@ fmod STACK{X :: TRIV} is
 	protecting BOOL .
 
 	sorts NeStack{X} Stack{X} .
-	subsort NeStack{X} < Stack{X} .
+	subsort X$Elt  < NeStack{X} < Stack{X} .
 
-	op `(||`) : -> Stack{X} [ctor] .
-	op push : X$Elt Stack{X} -> NeStack{X} [ctor] .
-	op pop : NeStack{X} -> Stack{X} .
-	op top : NeStack{X} -> X$Elt .
-	op isEmpty : Stack{X} -> Bool .
+	op NOPE : -> Stack{X} [ctor] .
+	op _!!!_ : X$Elt Stack{X} -> NeStack{X} [ctor] .
 
-	var S : Stack{X} .
 	var E : X$Elt .
-	eq pop(push(E, S)) = S .
-	eq top(push(E, S)) = E .
-	eq isEmpty( (||) ) = true .
-	eq isEmpty(push(E, S)) = false .
+	var S : Stack{X} .
+	eq (E !!! NOPE)  = E .
+	
+	op isEmpty_ : Stack{X} -> Bool .
+	eq isEmpty(NOPE) = true .
+	eq isEmpty(S)    = false [owise] .
+	
 endfm
+
+
 
 view StackEntry from TRIV to KERMETA-STACK is
 	sort Elt to StackEntry .
@@ -167,6 +168,7 @@ mod KERMETA is
 	pr KERMETA-AL .
 	pr KERMETA-CONFIGURATION .
 	
+	
 	var N : Nat .
 	vars LAB LABNxt LABE LABT LABNULL : @Label .
 	vars D : Domain .
@@ -175,10 +177,12 @@ mod KERMETA is
 	vars MM : @Metamodel .
 	var SFIS : Set{@StructuralFeatureInstance} .
 	vars S : Stack{StackEntry} .
-	vars E : OCL-Exp .
+	vars E RES : OCL-Exp .
 	vars MYVAR : @Variable .
+	var MAYBEVAR : Maybe{@LocalVariable} .
 	var CLASS : @Class .
 	var OBJSET : Set{@Object} .
+	var SE : StackEntry .
 	
 	op newOid : Nat -> Oid .
 	
@@ -190,14 +194,22 @@ mod KERMETA is
 	op exec_ : KConfig -> KConfig .
 	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABT, S, < M ## VPSET >, N |> 
 		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ < LABT , LABE > := nxt(LAB)
-			 /\ false = << E ; env(VPSET) ; M >> 	
+			 /\ true = << E ; env(VPSET) ; M >> 	
 	.
 	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABE, S, < M ## VPSET >, N |> 
 		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
-			< LABT , LABE > := nxt(LAB) /\ true = << E ; env(VPSET) ; M >> 
+			< LABT , LABE > := nxt(LAB) /\ false = << E ; env(VPSET) ; M >> 
 	.
 	ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { complete(< newOid(N) : CLASS | empty >) OBJSET } ## (putVar(MYVAR <- newOid(N), VPSET)) >, (N + 1) |>
 			if  MYVAR .:=. new ( CLASS ) := statements( MM ) [ LAB ] /\ 
 			< LABNxt , LABNULL > := nxt(LAB)
 	.
+	ceq exec(<| LAB, (| LABNxt , VPSETT, null |) !!! S, < M ## VPSET >, N |>) = <| LABNxt, S, < M ## VPSETT >, N |> if
+		return :=  statements( meta(M) ) [ LAB ]
+	.
+	ceq exec(<| LAB, (| LABNxt , VPSETT, MYVAR |) !!! S, < M ## VPSET >, N |>) = <| LABNxt, S, < M ## VPSETT >, N |> if
+		return( E ) :=  statements( meta(M) ) [ LAB ] /\
+		RES := << E ; env(VPSET) ; M >>
+	. --- evaluate E within VPSET, then update MYVAR inside VPSETT
+		
 endm
