@@ -47,31 +47,34 @@ mod FSM-MODEL is
 endm
 
 
-reduce nxt([FSM, FSM@FSM, getStart@FSM@FSM,  2]) .
----reduce 0 .
-reduce nxt([FSM, FSM@FSM, accept@FSM@FSM,    8]) .
----reduce 0 .""
+--- Testing Control Flow
 
----reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, getStart@FSM@FSM,  2]] .
----reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, accept@FSM@FSM,    8]] .
+--- reduce nxt([FSM, FSM@FSM, getStart@FSM@FSM,  2]) .
+--- reduce nxt([FSM, FSM@FSM, accept@FSM@FSM,    8]) .
 
----reduce 0 .
-reduce << i@getStart@FSM@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
-reduce << states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
-reduce << i@getStart@FSM@FSM .=. states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
-reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
-reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. STOP@Kind@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, getStart@FSM@FSM,  2]] .
+--- reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, accept@FSM@FSM,    8]] .
 
-reduce << (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM) ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
----reduce << i@getStart@FSM@FSM .=. states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- Testing Expression parsing / evaluation
 
----reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce << i@getStart@FSM@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce << states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce << i@getStart@FSM@FSM .=. states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+
+reduce << (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM) ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+reduce << (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM) ; env( putVar(i@getStart@FSM@FSM <- 2, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM ; env( putVar(i@getStart@FSM@FSM <- 2, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+
+--- reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
 ---reduce << states@FSM@FSM -> at(1) . kind@State@FSM ; empty ; FSMModel >> .
----reduce 0 .
----reduce exec <| [FSM, FSM@FSM, getStart@FSM@FSM,  2] , (||) , < FSMModel ## putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) > , 0 |> .
 
----reduce complete (< 'o : Transition@FSM | empty >) .
+--- Testing ConditionalStmt
+-----------------------------------------------------------------------------------
+reduce exec <| [FSM, FSM@FSM, getStart@FSM@FSM,  2] , NOPE , < FSMModel ## putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) > , 0 |> .
+reduce exec <| [FSM, FSM@FSM, getStart@FSM@FSM,  2] , NOPE , < FSMModel ## putVar(i@getStart@FSM@FSM <- 2, putVar(self <- 'fsm, empty)) > , 0 |> .
 
----reduce 0 .
----reduce <| [FSM, FSM@FSM, accept@FSM@FSM,    8] , (||) , < FiniteStateMachine { complete(< newOid(3) : Transition@FSM | empty >) } ## putVar(i@accept@FSM@FSM <- newOid(3), putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty))) >, 3 |> .
----reduce exec <| [FSM, FSM@FSM, accept@FSM@FSM,    8], (||), < FSMModel ## putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) > , 0 |> .
+--- Testing ConditionalStmt
+-----------------------------------------------------------------------------------
+reduce exec <| [FSM, FSM@FSM, accept@FSM@FSM,    8], NOPE , < FSMModel ## putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm, empty)) > , 0 |> .

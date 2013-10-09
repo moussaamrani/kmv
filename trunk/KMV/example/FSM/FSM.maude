@@ -404,7 +404,7 @@ mod FSM-MM is
 	
 	eq statements(FiniteStateMachine) = 
 	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  1] |-> i@getStart@FSM@FSM .:=. 0,
-	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  2] |-> iff(not (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM) ),
+	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  2] |-> iff( (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM) ),
 		 [FSM, FSM@FSM, getStart@FSM@FSM,  3] |-> i@getStart@FSM@FSM .:=. i@getStart@FSM@FSM + 1,
 	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  4] |-> iff(i@getStart@FSM@FSM .=. states@FSM@FSM -> size()),
 		 [FSM, FSM@FSM, getStart@FSM@FSM,  5] |-> return null,
@@ -421,8 +421,8 @@ mod FSM-MM is
 		 [FSM, FSM@FSM, accept@FSM@FSM,    4] |-> iff(current@accept@FSM@FSM .=. null),
 		 [FSM, FSM@FSM, accept@FSM@FSM,    5] |-> isNull@accept@FSM@FSM .:=. true,
 		 [FSM, FSM@FSM, accept@FSM@FSM,    6] |-> i@accept@FSM@FSM .:=. i@accept@FSM@FSM + 1,
-		 [FSM, FSM@FSM, accept@FSM@FSM,    7] |-> return (current@accept@FSM@FSM .=. final@accept@FSM@FSM)
-		 ---[FSM, FSM@FSM, accept@FSM@FSM,    8] |-> i@accept@FSM@FSM .:=. new (Transition@FSM)     
+		 [FSM, FSM@FSM, accept@FSM@FSM,    7] |-> return (current@accept@FSM@FSM .=. final@accept@FSM@FSM),
+		 [FSM, FSM@FSM, accept@FSM@FSM,    8] |-> i@accept@FSM@FSM .:=. new (Transition@FSM)     
 	.
 	
 	var N : Nat .
