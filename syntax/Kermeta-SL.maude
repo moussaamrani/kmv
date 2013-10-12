@@ -30,7 +30,7 @@ mod KERMETA-SL-CTORS is
 	op containingOperation : @Variable  -> @Operation .
    	op parameters : @Operation -> MyList . --- of @Parameter
 	op variables : @Operation -> MyList .  --- of @Variable
-				
+					
 	--- Label
 	sort @Label @LabelNxt .
 	op [_,_,_,_] : @Package @Class @Operation Nat -> @Label [ctor] .
@@ -39,6 +39,31 @@ mod KERMETA-SL-CTORS is
 	op <_,_> : @Label @Label -> @LabelNxt [ctor] .
 	op nxt : @Label -> @LabelNxt .
 	op labels : @Operation -> MyList . --- of @Label
+	
+	var LV : @LocalVariable .
+	op defaultValue : @LocalVariable -> OCL-Type .
+	eq defaultValue(LV) = 
+		if isMany(LV) then
+			if isOrdered(LV) then
+				if isUnique(LV) then
+					OrderedSet{}
+				else
+					Sequence{}
+				fi
+			else
+				if isUnique(LV) then
+					Set{}
+				else
+					Bag{}
+				fi
+			fi
+		else 
+			if type(LV) :: @DataType then
+				defaultValue(type(LV))
+			else
+				null
+			fi
+		fi .
 endm
 
 view @Label from TRIV to KERMETA-SL-CTORS is
@@ -47,6 +72,10 @@ endv
 
 view @Statement from TRIV to KERMETA-STMT-PREP is
  	sort Elt to @Statement .
+endv
+
+view @Operation from TRIV to KERMETA-SL-CTORS is
+ 	sort Elt to @Operation .
 endv
 
 view @LocalVariable from TRIV to KERMETA-SL-CTORS is
@@ -89,15 +118,86 @@ mod KERMETA-AL is
 	pr KERMETA-STMT-PREP .
 	pr KERMETA-SL .
     pr METAMODEL-PROP .
+    pr MGMAYBE{@Operation} .
                 
-	sort    @CondStmt @AssignStmt @InstanceCreationStmt @CallStmt @ReturnStmt .
+	sort    @CondStmt @AssignStmt @InstanceCreationStmt @Call @CallStmt @ReturnStmt .
+	subsort @Call < @CallStmt .
 	subsort @CondStmt @AssignStmt @InstanceCreationStmt @CallStmt @ReturnStmt < @Statement .
+	sort    @CollItem .
 	
+	ops bag
+		set
+		seq
+		oset : -> @CollItem .
 	op iff_      : OCL-Exp -> @CondStmt [ctor] .
    	op _.:=._      : OCL-Exp OCL-Exp -> @AssignStmt [ctor] .
-   	op _ .:=. new`(_`) : @Variable @Class -> @InstanceCreationStmt [ctor] .
+   	op _.:=. new`(_`) : @Variable @Classifier -> @InstanceCreationStmt [ctor] .
+   	op _.:=. new`(_,_`) : @Variable @CollItem @Classifier -> @InstanceCreationStmt [ctor] .
    	op return    : -> @ReturnStmt [ctor] .
    	op return_   : OCL-Exp -> @ReturnStmt [ctor] .
+   	op _._<>   : OCL-Exp String -> @Call [ctor prec 15] .
+   	op _._<_>   : OCL-Exp String List{OCL-Exp} -> @Call [ctor] .
+   	op _.:=._    : OCL-Exp @Call -> @CallStmt [ctor] .
+   	
+   	var CLASSIFIER : @Classifier .
+   	op default(_,_) :  @CollItem @Classifier -> OCL-Exp .
+   	eq default(bag,  CLASSIFIER) = Bag{} .
+   	eq default(set,  CLASSIFIER) = Set{} .
+   	eq default(seq,  CLASSIFIER) = Sequence{} .
+   	eq default(oset, CLASSIFIER) = OrderedSet{} .
+   	
+   	var ON : String .
+   	var C  : @Class .
+   	var O : @Operation .
+   	var L VALLIST PARAMLIST : MyList .
+   	var LV VAL PARAM : @LocalVariable .
+   	vars VPAIRS VPAIRSS VPSET : Set{VarPair} .
+   	var VPELT : VarPair .
+   	
+   	op createLocalEnv : @Operation -> Set{VarPair} .
+   	eq createLocalEnv(O) = createLocalEnv$(variables(O)) .
+   	
+   	op createLocalEnv$ : MyList -> Set{VarPair} . --- of @Variable
+   	eq createLocalEnv$(nil) = empty .
+   	eq createLocalEnv$(LV L) = putVar(LV <- defaultValue(LV), createLocalEnv$(L)) .
+   	
+	op createParamBinding : List{OCL-Exp} MyList -> Set{VarPair} .
+	eq createParamBinding(mt-ord, nil)  = empty .
+	eq createParamBinding((VAL # VALLIST), (PARAM PARAMLIST)) = putVar(PARAM <- VAL, createParamBinding(VALLIST, PARAMLIST)) .
+  	
+   	
+   	op lookup : String @Class -> @Operation .
+   	eq lookup(ON , C) = 
+   		if(not ( getByName(ON , C) == null )) then
+   			getByName(ON , C)
+   		else 
+   			findByName(ON , allSuperTypes(C) )
+   		fi
+   	.
+   	
+   	op findByName : String MyList -> @Operation . --- of @Class
+   	eq findByName(ON , C) = getByName(ON , C) .
+ 	eq findByName(ON , C L) = 
+ 		if(not (getByName(ON , C) == null)) then
+ 	 		getByName(ON , C)
+ 	 	else
+ 	 		findByName(ON , L)
+ 	 	fi
+ 	 .
+   	
+   	op getByName : String @Class -> Maybe{@Operation} . 
+   	eq getByName(ON , C) = getByName$(ON , operations(C)) .
+   	 
+   	op getByName$ : String MyList -> Maybe{@Operation} . --- of @Operation
+   	eq getByName$(ON , nil) = null .
+   	eq getByName$(ON , O L) = 
+   		if (ON == name(O)) then
+   			O
+   		else
+   			getByName$(ON , L)
+   		fi 
+   	.
+   	
 endm
 
 
@@ -159,10 +259,11 @@ mod KERMETA-CONFIGURATION is
 	var N : Nat .
 	var D : Domain .
 	
-	op finished_ : KConfig -> Bool .
-	eq finished(<| [], S, D, N |>) = isEmpty(S) .
-	eq finished(<| LAB, S, D, N |>) = false [owise] .
+	op isStop : KConfig -> Bool .
+	eq isStop(<| [], S, D, N |>) = isEmpty(S) .
+	eq isStop(<| LAB, S, D, N |>) = false [owise] .
 endm
+
 mod KERMETA is
 
 	pr KERMETA-AL .
@@ -177,22 +278,30 @@ mod KERMETA is
 	vars MM : @Metamodel .
 	var SFIS : Set{@StructuralFeatureInstance} .
 	vars S : Stack{StackEntry} .
-	vars E RES : OCL-Exp .
+	vars E RES INST O : OCL-Exp .
 	vars MYVAR : @Variable .
 	var MAYBEVAR : Maybe{@LocalVariable} .
 	var CLASS : @Class .
+	var CLASSIFIER : @Classifier .
 	var OBJSET : Set{@Object} .
 	var SE : StackEntry .
+	var COLLITEM : @CollItem .
+	var OPNAME : String .
+	var OP : @Operation . 
+	var LO LEXP : List{OCL-Exp} .
+	var K : KConfig .
 	
 	op newOid : Nat -> Oid .
 	
 	var VAR : @Variable .
 	eq newOid(N) = qid("O" + string(N, 10)) .
 	
+	op run : KConfig -> KConfig .
+	eq run(K) = if isStop(K) then K else run(exec(K)) fi .
 	
-	op exec_ : KConfig -> KConfig .
-	op exec_ : KConfig -> KConfig .
-	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABT, S, < M ## VPSET >, N |> 
+	
+	op exec : KConfig -> KConfig .
+	ceq exec( <| LAB, S, < M ## VPSET >, N |> ) = <| LABT, S, < M ## VPSET >, N |> 
 		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ < LABT , LABE > := nxt(LAB)
 			 /\ true = << E ; env(VPSET) ; M >> 	
 	.
@@ -200,10 +309,21 @@ mod KERMETA is
 		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
 			< LABT , LABE > := nxt(LAB) /\ false = << E ; env(VPSET) ; M >> 
 	.
-	ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { complete(< newOid(N) : CLASS | empty >) OBJSET } ## (putVar(MYVAR <- newOid(N), VPSET)) >, (N + 1) |>
-			if  MYVAR .:=. new ( CLASS ) := statements( MM ) [ LAB ] /\ 
+	
+	ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { complete(< newOid(N) : CLASSIFIER | empty >) OBJSET } ## (putVar(MYVAR <- newOid(N), VPSET)) >, (N + 1) |>
+			if  MYVAR .:=. new ( CLASSIFIER ) := statements( MM ) [ LAB ] /\ CLASSIFIER :: @Class /\ 
 			< LABNxt , LABNULL > := nxt(LAB)
 	.
+	ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { OBJSET } ## (putVar(MYVAR <- defaultValue(CLASSIFIER), VPSET)) >, N |>
+			if  MYVAR .:=. new ( CLASSIFIER ) := statements( MM ) [ LAB ] /\ CLASSIFIER :: @DataType /\ 
+			< LABNxt , LABNULL > := nxt(LAB)
+	.
+	
+	ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { OBJSET } ## (putVar(MYVAR <- default(COLLITEM , CLASSIFIER), VPSET)) >, N |>
+			if  MYVAR .:=. new ( COLLITEM , CLASSIFIER ) := statements( MM ) [ LAB ] /\ 
+			< LABNxt , LABNULL > := nxt(LAB)
+	.
+	
 	ceq exec(<| LAB, (| LABNxt , VPSETT, null |) !!! S, < M ## VPSET >, N |>) = <| LABNxt, S, < M ## VPSETT >, N |> if
 		return :=  statements( meta(M) ) [ LAB ]
 	.
@@ -211,5 +331,22 @@ mod KERMETA is
 		return( E ) :=  statements( meta(M) ) [ LAB ] /\
 		RES := << E ; env(VPSET) ; M >>
 	. --- evaluate E within VPSET, then update MYVAR inside VPSETT
-		
+	
+	
+	ceq exec(<| LAB, S, < MM { < O : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, null |) !!! S, < MM { OBJSET } ## (putVar(self <- O, createLocalEnv(OP))) >, N |>
+		if INST . OPNAME <> := statements( MM ) [ LAB ] /\
+		< LABNxt , LABNULL > := nxt(LAB) /\
+		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
+		OP := lookup(OPNAME, CLASS) 
+	.
+	ceq exec(<| LAB, S, < MM { < O : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, null |) !!! S, < MM { OBJSET } ## (putVar(self <- O, createLocalEnv(OP))) >, N |>
+		if INST . OPNAME < LO > := statements( MM ) [ LAB ] /\
+		< LABNxt , LABNULL > := nxt(LAB) /\
+		LEXP := eval-EL(LO, env(VPSET), none) /\
+		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
+		OP := lookup(OPNAME, CLASS) 
+	.
+
 endm
