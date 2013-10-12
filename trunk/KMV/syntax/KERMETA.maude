@@ -1,0 +1,226 @@
+cd /cygdrive/f/Workspace/Maude/KMV/syntax/
+load model-checker.maude 
+load mmOdCL.maude
+load MMGDefinitions.maude
+
+
+view @Class from TRIV to MAUDELING is
+  sort Elt to @Class .
+endv
+
+mod KERMETA-STMT-PREP is
+	sort @Statement .
+endm
+
+mod KERMETA-SL-CTORS is
+	pr MAUDELING .
+	pr MGMAYBE{@Class} . 
+
+	--- Operation & Parameters signature
+	sort @Operation @Parameter @Variable @LocalVariable .
+	subsort @Variable @Parameter < @LocalVariable < Vid .
+	subsort @Operation @Parameter @LocalVariable < @StructuralFeature .
+	op self : -> @LocalVariable .
+	op operations : @Class -> MyList . --- of @Operation
+	op isAbstract : @Operation -> Bool .
+	op from : @StructuralFeature -> Maybe{@Class} .
+	op containingOperation : @Parameter -> @Operation .
+	op containingOperation : @Variable  -> @Operation .
+   	op parameters : @Operation -> MyList . --- of @Parameter
+	op variables : @Operation -> MyList .  --- of @Variable
+				
+	--- Label
+	sort @Label @LabelNxt .
+	op [_,_,_,_] : @Package @Class @Operation Nat -> @Label [ctor] .
+	--- default label
+	op [] : -> @Label .
+	op <_,_> : @Label @Label -> @LabelNxt [ctor] .
+	op nxt : @Label -> @LabelNxt .
+	op labels : @Operation -> MyList . --- of @Label
+endm
+
+view @Label from TRIV to KERMETA-SL-CTORS is
+  	sort Elt to @Label .
+endv
+
+view @Statement from TRIV to KERMETA-STMT-PREP is
+ 	sort Elt to @Statement .
+endv
+
+view @LocalVariable from TRIV to KERMETA-SL-CTORS is
+	sort Elt to @LocalVariable .	
+endv
+
+view OclType from TRIV to MAUDELING is
+    sort Elt to OclType .
+endv
+
+mod KERMETA-STATEMENTS-MAP is
+	pr MAP{@Label, @Statement} .
+	pr MAP{@LocalVariable, OclType} .
+endm
+
+mod KERMETA-SL is
+	pr KERMETA-SL-CTORS .
+	pr KERMETA-STATEMENTS-MAP .
+	op statements : @Metamodel -> Map{@Label, @Statement} .
+endm
+
+--- ------------------------------------------------------------------------------------
+--- Action Language Syntax
+--- 
+--- Body ::= [Stm]+
+--- Stm  ::= lab: Stmt
+--- Stmt ::= condStmt 
+---       |  assignStmt | castStmt
+---       |  instanceCreationStmt 
+---       |  collStmt
+---       |  returnStmt | callStmt 
+--- CondStmt             ::= <if> exp
+--- AssignStmt           ::= lhs := exp
+--- InstanceCreationStmt ::= var := exp
+--- ReturnStmt           ::= <return> | <return> exp
+--- CallStmt             ::= call | var := call
+--- Call                 ::= target.op(exp*)
+--- ------------------------------------------------------------------------------------
+mod KERMETA-AL is
+	pr KERMETA-STMT-PREP .
+    pr METAMODEL-PROP .
+    pr KERMETA-SL .
+   --- pr MAUDELING .
+                
+	sort    @CondStmt @AssignStmt @InstanceCreationStmt @CallStmt @ReturnStmt .
+	subsort @CondStmt @AssignStmt @InstanceCreationStmt @CallStmt @ReturnStmt < @Statement .
+	sort @OperationName @Call .
+	subsort @Call < @CallStmt .
+	
+	
+	op iff_           : OclExp -> @CondStmt [ctor] .
+   	op _.:=._         : @Variable OclExp -> @AssignStmt [ctor] .
+   	op _.:=. new`(_`) : @Variable @Class -> @InstanceCreationStmt [ctor] .
+   	op return         : -> @ReturnStmt [ctor] .
+   	op return_        : OclExp -> @ReturnStmt [ctor] .
+   	op _._()          : OclExp OpName -> @Call [ctor] .
+   	op _._(_)          : OclExp OpName List{OclExp} -> @Call [ctor] .
+   	op _.:=._         : @Variable @Call -> @Call [ctor] . 
+endm
+
+
+
+mod KERMETA-DOMAIN is
+	pr MGmOdCL .
+	pr METAMODEL-PROP .
+	pr KERMETA-SL-CTORS .
+	---pr MAP{@LocalVariable, OclType} .
+	sort Domain .
+	op <_##_> : @Model Set{VarPair} -> Domain [ctor] .
+		
+endm
+
+mod KERMETA-STACK is
+	pr KERMETA-SL .
+	pr KERMETA-STATEMENTS-MAP .
+	pr MGMAYBE{@LocalVariable} .	
+	
+	sort StackEntry .
+	op `(|_,_,_|`) : @Label Set{VarPair} Maybe{@LocalVariable} -> StackEntry .
+endm
+
+fmod STACK{X :: TRIV} is
+	protecting BOOL .
+
+	sorts NeStack{X} Stack{X} .
+	subsort NeStack{X} < Stack{X} .
+
+	op `(||`) : -> Stack{X} [ctor] .
+	op push : X$Elt Stack{X} -> NeStack{X} [ctor] .
+	op pop : NeStack{X} -> Stack{X} .
+	op top : NeStack{X} -> X$Elt .
+	op isEmpty : Stack{X} -> Bool .
+
+	var S : Stack{X} .
+	var E : X$Elt .
+	eq pop(push(E, S)) = S .
+	eq top(push(E, S)) = E .
+	eq isEmpty( (||) ) = true .
+	eq isEmpty(push(E, S)) = false .
+endfm
+
+view StackEntry from TRIV to KERMETA-STACK is
+	sort Elt to StackEntry .
+endv
+
+mod KERMETA-CONFIGURATION is
+	pr KERMETA-SL .
+	pr STACK{StackEntry} .
+	pr KERMETA-DOMAIN .
+	pr MAUDELING .
+	
+	sort KConfig .
+	op <|_,_,_,_|> : @Label Stack{StackEntry} Domain Nat -> KConfig .
+	
+	var LAB : @Label .
+	var S : Stack{StackEntry} .
+	var N : Nat .
+	var D : Domain .
+	
+	op finished_ : KConfig -> Bool .
+	eq finished(<| [], S, D, N |>) = isEmpty(S) .
+	eq finished(<| LAB, S, D, N |>) = false [owise] .
+endm
+
+
+
+mod KERMETA is
+	pr KERMETA-AL .
+	pr KERMETA-CONFIGURATION .
+	---pr MAUDELING .
+	
+	op newOid : Nat -> Oid .
+	
+	var VAR : @Variable .
+	eq newOid(N) = string2Qid("O" + string(N, 10)) .
+	
+---	op allObjects_ : @Model -> Set{Oid} .
+---	eq allObjects(< O : C | SFIS >) = O .
+---	eq allObjects(< O : C | SFIS > OBJS ) = O allObject(OBJS) [owise] .
+	
+	var N : Nat .
+	vars LAB LABNxt LABE LABT LABNULL : @Label .
+	vars D : Domain .
+	vars VPSET VPSETT : Set{VarPair} .
+	vars M MP : @Model .
+	vars MM : @Metamodel .
+	var SFIS : Set{@StructuralFeatureInstance} .
+	vars S : Stack{StackEntry} .
+	vars E : OclExp .
+	vars MYVAR : @Variable .
+	var CLASS : @Class .
+	var OBJSET : Set{@Object} .
+	
+	
+	
+	
+	op exec_ : KConfig -> KConfig .
+	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABT, S, < M ## VPSET >, N |> 
+		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ < LABT , LABE > := nxt(LAB) .
+			 ---/\ false = << E ; env(VPSET) ; M >> 
+---	.
+---	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABE, S, < M ## VPSET >, N |> 
+---			if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
+---				< LABT , LABE > := nxt(LAB) /\ true = << E ; env(VPSET) ; M >> 
+---		.
+---		ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { complete(< newOid(N) : CLASS | empty >) OBJSET } ## (putVar(MYVAR <- newOid(N), VPSET)) >, (N + 1) |>
+---				if  MYVAR .:=. new ( CLASS ) := statements( MM ) [ LAB ] /\ 
+---				< LABNxt , LABNULL > := nxt(LAB)
+---		.
+endm
+
+
+	
+
+---	ceq exec(<| LAB, SE .::. S, < M ## VPSET >, N |>) = <| LABNxt, S, < M ## (putVar(VAR <- (<< E ; env(VPSET) ; M >>) , VPSETT) >, N |>
+---			if  VAR .:=. EXP . OP ( EXPLIST ) := statements( MM ) [ LAB ] /\ 
+---			VALLIST := eval-EL() /\ 
+---          
+---	.
