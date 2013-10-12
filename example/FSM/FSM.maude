@@ -56,6 +56,8 @@ mod FSM-MM is
   	eq isOrdered (label@Label@FSM) = true .
   	eq isUnique (label@Label@FSM) = true .
   	eq isId (label@Label@FSM) = true .
+  	
+  	eq operations(Label@FSM) = nil .
 
 	--- FSM
 	
@@ -288,7 +290,7 @@ mod FSM-MM is
 	eq isUnique (fsm@Transition@FSM) = true .
 	eq isContainment (fsm@Transition@FSM) = false .
 	
-	  
+	eq operations(Transition@FSM) = nil .   
 	--- State
 		
 	sort State@FSM .
@@ -403,33 +405,78 @@ mod FSM-MM is
 	eq containingOperation(current@fire@State@FSM) = fire@State@FSM .
 	
 	eq statements(FiniteStateMachine) = 
-	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  1] |-> i@getStart@FSM@FSM .:=. 0,
-	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  2] |-> iff( (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM) ),
-		 [FSM, FSM@FSM, getStart@FSM@FSM,  3] |-> i@getStart@FSM@FSM .:=. i@getStart@FSM@FSM + 1,
-	 	 [FSM, FSM@FSM, getStart@FSM@FSM,  4] |-> iff(i@getStart@FSM@FSM .=. states@FSM@FSM -> size()),
-		 [FSM, FSM@FSM, getStart@FSM@FSM,  5] |-> return null,
-		 [FSM, FSM@FSM, getStart@FSM@FSM,  6] |-> return (states@FSM@FSM -> at(i@getStart@FSM@FSM)),
-	 	 [FSM, FSM@FSM, getFinal@FSM@FSM,  1] |-> i@getFinal@FSM@FSM .:=. 0,
-	 	 [FSM, FSM@FSM, getFinal@FSM@FSM,  2] |-> iff(not (i@getFinal@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getFinal@FSM@FSM) . kind@State@FSM .=. STOP@Kind@FSM)),
-		 [FSM, FSM@FSM, getFinal@FSM@FSM,  3] |-> i@getFinal@FSM@FSM .:=. i@getFinal@FSM@FSM + 1,
-	 	 [FSM, FSM@FSM, getFinal@FSM@FSM,  4] |-> iff(i@getFinal@FSM@FSM .=. states@FSM@FSM -> size()),
-		 [FSM, FSM@FSM, getFinal@FSM@FSM,  5] |-> return null,
-		 [FSM, FSM@FSM, getFinal@FSM@FSM,  6] |-> return (states@FSM@FSM -> at(i@getFinal@FSM@FSM)),
-		 [FSM, FSM@FSM, accept@FSM@FSM,    1] |-> i@accept@FSM@FSM .:=. 0,
-		 [FSM, FSM@FSM, accept@FSM@FSM,    2] |-> iff((toEval@accept@FSM@FSM . size()) or isNull@accept@FSM@FSM),
-		 ---[FSM, FSM@FSM, accept@FSM@FSM,    3] |-> current@accept@FSM@FSM := current@accept@FSM@FSM . fire@FSM@FSM (toEval@accept@FSM@FSM . at(i@accept@FSM@FSM)),   
-		 [FSM, FSM@FSM, accept@FSM@FSM,    4] |-> iff(current@accept@FSM@FSM .=. null),
-		 [FSM, FSM@FSM, accept@FSM@FSM,    5] |-> isNull@accept@FSM@FSM .:=. true,
-		 [FSM, FSM@FSM, accept@FSM@FSM,    6] |-> i@accept@FSM@FSM .:=. i@accept@FSM@FSM + 1,
-		 [FSM, FSM@FSM, accept@FSM@FSM,    7] |-> return (current@accept@FSM@FSM .=. final@accept@FSM@FSM),
-		 [FSM, FSM@FSM, accept@FSM@FSM,    8] |-> i@accept@FSM@FSM .:=. new (Transition@FSM)     
+[FSM, FSM@FSM, getStart@FSM@FSM,  1] |-> i@getStart@FSM@FSM .:=. 0,
+[FSM, FSM@FSM, getStart@FSM@FSM,  2] |-> iff( (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM) ),
+[FSM, FSM@FSM, getStart@FSM@FSM,  3] |-> i@getStart@FSM@FSM .:=. i@getStart@FSM@FSM + 1,
+[FSM, FSM@FSM, getStart@FSM@FSM,  4] |-> iff(i@getStart@FSM@FSM .=. states@FSM@FSM -> size()),
+[FSM, FSM@FSM, getStart@FSM@FSM,  5] |-> return null,
+[FSM, FSM@FSM, getStart@FSM@FSM,  6] |-> return (states@FSM@FSM -> at(i@getStart@FSM@FSM)),
+	 	 
+[FSM, FSM@FSM, getFinal@FSM@FSM,  1] |-> i@getFinal@FSM@FSM .:=. 0,
+[FSM, FSM@FSM, getFinal@FSM@FSM,  2] |-> iff(not (i@getFinal@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getFinal@FSM@FSM) . kind@State@FSM .=. STOP@Kind@FSM)),
+[FSM, FSM@FSM, getFinal@FSM@FSM,  3] |-> i@getFinal@FSM@FSM .:=. i@getFinal@FSM@FSM + 1,
+[FSM, FSM@FSM, getFinal@FSM@FSM,  4] |-> iff(i@getFinal@FSM@FSM .=. states@FSM@FSM -> size()),
+[FSM, FSM@FSM, getFinal@FSM@FSM,  5] |-> return null,
+[FSM, FSM@FSM, getFinal@FSM@FSM,  6] |-> return (states@FSM@FSM -> at(i@getFinal@FSM@FSM)),
+		 
+[FSM, FSM@FSM, accept@FSM@FSM,    1] |-> current@accept@FSM@FSM .:=. self . "getStart" <>,
+[FSM, FSM@FSM, accept@FSM@FSM,    2] |-> final@accept@FSM@FSM .:=. self . "getFinal" <>,
+--- [FSM, FSM@FSM, accept@FSM@FSM,    3] |-> toEval@accept@FSM@FSM .:=. word@accept@FSM@FSM,
+--- [FSM, FSM@FSM, accept@FSM@FSM,    4] |-> isNull@accept@FSM@FSM .:=. false,		 
+[FSM, FSM@FSM, accept@FSM@FSM,    5] |-> i@accept@FSM@FSM .:=. 1,
+[FSM, FSM@FSM, accept@FSM@FSM,    6] |-> iff(not ((i@accept@FSM@FSM .=. toEval@accept@FSM@FSM -> size()) or isNull@accept@FSM@FSM)),
+[FSM, FSM@FSM, accept@FSM@FSM,    7] |-> current@accept@FSM@FSM . "fire" < toEval@accept@FSM@FSM -> at(i@accept@FSM@FSM) >, --- toEval@accept@FSM@FSM -> at(i@accept@FSM@FSM)   
+[FSM, FSM@FSM, accept@FSM@FSM,    8] |-> iff(current@accept@FSM@FSM .=. null),
+[FSM, FSM@FSM, accept@FSM@FSM,    9] |-> isNull@accept@FSM@FSM .:=. true,
+[FSM, FSM@FSM, accept@FSM@FSM,   10] |-> i@accept@FSM@FSM .:=. i@accept@FSM@FSM + 1,
+[FSM, FSM@FSM, accept@FSM@FSM,   11] |-> return (current@accept@FSM@FSM .=. final@accept@FSM@FSM),
+		 
+[FSM, FSM@FSM, fire@State@FSM,  1] |-> trans@fire@State@FSM .:=. self . out@State@FSM -> asSequence(),
+[FSM, FSM@FSM, fire@State@FSM,  2] |-> iff(trans@fire@State@FSM .=. null),
+[FSM, FSM@FSM, fire@State@FSM,  3] |-> return null,
+[FSM, FSM@FSM, fire@State@FSM,  4] |-> current@fire@State@FSM .:=. self . trans@fire@State@FSM -> at(1),
+[FSM, FSM@FSM, fire@State@FSM,  5] |-> i@fire@State@FSM .:=. 1,
+[FSM, FSM@FSM, fire@State@FSM,  6] |-> iff((i@fire@State@FSM .=. trans@fire@State@FSM -> size()) or (trans@fire@State@FSM -> at(i@fire@State@FSM) . label@Label@FSM .=. letter@fire@State@FSM)),
+[FSM, FSM@FSM, fire@State@FSM,  7] |-> i@fire@State@FSM .:=. i@fire@State@FSM + 1,
+		 [FSM, FSM@FSM, fire@State@FSM,  2] |-> iff(current@fire@State@FSM .=. null),
+		 [FSM, FSM@FSM, fire@State@FSM,  2] |-> return null,
+		 [FSM, FSM@FSM, fire@State@FSM,  2] |-> return (current@fire@State@FSM . tgt@Transition@FSM)    	      
 	.
 	
 	var N : Nat .
-	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  2]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  3], [FSM, FSM@FSM, getStart@FSM@FSM,  4]> .
-	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  4]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  5], [FSM, FSM@FSM, getStart@FSM@FSM,  6]> .
-	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  5]) = <[], []> .
-	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  6]) = <[], []> .
-	eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    8]) = <[], []> .
-	eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  N]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  (N + 1) ], []> [owise] .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  2]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  3], 
+												[FSM, FSM@FSM, getStart@FSM@FSM,  4]> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  3]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  2], []> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  4]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  5], 
+												[FSM, FSM@FSM, getStart@FSM@FSM,  6]> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  5]) = <[], []> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  6]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  2], []> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  N]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  (N + 1) ], []> [owise] .
+
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  2]) = <[FSM, FSM@FSM, getFinal@FSM@FSM,  3], 
+												[FSM, FSM@FSM, getFinal@FSM@FSM,  4]> .
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  3]) = <[FSM, FSM@FSM, getFinal@FSM@FSM,  2], []> .
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  4]) = <[FSM, FSM@FSM, getFinal@FSM@FSM,  5], 
+												[FSM, FSM@FSM, getFinal@FSM@FSM,  6]> .
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  5]) = <[], []> .
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  6]) = <[FSM, FSM@FSM, getFinal@FSM@FSM,  2], []> .
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  N]) = <[FSM, FSM@FSM, getFinal@FSM@FSM,  (N + 1) ], []> [owise] .
+
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    6]) = <[FSM, FSM@FSM, accept@FSM@FSM,    7], 
+												[FSM, FSM@FSM, accept@FSM@FSM,   11]> .
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    8]) = <[FSM, FSM@FSM, accept@FSM@FSM,    9], 
+												[FSM, FSM@FSM, accept@FSM@FSM,   10]> .
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,   10]) = <[FSM, FSM@FSM, accept@FSM@FSM,    6], []> .
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    N]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  (N + 1) ], []> [owise] .
+	
+eq nxt([FSM, FSM@FSM, fire@State@FSM,    2]) = <[FSM, FSM@FSM, fire@State@FSM,    3], 
+												[FSM, FSM@FSM, fire@State@FSM,    4]> .
+eq nxt([FSM, FSM@FSM, fire@State@FSM,    3]) = <[], []> .
+eq nxt([FSM, FSM@FSM, fire@State@FSM,    6]) = <[FSM, FSM@FSM, fire@State@FSM,    7], 
+												[FSM, FSM@FSM, fire@State@FSM,    8]> .
+eq nxt([FSM, FSM@FSM, fire@State@FSM,    7]) = <[FSM, FSM@FSM, fire@State@FSM,    6], []> .
+eq nxt([FSM, FSM@FSM, fire@State@FSM,    8]) = <[FSM, FSM@FSM, fire@State@FSM,    9], 
+												[FSM, FSM@FSM, fire@State@FSM,   10]> .
+	
+	 
 endm
