@@ -1,0 +1,326 @@
+--- ------------------------------------------------------------------------------------ 
+--- File: filter-pre.maude
+--- Author: Manuel Roldan
+--- University of Malaga
+--- Created: 2-05-2012
+--- Last modified: 
+--- Status:  Working version
+--- 
+--- Use: Implementation of the filter-pre function. 
+--- ------------------------------------------------------------------------------------ 
+
+in mOdCL.maude
+mod FILTER-PRE is
+  pr EVAL .
+  vars E1 E2 E3 : OclExp .
+  var L : MSet{OclExp} .
+  var LO : List{OclExp} .
+  vars Cf Cf' : Configuration .
+  vars O O' : Object .
+  var V : Vid .
+  var Op : OpName .
+  var AT : AttributeName .
+
+  --- ----------------------------------------------------------------------------------- 
+  --- ----------------------------------------------------------------------------------- 
+  op filter-pre : OclExp Configuration -> Configuration .
+
+  --- Simple expressions with implicit or explicit self are directly processed
+  eq filter-pre(V:AttributeName @pre, Cf) 
+    = get-obj($eval(self, Cf, none), Cf) .
+
+  eq filter-pre((V:AttributeName QL:QF-List) @pre, Cf)
+    = get-obj($eval(self, Cf, none), Cf)
+      and-furthermore filter-pre-QF-List(QL:QF-List, Cf) .
+
+  eq filter-pre(W:OpName @pre (), Cf) 
+    = get-obj($eval(self, Cf, none), Cf) .
+
+  eq filter-pre(W:OpName @pre (LO), Cf)
+    = get-obj($eval(self, Cf, none), Cf) and-furthermore filter-pre-args(LO, Cf) .
+
+  eq filter-pre(self . V:AttributeName @pre, Cf) 
+    = get-obj($eval(self, Cf, none), Cf) .
+
+  eq filter-pre(self . (V:AttributeName QL:QF-List) @pre, Cf)
+    = get-obj($eval(self, Cf, none), Cf)
+      and-furthermore filter-pre-QF-List(QL:QF-List, Cf) .
+
+  eq filter-pre(self . W:OpName @pre (), Cf) 
+    = get-obj($eval(self, Cf, none), Cf) .
+
+  eq filter-pre(self . W:OpName @pre (L), Cf)
+    = get-obj($eval(self, Cf, none), Cf) and-furthermore filter-pre-args(L, Cf) .
+
+  ---  
+  eq filter-pre(E1 W:OCL-Attr @pre, Cf) 
+    = filter-pre(E1, Cf) and-furthermore
+      if source-self(E1)
+      then filter-objs(collect-class(get-class($eval(self, Cf, none), Cf), E1), Cf)
+      else filter-objs(collect-class(locate-class(E1                    ), E1), Cf)
+      fi .
+
+  eq filter-pre(E1 (W:OCL-Attr QL:QF-List) @pre, Cf) 
+    = (filter-pre(E1, Cf) and-furthermore filter-pre-QF-List(QL:QF-List, Cf)) 
+      and-furthermore 
+      if source-self(E1)
+      then filter-objs(collect-class(get-class($eval(self, Cf, none), Cf), E1), Cf)
+      else filter-objs(collect-class(locate-class(E1                    ), E1), Cf)
+      fi . 
+
+  eq filter-pre(E1 . Op @pre(), Cf) 
+    = filter-pre(E1, Cf) and-furthermore
+      if source-self(E1)
+      then filter-objs(collect-class(get-class($eval(self, Cf, none), Cf), E1), Cf) 
+      else filter-objs(collect-class(locate-class(E1                    ), E1), Cf)
+      fi .
+
+  eq filter-pre(E1 . Op @pre(LO), Cf) 
+    = (filter-pre(E1, Cf) and-furthermore filter-pre-args(LO, Cf))
+      and-furthermore 
+      if source-self(E1)
+      then filter-objs(collect-class(get-class($eval(self, Cf, none), Cf), E1), Cf) 
+      else filter-objs(collect-class(locate-class(E1                    ), E1), Cf)
+      fi .
+ 
+  --- ------------------------------------------------------------------------------------ 
+  eq filter-pre(E1 = E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 <> E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 > E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 < E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 >= E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 <= E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+
+  eq filter-pre(- E1, Cf) = filter-pre(E1, Cf) .
+  eq filter-pre(E1 + E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 * E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 / E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 - E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+
+  eq filter-pre(not E1, Cf) = filter-pre(E1, Cf) .
+  eq filter-pre(E1 or E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 and E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 xor E2, Cf) = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(E1 implies E2, Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  eq filter-pre(if E1 then E2 else E3 endif, Cf) 
+    = filter-pre(E1, Cf) 
+      and-furthermore (filter-pre(E2, Cf) and-furthermore filter-pre(E3, Cf)) .
+
+  --- toReal toInteger size abs floor round sin cos tan asin acos atan sqrt exp log
+  eq filter-pre((E1 . O:Name0), Cf) = filter-pre(E1, Cf) .
+  --- concat max min div mod rem pow
+  eq filter-pre((E1 . O:Name1(E2)), Cf) 
+     = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  --- substring
+  eq filter-pre((E1 . O:Name2(E2, E3)), Cf) 
+    = filter-pre(E1, Cf) 
+      and-furthermore (filter-pre(E2, Cf) and-furthermore filter-pre(E3, Cf)) .
+
+  --- size isEmpty notEmpty sum first last asSet asBag asSequence asOrderedSet flatten
+  eq filter-pre(E1 -> O:Name0(), Cf) = filter-pre(E1, Cf) .
+  --- includes excludes includesAll excludesAll count including excluding
+  --- union intersection symmetricDifference append prepend at indexOf
+  eq filter-pre(E1 -> O:Name1(E2), Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+  --- insertAt subSequence subOrderedSet
+  eq filter-pre(E1 -> O:Name2(E2, E3), Cf) 
+    = filter-pre(E1, Cf) 
+      and-furthermore (filter-pre(E2, Cf) and-furthermore filter-pre(E3, Cf)) .
+
+  --- forAll exists select reject any one isUnique collect collectNested sortedBy
+  eq filter-pre(E1 -> I:IteratorName  (V | E2), Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+
+  eq filter-pre(E1 -> I:IteratorName  (E2), Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre(E2, Cf) .
+
+  eq filter-pre(Set{mt-ord}, Cf) = none .
+  eq filter-pre(Set{E1 , L}, Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre(Set{L}, Cf) .
+  eq filter-pre(Bag{mt-ord}, Cf) = none .
+  eq filter-pre(Bag{E1 , L}, Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre(Bag{L}, Cf) .
+  eq filter-pre(Sequence{mt-ord}, Cf) = none .
+  eq filter-pre(Sequence{E1 , LO}, Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre(Sequence{LO}, Cf) .
+  eq filter-pre(OrderedSet{mt-ord}, Cf) = none .
+  eq filter-pre(OrderedSet{E1 , LO}, Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre(OrderedSet{LO}, Cf) .
+
+  eq filter-pre(E1 . oclIsUndefined(), Cf) = filter-pre(E1, Cf) .
+  eq filter-pre(E1 . oclIsKindOf(C:Cid), Cf) = filter-pre(E1, Cf) .
+  eq filter-pre(E1 . oclIsTypeOf(C:Cid), Cf) = filter-pre(E1, Cf) .
+
+  eq filter-pre(C:Cid . allInstances(), Cf) = none .
+  eq filter-pre(C:Cid . allInstances, Cf) = none .
+
+  eq filter-pre(V:Vid, Cf) = none .
+
+  eq filter-pre(E1 W:OCL-Attr, Cf) = filter-pre(E1, Cf) .
+  eq filter-pre(E1 (W:OCL-Attr QL:QF-List), Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre-QF-List(QL:QF-List, Cf) .
+  eq filter-pre(E1 . Op(), Cf) = filter-pre(E1, Cf) .
+  eq filter-pre(E1 . Op(LO), Cf) 
+     = filter-pre(E1, Cf) and-furthermore filter-pre-args(LO, Cf) .
+
+  eq filter-pre(V:AttributeName, Cf) = none .
+  eq filter-pre(V:AttributeName QL:QF-List, Cf) = filter-pre-QF-List(QL:QF-List, Cf) .
+  eq filter-pre(W:OpName(), Cf) = none .
+  eq filter-pre(W:OpName(LO), Cf) = filter-pre-args(LO, Cf) .
+
+  eq filter-pre(V:OclAny, Cf) = none .
+
+
+  --- ----------------------------------------------------------------------------------
+  --- Auxiliary functions
+  --- 
+
+  --- ----------------------------------------------------------------------------------
+  --- We assume that one class-of equation has been included in the CLASSES-m module
+  ---   - for each attribute of user defined class
+  --- 	- for each function returning an object ob user defined class
+  op class-of : Cid AttributeName -> Cid .
+  op class-of : Cid OpName -> Cid .
+
+  --- ----------------------------------------------------------------------------------
+  op _and-furthermore_ : Configuration Configuration -> Configuration .
+  eq (O:Object Cf) and-furthermore (O' Cf') 
+    = if (O == O') then Cf and-furthermore (O' Cf') 
+      else Cf and-furthermore (O O' Cf') fi .
+  eq (M:Msg Cf) and-furthermore (M':Msg Cf') 
+    = if (M:Msg == M':Msg) then Cf and-furthermore (M':Msg Cf') 
+      else Cf and-furthermore (M:Msg M':Msg Cf') fi .
+  eq Cf and-furthermore Cf' =  Cf Cf' [owise] .
+
+  --- ---------------------------------------------------------------------------------- 
+  op get-obj : Oid Configuration -> Object .
+  eq get-obj(O:Oid, < O:Oid : C:Cid | AS:AttributeSet > Cf) 
+    = < O:Oid : C:Cid | AS:AttributeSet > .
+
+  --- ---------------------------------------------------------------------------------- 
+  op filter-objs : Cid Configuration -> Configuration .
+  eq filter-objs(C1:Cid, < O:Oid : C2:Cid | AS:AttributeSet > Cf)
+    = if (C1:Cid == C2:Cid) or isSubClass(C2:Cid, C1:Cid)
+      then < O:Oid : C2:Cid | AS:AttributeSet > filter-objs(C1:Cid, Cf)
+      else filter-objs(C1:Cid, Cf)
+      fi .
+  eq filter-objs(C1:Cid, Cf) = none 
+  [owise] . 
+
+  --- ---------------------------------------------------------------------------------- 
+  op filter-pre-QF-List : QF-List Configuration -> Configuration .
+  eq filter-pre-QF-List([mt-ord], Cf) = none .
+  eq filter-pre-QF-List([E1 , LO], Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre-QF-List([LO], Cf) .
+
+  --- ---------------------------------------------------------------------------------- 
+  op filter-pre-args :  List{OclExp} Configuration -> Configuration .
+  eq filter-pre-args(mt-ord, Cf) = none .
+  eq filter-pre-args((E1 , LO), Cf) 
+    = filter-pre(E1, Cf) and-furthermore filter-pre-args(LO, Cf) .
+
+  --- ----------------------------------------------------------------------------------
+  --- Given an expression which does not start with self (explicit or implicit), it starts 
+  --- with C:Cid . allInstances(). 
+  --- locate-class returns the class
+  op locate-class : OclExp -> Cid .
+  eq locate-class(C:Cid . allInstances()) = C:Cid .
+  eq locate-class(C:Cid . allInstances) = C:Cid .
+  eq locate-class(E1 . E2) = locate-class(E1) .
+  eq locate-class(E1 . E2 @pre) = locate-class(E1) .
+  eq locate-class(E1 . E2 QL:QF-List) = locate-class(E1) .
+  eq locate-class(E1 . E2 QL:QF-List @pre) = locate-class(E1) .
+  eq locate-class(E1 . W:OpName()) = locate-class(E1) .
+  eq locate-class(E1 . W:OpName (LO)) = locate-class(E1) .
+  eq locate-class(E1 . W:OpName @pre ()) = locate-class(E1) .
+  eq locate-class(E1 . W:OpName @pre (LO)) = locate-class(E1) .
+  eq locate-class(E1 -> O:Name0() ) = locate-class(E1) .
+  eq locate-class(E1 -> O:Name1(E2) ) = locate-class(E1) .
+  eq locate-class(E1 -> O:Name2(E2, E3) ) = locate-class(E1) .
+
+  --- ----------------------------------------------------------------------------------
+  --- source-self determines if a given expression starts with explicit self
+  --- or with AttributeName or invocation a function (self implicit)
+  op source-self : OclExp -> Bool .
+  eq source-self(self) = true .
+  eq source-self(V:AttributeName) = true .
+  eq source-self(V:AttributeName QL:QF-List) = true .
+  eq source-self((V:AttributeName QL:QF-List) @pre) = true .
+  eq source-self(W:OpName()) = true .
+  eq source-self(W:OpName (LO)) = true .
+  eq source-self(V:AttributeName @pre) = true .
+  eq source-self(W:OpName @pre ()) = true .
+  eq source-self(W:OpName @pre (LO)) = true .
+  
+  eq source-self(E1 . E2) = source-self(E1) .
+  eq source-self(E1 . E2 @pre) = source-self(E1) .
+  eq source-self(E1 . E2 QL:QF-List) = source-self(E1) .
+  eq source-self(E1 . E2 QL:QF-List @pre) = source-self(E1) .
+  eq source-self(E1 . W:OpName()) = source-self(E1) .
+  eq source-self(E1 . W:OpName (LO)) = source-self(E1) .
+  eq source-self(E1 . W:OpName @pre ()) = source-self(E1) .
+  eq source-self(E1 . W:OpName @pre (LO)) = source-self(E1) .
+  eq source-self(E1 -> O:Name0() ) = source-self(E1) .
+  eq source-self(E1 -> O:Name1(E2) ) = source-self(E1) .
+  eq source-self(E1 -> O:Name2(E2, E3) ) = source-self(E1) .
+  eq source-self(E1 -> O:IteratorName(V | E2)) = source-self(E1) .
+  eq source-self(E1 -> O:IteratorName(E2)) = source-self(E1) .
+
+  eq source-self(E1) = false
+  [owise] .
+
+  --- ---------------------------------------------------------------------------------- 
+  --- Given an expression which starts in an object of a given class, returns
+  --- the class of the object containing the attribute referred by @pre.
+  --- In case of complex expression with more that one @pre clauses it returns
+  --- the class concerning the last.
+  --- For example, in    a . b @pre . c . d @pre it returns the class which contains
+  --- the attribute 'd'
+  op collect-class : Cid OclExp -> Cid .
+
+  eq collect-class(C:Cid, self) = C:Cid .
+  eq collect-class(C:Cid, C':Cid . allInstances()) = C':Cid .
+  eq collect-class(C:Cid, C':Cid . allInstances) = C':Cid .
+
+  eq collect-class(C:Cid, AT) = class-of(C:Cid, AT) .
+  eq collect-class(C:Cid, AT @pre) = class-of(C:Cid, AT) .
+  eq collect-class(C:Cid, AT QL:QF-List) = class-of(C:Cid, AT) .
+  eq collect-class(C:Cid, AT QL:QF-List @pre) = class-of(C:Cid, AT) .
+
+  eq collect-class(C:Cid, E1 . AT) = class-of(collect-class(C:Cid, E1), AT) .
+  eq collect-class(C:Cid, E1 . AT @pre) = class-of(collect-class(C:Cid, E1), AT) .
+  eq collect-class(C:Cid, E1 . AT QL:QF-List) = class-of(collect-class(C:Cid, E1), AT) .
+  eq collect-class(C:Cid, E1 . AT QL:QF-List @pre) = class-of(collect-class(C:Cid, E1), AT) .
+
+  eq collect-class(C:Cid, Op()) = class-of(C:Cid, Op) .
+  eq collect-class(C:Cid, E1 . Op())= class-of(collect-class(C:Cid, E1), Op) .
+  eq collect-class(C:Cid, Op @pre()) = class-of(C:Cid, Op) .
+  eq collect-class(C:Cid, E1 . Op @pre()) = class-of(collect-class(C:Cid, E1), Op) .
+  eq collect-class(C:Cid, Op(LO)) = class-of(C:Cid, Op) .
+  eq collect-class(C:Cid, E1 . Op(LO)) = class-of(collect-class(C:Cid, E1), Op) .
+  eq collect-class(C:Cid, Op @pre(LO)) = class-of(C:Cid, Op) .
+  eq collect-class(C:Cid, E1 . Op @pre(LO)) = class-of(collect-class(C:Cid, E1), Op) .
+
+  --- first last asSet asBag asSequence asOrderedSet
+  eq collect-class(C:Cid, E1 -> O:Name0()) = collect-class(C:Cid, E1) .
+  --- including excluding union intersection symmetricDifference append prepend at
+  eq collect-class(C:Cid, E1 -> O:Name1(E2)) = collect-class(C:Cid, E1) .
+  --- subSequence subOrderedSet
+  eq collect-class(C:Cid, E1 -> O:Name2(E2, E3)) = collect-class(C:Cid, E1) .
+
+  eq collect-class(C:Cid, E1 -> select(V | E2)) = collect-class(C:Cid, E1) .
+  eq collect-class(C:Cid, E1 -> reject(V | E2)) = collect-class(C:Cid, E1) .
+  eq collect-class(C:Cid, E1 -> any(V | E2)) = collect-class(C:Cid, E1) .
+  eq collect-class(C:Cid, E1 -> sortedBy(V | E2)) = collect-class(C:Cid, E1) .
+
+  eq collect-class(C:Cid, E1 -> collect(V | E2)) 
+    = collect-class(collect-class(C:Cid, E1), E2) .
+  eq collect-class(C:Cid, E1 -> collectNested(V | E2)) 
+    = collect-class(collect-class(C:Cid, E1), E2) .
+endm
+
+mod mOdCL-pre is
+  pr mOdCL .
+  pr FILTER-PRE * (sort MSet{OclExp} to List) . 
+endm

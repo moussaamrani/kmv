@@ -1,0 +1,109 @@
+--- ------------------------------------------------------------------------------------ 
+--- File: test-rew-cinema-validation.maude
+--- Description: Test module for the cinema model (Single-thread version)
+--- 		 Validation version
+--- Tested on version: Maude 2.6
+--- Last modified: 18/04/2012
+--- To be executed with:	maude test-rew-cinema-validation.maude
+--- ------------------------------------------------------------------------------------ 
+
+in codeEnroll.maude   
+
+--- ------------------------------------------------------------------------------------ 
+mod CINEMA-CONSTRAINTS  is
+   pr INTERACTIONCLIENTGOCINEMA .
+
+   ops $C $T $S $T1 $T2 : -> Vid .
+
+   op seats-available : -> OclExp .
+   eq seats-available 
+     = (context Session inv self . capacity >= self . Ticket -> size()) .
+
+   op avoid-overlapping : -> OclExp .
+   eq avoid-overlapping 
+     = (context Client
+        inv self . Ticket -> forAll($T1 | 
+                       self . Ticket  -> forAll($T2 | 
+                         (($T1 = $T2) 
+                         or ($T1 . sessions . endTime < $T2 . sessions . startTime)
+                         or ($T2 . sessions . endTime < $T1 . sessions . startTime))))) .
+                         
+	op prueba : -> OclExp .
+   	eq prueba 
+     	= (context Session inv self . Ticket -> size() = 0) .                        
+
+   --- ---------------- Invariants  --------------------
+   ---
+   eq inv = seats-available and avoid-overlapping .
+
+   --- ---------------- Preconditions --------------------
+   ---
+   ***(eq pre(buyTicket)
+     =  (sessions -> select($S | ($S . startTime = startTime)) -> size() = 1)  . )
+
+   --- ---------------- Postconditions -------------------
+   ---
+   ***(eq post(buyTicket) 
+     = ((result = null)
+        or
+       (sessions -> select($S | $S . startTime = startTime) . Ticket -> includes(result)
+       and
+       (sessions -> select($S | $S . startTime = startTime) . Ticket -> asSet()
+        - sessions -> select($S | $S . startTime = startTime) . Ticket @pre -> asSet()) 
+              -> size() = 1))  . )
+              
+              
+	eq pre(goCinema)
+		= self . Ticket -> forAll($T | $T . startTime <> startTime) .
+	
+	eq post(goCinema)
+		= ((not result) or 
+			(self . Ticket -> select($T | $T . sessions . startTime = startTime ) 
+				-> size() = 1 and
+			 self . Ticket @pre -> size() = self . Ticket -> size() - 1 )) .
+	
+endm
+
+--- ------------------------------------------------------------------------------------ 
+mod TEST-CINEMA is
+   pr INTERACTIONCLIENTGOCINEMA .
+
+   op cinema1 : -> Oid .
+   op bbva : -> Oid .
+   ops s1 s2 s3 : -> Oid .
+   ops bob ada tom : -> Oid .
+   ops acc1 acc2 acc3 : -> Oid .
+   ops visa : -> Oid .
+
+   op init-state : -> Configuration .
+	eq init-state = 
+      	next-Oid(1)
+      	< cinema1 : Cinema | name : "Coronet", bank : bbva, sessions : Set{s1 , s2 , s3} >
+
+      	< s1 : Session  | startTime : 1100, endTime : 1150, capacity : 10, price : 5, Ticket : Set{}, clients : Set{} >
+      	< s2 : Session  | startTime : 1200, endTime : 1250, capacity : 10, price : 8, Ticket : Set{}, clients : Set{} >
+      	< s3 : Session  | startTime : 1300, endTime : 1350, capacity : 10, price : 5, Ticket : Set{}, clients : Set{} >
+
+		< bob : Client | Ticket : Set{}, debitCards : Set{visa}, cinemas : Set{}, sessions : Set{}, accounts : Set{} >
+		
+		< visa : DebitCard | number : 111 > 
+      	
+      	< bbva : Bank  | accounts : Set{acc1, acc2, acc3} >
+
+      	< acc1 : Account | balance :   100, debitCards : Set{} >
+      	< acc2 : Account | balance :  1000, debitCards : Set{visa} >
+      	< acc3 : Account | balance : 10000, debitCards : Set{} > 
+      	
+   	  	call(goCinema, bob, (arg(cinema, cinema1), arg(startTime, 1200))) .
+   	  	
+   	  	
+endm
+
+mod CINEMA-VALIDATION-TEST is
+   pr TEST-CINEMA .
+   pr CINEMA-CONSTRAINTS .
+endm
+
+rewrite in CINEMA-VALIDATION-TEST : [ init-state ] .
+
+eof

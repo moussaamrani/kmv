@@ -1,0 +1,374 @@
+--- ------------------------------------------------------------------------------------ 
+--- File: stack.maude
+--- Description: Stack management 
+--- 		 Module STACK only manages an execution stack (single threaded)
+---		 Module VALIDATION-STACK includes OCL validation (single threaded)
+--- 		 Module STACK-MT only manages an execution stack (multi threaded)
+---		 Module VALIDATION-STACK-MT includes OCL validation (multi threaded)
+--- Tested on version: Maude 2.6
+--- Created: 26/05/2011
+--- Last modified: 
+--- ------------------------------------------------------------------------------------ 
+
+--- ------------------------------------------------------------------------------------ 
+fmod LISTM{X :: TRIV} is
+  sort ListM{X} .
+  subsort X$Elt <  ListM{X} .
+
+  op nil : -> ListM{X} [ctor] .
+  op _::_ : ListM{X} ListM{X} -> ListM{X} [ctor assoc id: nil prec 120] .
+endfm
+
+--- ------------------------------------------------------------------------------------ 
+--- -------------------- BASIC STACK MANAGEMENT SINGLE-THREADED VERSION  --------------- 
+--- ------------------------------------------------------------------------------------ 
+view Object from TRIV to CONFIGURATION is
+  sort Elt to Object .
+endv
+--- ------------------------------------------------------------------------------------ 
+mod STACK is
+  pr LISTM{Object} .
+  pr mOdCL .
+
+  vars Op Op' : OpName .
+  vars AL AL' : ArgsList .
+  vars S S' O : Oid .
+  vars Cf Cf' : Configuration .
+  var R : OclType .
+  var ST : ListM{Object} .
+  
+  op Stack : -> Cid [ctor] .
+  op state :_ : ListM{Object}  -> Attribute [gather (&)] .
+
+  op Context : -> Cid [ctor] .
+  op opN :_ : OpName -> Attribute [ctor gather (&)] .
+  op obj :_ : Oid -> Attribute [ctor gather (&)] .
+  op args :_ : ArgsList -> Attribute [ctor gather (&)] .
+
+  ops stack ctx : -> Oid .
+
+  op [_] : Configuration -> Configuration .
+
+  op call   : OpName Oid ArgsList -> Msg [ctor] .
+  op return : OclType -> Msg [ctor] .
+  op resume : OpName OclType -> Msg [ctor] .
+
+  eq [INIT] : [ Cf ] = < stack : Stack | state : nil > Cf .
+
+  eq [CALL] :
+    call(Op, S, AL)
+    < stack : Stack | state : nil >
+    = < stack : Stack | state : nil >   
+      < ctx : Context | opN : Op, obj : S, args : AL > 
+  [owise] .
+
+  eq [CALL] :
+    call(Op', S', AL')
+    < ctx : Context | opN : Op, obj : S, args : AL >
+    < stack : Stack | state : ST >
+    = < stack : Stack |
+        state : < ctx : Context | opN : Op, obj : S, args : AL > :: ST >
+      < ctx : Context | opN : Op', obj : S', args : AL' > .
+
+  eq [RETURN] :
+    return(R)
+    < ctx : Context | opN : Op, obj : S, args : AL >
+    < stack : Stack |
+      state : < ctx : Context | opN : Op', obj : S', args : AL' > :: ST >
+    = resume(Op, R)
+      < ctx : Context | opN : Op', obj : S', args : AL' >
+      < stack : Stack | state :  ST > . 
+
+  eq [RETURN] :
+    return(R) 
+    < ctx : Context | opN : Op, obj : S, args : AL >     
+    < stack : Stack | state :  nil >
+    = resume(Op, R)
+      < stack : Stack | state : nil > .
+endm
+
+--- ------------------------------------------------------------------------------------ 
+--- -------------------- BASIC STACK MANAGEMENT MULTI-THREADED VERSION  ---------------- 
+--- ------------------------------------------------------------------------------------ 
+mod STACK-MT is
+  pr LISTM{Object} . 
+  pr mOdCL .
+
+  vars Op Op' : OpName .
+  vars AL AL' : ArgsList .
+  vars S S' O : Oid .
+  vars Cf Cf' : Configuration .
+  var R : OclType .
+  var ST : ListM{Object} .
+  var T : Oid .
+  ops stack ctx : -> Oid .
+
+  op Stack : -> Cid [ctor] .
+  op state :_ : ListM{Object} -> Attribute [gather (&)] .
+
+  op Context : -> Cid [ctor] .
+  op opN :_ : OpName -> Attribute [ctor gather (&)] .
+  op id :_ : Oid -> Attribute [ctor gather (&)] .
+  op obj :_ : Oid -> Attribute [ctor gather (&)] .
+  op args :_ : ArgsList -> Attribute [ctor gather (&)] .
+
+  op [_] : Configuration -> Configuration .
+
+  op call   : OpName Oid ArgsList Oid -> Msg [ctor] .
+  op return : OclType Oid -> Msg [ctor] .
+  op resume : OpName OclType Oid -> Msg [ctor] .
+  op newThread : Oid -> Msg [ctor] .
+
+  eq [NEW-THREAD] :
+    newThread(O:Oid) = < stack : Stack | id : O:Oid, state : nil > . 
+
+  eq [CALL] :
+    call(Op, S, AL, T)
+    < stack : Stack | id : T, state : nil >
+    = < stack : Stack | id : T, state : nil >   
+      < ctx : Context | id : T, opN : Op, obj : S, args : AL > 
+  [owise] .
+
+  eq [CALL] :
+    call(Op', S', AL', T)
+    < ctx : Context | id : T, opN : Op, obj : S, args : AL >
+    < stack : Stack | id : T, state : ST >
+    = < stack : Stack | 
+        id : T,
+        state : < ctx : Context | id : T, opN : Op, obj : S, args : AL > :: ST >
+      < ctx : Context | id : T, opN : Op', obj : S', args : AL' > .
+
+  eq [RETURN] :
+    return(R, T)
+    < ctx : Context | id : T, opN : Op, obj : S, args : AL >
+    < stack : Stack |
+      id : T,
+      state : < ctx : Context | id : T, opN : Op', obj : S', args : AL' > :: ST >
+    = resume(Op, R, T)
+      < ctx : Context | id : T, opN : Op', obj : S', args : AL' >
+      < stack : Stack | id : T, state :  ST > . 
+
+  eq [RETURN] :
+    return(R, T) 
+    < ctx : Context | id : T, opN : Op, obj : S, args : AL >     
+    < stack : Stack | id : T, state :  nil >
+    = resume(Op, R, T)
+      < stack : Stack | id : T,  state : nil > .
+
+endm
+
+--- ------------------------------------------------------------------------------------ 
+--- -------------------- VALIDATION STACK MANAGEMENT SINGLE-THREADED VERSION ----------- 
+--- ------------------------------------------------------------------------------------ 
+view Configuration from TRIV to CONFIGURATION is
+  sort Elt to Configuration .
+endv
+--- ------------------------------------------------------------------------------------ 
+mod VALIDATION-STACK is
+  pr LISTM{Configuration} . 
+  pr mOdCL-pre .
+
+  vars Op Op' : OpName .
+  vars AL AL' : ArgsList .
+  vars S S' O : Oid .
+  vars Cf Cf' : Configuration .
+  var R : OclType .
+  var ST : ListM{Configuration} .
+  vars AS-1 AS-2 : AttributeSet .
+
+  op Stack : -> Cid [ctor] .
+  op state :_ : ListM{Configuration} -> Attribute [gather (&)] .
+
+  sorts SPair SPairList Selector .
+  subsort SPair < SPairList .
+  op `(_|_`) : Int Int -> SPair [ctor] .
+  op __ : SPairList SPairList -> SPairList [ctor assoc].
+  op [_] : SPairList -> Selector .
+
+  op Context : -> Cid [ctor] .
+  op opN :_ : OpName -> Attribute [ctor gather (&)] .
+  op obj :_ : Oid -> Attribute [ctor gather (&)] .
+  op args :_ : ArgsList -> Attribute [ctor gather (&)] .
+  op seq :_ : Selector -> Attribute [ctor gather (&)] .
+
+  ops stack ctx : -> Oid .
+
+  sort Configuration+ .
+  op [_] : Configuration -> Configuration+ .
+  op {_} : Configuration -> Configuration+ .
+
+  op state-pre : Oid ArgsList Configuration -> Configuration .
+  eq state-pre(S, AL, Cf) = env(self <- S) OpEnv(AL) Cf .   
+
+  op state-post : Oid OclType ArgsList Configuration -> Configuration .
+  eq state-post(S, R, AL, Cf) = env(self <- S) OpEnv((arg(result, R), AL)) Cf .   
+
+  op error : String OpName Configuration -> Msg .
+
+  op call   : OpName Oid ArgsList -> Msg [ctor] .
+  op return : OclType -> Msg [ctor] .
+  op resume : OpName OclType -> Msg [ctor] .
+
+  eq [INIT] : [ Cf ] = { < stack : Stack | state : nil > Cf } .
+
+  eq [CALL] :
+    { call(Op, S, AL)
+      < stack : Stack | state : nil >
+      Cf }
+    =  if eval(inv, Cf) and eval(pre(Op), state-pre(S, AL, Cf))
+       then { < stack : Stack | state : filter-pre(post(Op), state-pre(S, AL, Cf)) >   
+              < ctx : Context | opN : Op, obj : S, args : AL, seq : [(1 | 1)] >
+             Cf }
+      else {error("Invariant or precondition violation", Op, Cf)}
+      fi .
+
+  eq [CALL] :
+    { call(Op', S', AL')
+      < ctx : Context | opN : Op, obj : S, args : AL, AS-1 >
+      < stack : Stack | state : ST >
+      Cf }
+    = if eval(inv, Cf) and eval(pre(Op'), state-pre(S', AL', Cf))
+      then { < stack : Stack |
+               state : < ctx : Context | opN : Op, obj : S, args : AL, AS-1 > 
+                       filter-pre(post(Op'), state-pre(S', AL', Cf)) :: ST >
+             < ctx : Context | opN : Op', obj : S', args : AL', seq : [(1 | 1)] >
+             Cf } 
+      else {error("Invariant or precondition violation", Op', Cf)}
+      fi .
+
+  eq [RETURN] :
+    { return(R)
+      < ctx : Context | opN : Op, obj : S, args : AL, AS-1 >
+      < stack : Stack |
+        state : < ctx : Context | opN : Op', obj : S', args : AL', AS-2 > Cf' :: ST >
+      Cf}
+    = if eval(inv, Cf) 
+         and eval(post(Op), state-post(S, R, AL, Cf), state-pre(S, AL, Cf'))
+      then { resume(Op, R)
+             < ctx : Context | opN : Op', obj : S', args : AL', AS-2 >
+             < stack : Stack | state :  ST > 
+             Cf}
+      else {error("Invariant or postcondition violation", Op, Cf)}
+      fi .
+
+  eq [RETURN] :
+    { return(R) 
+      < ctx : Context | opN : Op, obj : S, args : AL, AS-1 >     
+      < stack : Stack | state :  Cf' >
+      Cf}
+    = if eval(inv, Cf) 
+         and eval(post(Op), state-post(S, R, AL, Cf), state-pre(S, AL, Cf'))
+      then { resume(Op, R)
+             < stack : Stack | state : nil > 
+             Cf} 
+      else {error("Invariant or postcondition violation", Op, Cf)}
+      fi .
+endm
+
+--- ------------------------------------------------------------------------------------ 
+--- -------------------- VALIDATION STACK MANAGEMENT  MULTI-THREADED VERSION    -------- 
+--- ------------------------------------------------------------------------------------ 
+mod VALIDATION-STACK-MT is
+  pr LISTM{Configuration} .
+  pr mOdCL .
+
+  vars Op Op' : OpName .
+  vars AL AL' : ArgsList .
+  vars S S' O : Oid .
+  vars Cf Cf' : Configuration .
+  var R : OclType .
+  var ST : ListM{Configuration} .
+  var T : Oid .
+
+  op Stack : -> Cid [ctor] .
+  op state :_ : ListM{Configuration} -> Attribute [gather (&)] .
+
+  op Context : -> Cid [ctor] .
+  op opN :_ : OpName -> Attribute [ctor gather (&)] .
+  op id :_ : Oid -> Attribute [ctor gather (&)] .
+  op obj :_ : Oid -> Attribute [ctor gather (&)] .
+  op args :_ : ArgsList -> Attribute [ctor gather (&)] .
+
+  ops stack ctx : -> Oid .
+
+  sort Configuration+ .
+  op [_] : Configuration -> Configuration+ .
+  op {_} : Configuration -> Configuration+ .
+
+  op state-pre : Oid ArgsList Configuration -> Configuration .
+  eq state-pre(S, AL, Cf) = env(self <- S) OpEnv(AL) Cf .   
+
+  op state-post : Oid OclType ArgsList Configuration -> Configuration .
+  eq state-post(S, R, AL, Cf) = env(self <- S) OpEnv((arg(result, R), AL)) Cf .   
+
+  op error : String OpName Configuration -> Msg .
+
+  op call   : OpName Oid ArgsList Oid -> Msg [ctor] .
+  op return : OclType Oid -> Msg [ctor] .
+  op resume : OpName OclType Oid -> Msg [ctor] .
+  op newThread : Oid -> Msg [ctor] .
+
+  op filter-stack : Configuration -> Configuration .
+  eq filter-stack(< stack : Stack | AS:AttributeSet > Cf ) = filter-stack(Cf) .
+  eq filter-stack(Cf) = Cf
+  [owise] .
+
+  eq [NEW-THREAD] :
+    newThread(O:Oid) = < stack : Stack | id : O:Oid, state : nil > . 
+
+  eq [CALL] :
+    { call(Op, S, AL, T)
+      < stack : Stack | id : T, state : nil >
+      Cf }
+    = if eval(inv, Cf) and eval(pre(Op), state-pre(S, AL, Cf))
+      then { < stack : Stack | id : T, state :  filter-stack(Cf) >  
+             < ctx : Context | id : T, opN : Op, obj : S, args : AL >
+             Cf } 
+      else {error("Invariant or precondition violation", Op, Cf)}
+      fi 
+  [owise] .
+
+  eq [CALL] :
+    { call(Op', S', AL', T)
+      < ctx : Context | id : T, opN : Op, obj : S, args : AL >
+      < stack : Stack | id : T, state : ST >
+      Cf }
+    = if eval(inv, Cf) and eval(pre(Op'), state-pre(S', AL', Cf))
+      then { < stack : Stack |
+               id : T,
+               state : < ctx : Context | id : T, opN : Op, obj : S, args : AL > 
+               filter-stack(Cf) :: ST >
+             < ctx : Context | id : T, opN : Op', obj : S', args : AL' >
+             Cf } 
+      else {error("Invariant or precondition violation", Op', Cf)}
+      fi .
+
+  eq [RETURN] :
+    { return(R, T)
+      < ctx : Context | id : T, opN : Op, obj : S, args : AL >
+      < stack : Stack |
+        id : T,
+        state : < ctx : Context | id : T, opN : Op', obj : S', args : AL' > Cf' :: ST >
+      Cf}
+    = if eval(inv, Cf) 
+         and eval(post(Op), state-post(S, R, AL, Cf), state-pre(S, AL, Cf'))
+      then { resume(Op, R, T)
+             < ctx : Context | id : T, opN : Op', obj : S', args : AL' >
+             < stack : Stack | id : T, state :  ST > 
+             Cf}
+      else {error("Invariant or postcondition violation", Op, Cf)}
+      fi .
+
+  eq [RETURN] :
+    { return(R, T) 
+      < ctx : Context | id : T, opN : Op, obj : S, args : AL >     
+      < stack : Stack | id : T, state :  Cf' >
+      Cf}
+    = if eval(inv, Cf) 
+         and eval(post(Op), state-post(S, R, AL, Cf), state-pre(S, AL, Cf'))
+      then { resume(Op, R, T)
+             < stack : Stack | id : T, state : nil > 
+             Cf} 
+      else {error("Invariant or postcondition violation", Op, Cf)}
+      fi .
+endm

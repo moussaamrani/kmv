@@ -1,0 +1,63 @@
+
+mod TRANSFORMATION-AUX is
+	pr mOdCL .
+	pr VALIDATION-STACK .
+	var Self : Oid .
+	
+	op seq : OpName Cid Nat -> Msg [ctor] .
+	
+	sort SeqPair .
+	op <_,_> : Int Int -> SeqPair .
+	
+	sort SeqStack .
+	subsort SeqPair < SeqStack .
+	
+	op __ : SeqStack SeqStack -> SeqStack [ctor assoc] .
+	
+	op seq : OpName Cid SeqStack -> Msg [ctor] .
+	
+	op evl : OclExp Configuration -> OclType .
+	eq evl(E:OclExp, < ctx : Context | opN : Op:OpName , obj : Self , args : L:ArgsList > Cf:Configuration)
+   		= eval(E:OclExp, < ctx : Context | opN : Op:OpName , obj : Self , args : L:ArgsList > Cf:Configuration
+     		    env(self <- Self) OpEnv(L:ArgsList)) .
+    
+    var I : Int .
+	var Rst : OclType .
+	--- MESSAGES
+  	---
+  	op exec-method : Oid OpName ArgsList Nat -> Msg [msg] .
+	
+  	--- Used to create new Oid when necessary 
+  	op next-Oid : Nat -> Msg [msg] .
+
+  	--- Unlock the execution of new calls
+  	op next-call : Int -> Msg [msg] .
+
+  	--- Para situar trazas puntales
+  	op TRACE : String -> Msg [msg] .
+
+  	--- Uso running para evitar que EXEC-MTH-RT actue cuando no debe. Solo debe actuar 
+  	--- cuando acabe la ejecucion de la llamada "inicial" en curso
+  	op running : OpName Cid -> Msg [msg] .
+  	op end : OpName Cid -> Msg [msg] .
+  	op exec-method : Nat Oid OpName Cid ArgsList -> Msg [msg] .
+
+  	rl [EXEC-MTH] :
+    	exec-method(I, Self, OP:OpName, C:Cid, AL:ArgsList)
+      	next-call(I)
+    => 	next-call(I)
+		running(OP:OpName, C:Cid)
+		seq(OP:OpName, C:Cid, 1)
+		call(OP:OpName, Self, AL:ArgsList) .
+
+  --- It allows a new addTransaction() call
+  	rl [EXEC-MTH-RT] :
+      	running(OP:OpName, C:Cid)
+      	resume(OP:OpName, Rst)
+      	end(OP:OpName, C:Cid)
+      	next-call(I)
+	=> 	next-call(I + 1) .
+	
+	subsort Int < Oid .
+
+endm
