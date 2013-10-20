@@ -57,8 +57,34 @@ mod FSM-MM is
   	eq isUnique (label@Label@FSM) = true .
   	eq isId (label@Label@FSM) = true .
   	
-  	eq operations(Label@FSM) = nil .
+  	--- eq operations(Label@FSM) = nil .
+  	--- CLEAN IT!
+	eq operations(Label@FSM) = set@Label@FSM .
+	
+	sort set@Label@FSM .
+	subsort set@Label@FSM < @Operation .
+	op set@Label@FSM : -> set@Label@FSM . 
+	eq name(set@Label@FSM) = "set" .
+	eq isAbstract(set@Label@FSM) = false .
+	eq from(set@Label@FSM) = null .
+	eq type(set@Label@FSM) = null .
+	eq lowerBound(set@Label@FSM) = 1 .
+	eq upperBound(set@Label@FSM) = 1 .
+	eq isOrdered(set@Label@FSM) = false .
+	eq isUnique(set@Label@FSM) = false .
+	eq containingClass (set@Label@FSM) = Label@FSM .
+	eq parameters(set@Label@FSM) = label@set@Label@FSM .
 
+	sort label@set@Label@FSM .
+	subsort label@set@Label@FSM < @Parameter .
+	op label@set@Label@FSM : -> label@set@Label@FSM .
+	eq name(label@set@Label@FSM) = "label" .
+	eq type(label@set@Label@FSM) = @String .
+	eq lowerBound(label@set@Label@FSM) = 1 .
+	eq upperBound(label@set@Label@FSM) = 1 .
+	eq isOrdered(label@set@Label@FSM) = true .
+	eq isUnique(label@set@Label@FSM) = true .
+	
 	--- FSM
 	
 	sort FSM@FSM  .
@@ -103,8 +129,9 @@ mod FSM-MM is
 	eq isUnique (transitions@FSM@FSM) = true .
 	eq isContainment (transitions@FSM@FSM) = true .
 
-
-	eq operations(FSM@FSM) = accept@FSM@FSM getStart@FSM@FSM getFinal@FSM@FSM .
+	--- CLEAN IT! simplify@FSM@FSM
+	eq operations(FSM@FSM) = accept@FSM@FSM getStart@FSM@FSM getFinal@FSM@FSM 
+							simplify@FSM@FSM .
 	
 	sort getStart@FSM@FSM .
 	subsort getStart@FSM@FSM < @Operation .
@@ -161,32 +188,34 @@ mod FSM-MM is
 	eq containingOperation(i@getFinal@FSM@FSM) = getFinal@FSM@FSM .
 	
 	
-	sort accept@FSM@FSM word@accept@FSM@FSM .
+	sort accept@FSM@FSM .
 	subsort accept@FSM@FSM < @Operation .
-	subsort word@accept@FSM@FSM < @Parameter .
 	op accept@FSM@FSM  : -> accept@FSM@FSM .
-	op word@accept@FSM@FSM : -> word@accept@FSM@FSM .
 	eq name(accept@FSM@FSM) = "accept" .
-	eq name(word@accept@FSM@FSM) = "word" .
 	eq isAbstract(accept@FSM@FSM) = false .
 	eq from(accept@FSM@FSM) = null .
 	eq type(accept@FSM@FSM) = @Bool .
-	eq type(word@accept@FSM@FSM) = @String .
 	eq lowerBound(accept@FSM@FSM) = 1 .
-	eq lowerBound(word@accept@FSM@FSM) = 0 .
 	eq upperBound(accept@FSM@FSM) = 1 .
-	eq upperBound(word@accept@FSM@FSM) = * .
 	eq isOrdered(accept@FSM@FSM) = false .
-	eq isOrdered(word@accept@FSM@FSM) = true .
 	eq isUnique(accept@FSM@FSM) = false .
-	eq isUnique(word@accept@FSM@FSM) = true .
 	eq containingClass (accept@FSM@FSM)  = FSM@FSM .
 	eq containingOperation(word@accept@FSM@FSM)	= accept@FSM@FSM .
 	eq parameters(accept@FSM@FSM) = word@accept@FSM@FSM .
-	
 	eq variables(accept@FSM@FSM) = i@accept@FSM@FSM 
 		current@accept@FSM@FSM final@accept@FSM@FSM toEval@accept@FSM@FSM 
 		isNull@accept@FSM@FSM .
+
+	sort word@accept@FSM@FSM .
+	subsort word@accept@FSM@FSM < @Parameter .
+	op word@accept@FSM@FSM : -> word@accept@FSM@FSM .
+	eq name(word@accept@FSM@FSM) = "word" .
+	eq type(word@accept@FSM@FSM) = @String .
+	eq lowerBound(word@accept@FSM@FSM) = 0 .
+	eq upperBound(word@accept@FSM@FSM) = * .
+	eq isOrdered(word@accept@FSM@FSM) = true .
+	eq isUnique(word@accept@FSM@FSM) = true .
+	
 	
 	sort i@accept@FSM@FSM .
 	op i@accept@FSM@FSM : -> i@accept@FSM@FSM .
@@ -242,6 +271,22 @@ mod FSM-MM is
 	eq isOrdered(isNull@accept@FSM@FSM) = false .
 	eq isUnique(isNull@accept@FSM@FSM) = false .
 	eq containingOperation(isNull@accept@FSM@FSM) = accept@FSM@FSM .
+	
+	--- CLEAN IT!
+	sort simplify@FSM@FSM .
+	subsort simplify@FSM@FSM < @Operation .
+	op simplify@FSM@FSM  : -> simplify@FSM@FSM .
+	eq name(simplify@FSM@FSM) = "simplify" .
+	eq isAbstract(simplify@FSM@FSM) = false .
+	eq from(simplify@FSM@FSM) = null .
+	eq type(simplify@FSM@FSM) = @Bool .
+	eq lowerBound(simplify@FSM@FSM) = 1 .
+	eq upperBound(simplify@FSM@FSM) = 1 .
+	eq isOrdered(simplify@FSM@FSM) = false .
+	eq isUnique(simplify@FSM@FSM) = false .
+	eq containingClass (simplify@FSM@FSM)  = FSM@FSM .
+	eq parameters(simplify@FSM@FSM) = null .
+	
 	
 	
 	--- Transition
@@ -405,6 +450,8 @@ mod FSM-MM is
 	eq containingOperation(current@fire@State@FSM) = fire@State@FSM .
 	
 	eq statements(FiniteStateMachine) = 
+--- CLEAN IT!
+[FSM, Label@FSM, set@Label@FSM,   1] |-> self . label@Label@FSM .:=. label@set@Label@FSM,
 [FSM, FSM@FSM, getStart@FSM@FSM,  1] |-> i@getStart@FSM@FSM .:=. 0,
 [FSM, FSM@FSM, getStart@FSM@FSM,  2] |-> iff( (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM) ),
 [FSM, FSM@FSM, getStart@FSM@FSM,  3] |-> i@getStart@FSM@FSM .:=. i@getStart@FSM@FSM + 1,
@@ -421,8 +468,8 @@ mod FSM-MM is
 		 
 [FSM, FSM@FSM, accept@FSM@FSM,    1] |-> current@accept@FSM@FSM .:=. self . "getStart" <>,
 [FSM, FSM@FSM, accept@FSM@FSM,    2] |-> final@accept@FSM@FSM .:=. self . "getFinal" <>,
---- [FSM, FSM@FSM, accept@FSM@FSM,    3] |-> toEval@accept@FSM@FSM .:=. word@accept@FSM@FSM,
---- [FSM, FSM@FSM, accept@FSM@FSM,    4] |-> isNull@accept@FSM@FSM .:=. false,		 
+[FSM, FSM@FSM, accept@FSM@FSM,    3] |-> toEval@accept@FSM@FSM .:=. word@accept@FSM@FSM,
+[FSM, FSM@FSM, accept@FSM@FSM,    4] |-> isNull@accept@FSM@FSM .:=. false,		 
 [FSM, FSM@FSM, accept@FSM@FSM,    5] |-> i@accept@FSM@FSM .:=. 1,
 [FSM, FSM@FSM, accept@FSM@FSM,    6] |-> iff(not ((i@accept@FSM@FSM .=. toEval@accept@FSM@FSM -> size()) or isNull@accept@FSM@FSM)),
 [FSM, FSM@FSM, accept@FSM@FSM,    7] |-> current@accept@FSM@FSM . "fire" < toEval@accept@FSM@FSM -> at(i@accept@FSM@FSM) >, --- toEval@accept@FSM@FSM -> at(i@accept@FSM@FSM)   
@@ -438,12 +485,16 @@ mod FSM-MM is
 [FSM, FSM@FSM, fire@State@FSM,  5] |-> i@fire@State@FSM .:=. 1,
 [FSM, FSM@FSM, fire@State@FSM,  6] |-> iff((i@fire@State@FSM .=. trans@fire@State@FSM -> size()) or (trans@fire@State@FSM -> at(i@fire@State@FSM) . label@Label@FSM .=. letter@fire@State@FSM)),
 [FSM, FSM@FSM, fire@State@FSM,  7] |-> i@fire@State@FSM .:=. i@fire@State@FSM + 1,
-		 [FSM, FSM@FSM, fire@State@FSM,  2] |-> iff(current@fire@State@FSM .=. null),
-		 [FSM, FSM@FSM, fire@State@FSM,  2] |-> return null,
-		 [FSM, FSM@FSM, fire@State@FSM,  2] |-> return (current@fire@State@FSM . tgt@Transition@FSM)    	      
-	.
+[FSM, FSM@FSM, fire@State@FSM,  8] |-> iff(current@fire@State@FSM .=. null),
+[FSM, FSM@FSM, fire@State@FSM,  9] |-> return null,
+[FSM, FSM@FSM, fire@State@FSM, 10] |-> return (current@fire@State@FSM . tgt@Transition@FSM),
+--- CLEAN IT!
+[FSM, FSM@FSM, simplify@FSM@FSM, 1] |-> self . states@FSM@FSM .:=. self . states@FSM@FSM -> at(1)
+.
 	
 	var N : Nat .
+--- CLEAN IT!
+eq nxt([FSM, Label@FSM, set@Label@FSM,     1]) = <[], []> .
 eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  2]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  3], 
 												[FSM, FSM@FSM, getStart@FSM@FSM,  4]> .
 eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  3]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  2], []> .
@@ -467,7 +518,7 @@ eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    6]) = <[FSM, FSM@FSM, accept@FSM@FSM,  
 eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    8]) = <[FSM, FSM@FSM, accept@FSM@FSM,    9], 
 												[FSM, FSM@FSM, accept@FSM@FSM,   10]> .
 eq nxt([FSM, FSM@FSM, accept@FSM@FSM,   10]) = <[FSM, FSM@FSM, accept@FSM@FSM,    6], []> .
-eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    N]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  (N + 1) ], []> [owise] .
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    N]) = <[FSM, FSM@FSM, accept@FSM@FSM,  (N + 1) ], []> [owise] .
 	
 eq nxt([FSM, FSM@FSM, fire@State@FSM,    2]) = <[FSM, FSM@FSM, fire@State@FSM,    3], 
 												[FSM, FSM@FSM, fire@State@FSM,    4]> .
@@ -477,6 +528,7 @@ eq nxt([FSM, FSM@FSM, fire@State@FSM,    6]) = <[FSM, FSM@FSM, fire@State@FSM,  
 eq nxt([FSM, FSM@FSM, fire@State@FSM,    7]) = <[FSM, FSM@FSM, fire@State@FSM,    6], []> .
 eq nxt([FSM, FSM@FSM, fire@State@FSM,    8]) = <[FSM, FSM@FSM, fire@State@FSM,    9], 
 												[FSM, FSM@FSM, fire@State@FSM,   10]> .
-	
-	 
+eq nxt([FSM, FSM@FSM, fire@State@FSM,    N]) = <[FSM, FSM@FSM, fire@State@FSM,  (N + 1) ], []> [owise] .	
+--- CLEAN IT!
+eq nxt([FSM, FSM@FSM, simplify@FSM@FSM,  1]) = <[], []> . 
 endm
