@@ -1,0 +1,105 @@
+/*
+ * $Id:$ 
+ * Creation		: March 6, 2012
+ * Licence		: EPL 
+ * Copyright (c) 2012 Supelec.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors	:
+ *     	Computer Science Department, Supelec
+ * Contacts		:
+ *     	Cecile.Hardebolle@supelec.fr
+ *     	Christophe.Jacquet@supelec.fr
+ *     	Frederic.Boulanger@supelec.fr
+ * Authors		: 
+ * 		hardebolle
+ */
+package spem;
+
+require kermeta
+
+require "./spemSemantics.kmt"
+
+require "platform:/resource/fr.supelec.modhelx/src/kermeta/core/abstractSemantics.kmt"
+require "platform:/resource/fr.supelec.modhelx/src/kermeta/mocs/abstractDEMoC.kmt"
+
+using kermeta::standard
+using kermeta::persistence
+using kermeta::exceptions
+using kermeta::utils
+using kermeta::io
+
+using modhelx::core
+using modhelx::mocs::de
+
+using spem
+
+// QUESTIONS ON THE SEMANTICS OF SPEM : 
+// is the order of activities important for good delivering of events ? if so, then necessary to map worksequences on relations...		
+// comment mapper les worksequence ? 
+// a priori pas besoin, ce sont les activity elles-même qui regardent leurs voisins pour savoir si elle commencent ou pas...
+// -> pas d'echange de jetons entre les activity alors ?
+
+class ActivityWrapper inherits AtomicBlock {
+	reference wrappedActivity : Activity
+
+	reference democ : AbstractDEMoC
+	reference receivedTokens : set Token[0..*]
+	reference spemEventToProcess : Event
+	reference spemTime : Integer
+	
+	operation initialize(activityToWrap : Activity) : ActivityWrapper is do
+		self.wrappedActivity := activityToWrap
+
+		self.name := self.wrappedActivity.name
+
+		// initialize all attributes necessary for execution on the spem side
+		self.wrappedActivity.initialize() 
+
+		// initial interface for modhelx
+		self.addPin("in")
+		self.addPin("out")
+		result := self
+	end
+	
+	method setup() is do
+		super()
+		self.democ := self.structure.model.moc.asType(AbstractDEMoC)
+	end
+	method reset() is do
+		super()
+		self.receivedTokens.clear()
+	end
+	method update() is do
+		super()
+		// get the tokens on the input pin, store them, remove them from the pin
+		// QUESTION : check if there is only one token on pin ?
+		self.receivedTokens.addAll(self.getPin("in").getTokens())
+		self.getPin("in").clearTokens()
+
+		// extract the ActivityEventKind to process
+		self.receivedTokens.each{e|
+			self.spemEventToProcess := self.democ.getEventValue(e).asType(Event)
+			self.spemTime := self.democ.getEventTimestamp(e)
+		}
+		
+		// call run
+		self.wrappedActivity.run(self.spemEventToProcess.kind, self.spemTime)
+		
+		// produce a token to trace new state
+		self.getPin("out").addToken(self.democ.createEvent("("+self.toString()+")"))
+		
+	end
+	method endOfSnapshot() is do
+		super()
+		// remove the info on the consummed tokens from the moc tables (the tokens have already been removed from the list of events to process)
+		self.receivedTokens.each{t|
+			// KEEP THIS ? OR RELY ON RESET OP ?
+			self.democ.removeEventFromValueDestTimeTables(t)
+		}
+	end
+}
+

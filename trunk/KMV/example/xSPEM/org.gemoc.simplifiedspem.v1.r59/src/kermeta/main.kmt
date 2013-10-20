@@ -1,0 +1,122 @@
+/*
+ * $Id:$ 
+ * Creation		: March 6, 2012
+ * Licence		: EPL 
+ * Copyright (c) 2012 Supelec.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors	:
+ *     	Computer Science Department, Supelec
+ * Contacts		:
+ *     	Cecile.Hardebolle@supelec.fr
+ *     	Christophe.Jacquet@supelec.fr
+ *     	Frederic.Boulanger@supelec.fr
+ * Authors		: 
+ * 		hardebolle
+ */
+@mainClass "main::Main"
+@mainOperation "main"
+
+package main;
+
+require kermeta
+
+require "http://simplifiedspem/1.0"
+require "./spemSemantics.kmt"
+require "./mappingModhelxSpem.kmt"
+
+require "platform:/resource/fr.supelec.modhelx/src/kermeta/core/abstractSemantics.kmt"
+require "platform:/resource/fr.supelec.modhelx/src/kermeta/core/executionEngine.kmt"
+
+require "platform:/resource/fr.supelec.modhelx/src/kermeta/mocs/concurrentDEMoC.kmt"
+require "platform:/resource/fr.supelec.modhelx/src/kermeta/mocs/sequentialDEMoC.kmt"
+require "platform:/resource/fr.supelec.modhelx/src/kermeta/mocs/DELib.kmt"
+
+using kermeta::standard
+using kermeta::persistence
+using kermeta::exceptions
+using kermeta::utils
+using kermeta::io
+
+using modhelx::core
+using modhelx::mocs::de
+using modhelx::engine
+
+using spem
+
+
+class Main{
+	operation main() : Void is do 
+
+		// load the spem model from the XMI file
+		var spemprocess : Process init loadSpemModel()
+			
+		// build the DE model around the spem model
+        var model : Model init Model.new.initialize("spemModel")
+		// DE MoC
+		// CAUTION this example does not work with SequentialDEMoC, USE ONLY ConcurrentDEMoC
+		var democ : AbstractDEMoC init ConcurrentDEMoC.new
+		democ.initialize()
+		model.moc := democ
+		// structure to contain the DE blocks
+		var struct : BlockStructure init BlockStructure.new
+		model.structure := struct
+		
+		// block to play simulation scenarios
+		var splay : DEScenarioPlayer init DEScenarioPlayer.new.initialize()
+		struct.blocks.add(splay)
+
+		// block to print simulation traces
+		var deprint : Block init DEPrinter.new.initialize()
+		struct.blocks.add(deprint)
+		
+		// for each activity in the spem model
+		spemprocess.activities.each{activity|
+			// create a wrapper for the activity 
+			var wrapper : ActivityWrapper init ActivityWrapper.new.initialize(activity)
+			// and add it to the modhelx model
+			struct.blocks.add(wrapper)
+			
+			// add a pin for this activity on the scenario player
+			var splaypin : Pin init splay.addPin(activity.name)
+			// and connect the scenario player to the activity
+			struct.createRelation(splaypin, wrapper.getPin("in"))
+			
+			// also connect the activity to the printer
+			struct.createRelation(wrapper.getPin("out"),deprint.getPin("in"))
+		}
+		
+		// build the scenario to play
+		splay.addEventToScenario(0,Event.new.initialize(ActivityEventKind.start),"A")
+		splay.addEventToScenario(3,Event.new.initialize(ActivityEventKind.start),"B")
+		splay.addEventToScenario(3,Event.new.initialize(ActivityEventKind.stop),"A")
+		splay.addEventToScenario(8,Event.new.initialize(ActivityEventKind.stop),"B")
+		
+		// run the model
+		var nbsnap : Integer init 10
+		var eng : Engine init Engine.new.initialize(model, nbsnap)
+		eng.setLogLevel(LogLevel.info) // possible log levels: info, debug
+		eng.run()  
+
+	end
+	
+	operation loadSpemModel() : Process is do
+        // creation d'une variable pour contenir notre instance
+        var spemmodel : Process
+
+        // chargement du modele en utilisant le EMFRepository
+        // il faut avoir, au prealable, charge le metamodele dans le registre EMF (click droit sur le package de plus haut niveau, EMFPackages registration > register)
+        var repository : EMFRepository init EMFRepository.new
+        var resource : EMFResource 
+        resource ?= repository.createResource("../../model/Process.xmi", "http://simplifiedspem/1.0")
+        resource.load
+		spemmodel ?= resource.one
+
+		result := spemmodel  
+	end
+	
+	
+}

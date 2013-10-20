@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ASCII"?>
+<spem:Process xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:spem="http://simplifiedspem/1.0" xsi:schemaLocation="http://simplifiedspem/1.0 ../metamodel/spem.ecore">
+  <activities linkToSuccessor="//@workSquences.0" name="A" durationmin="3" durationmax="6"/>
+  <activities linkToPredecessor="//@workSquences.0" name="B" durationmin="5" durationmax="7"/>
+  <workSquences successor="//@activities.1" predecessor="//@activities.0" kind="finishToFinish"/>
+</spem:Process>
