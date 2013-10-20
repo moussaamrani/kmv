@@ -272,14 +272,14 @@ mod KERMETA is
 	
 	var N : Nat .
 	vars LAB LABNxt LABE LABT LABNULL : @Label .
-	vars D : Domain .
 	vars VPSET VPSETT : Set{VarPair} .
+	vars S : Stack{StackEntry} .
 	vars M MP : @Model .
 	vars MM : @Metamodel .
 	var SFIS : Set{@StructuralFeatureInstance} .
-	vars S : Stack{StackEntry} .
-	vars E RES INST O : OCL-Exp .
-	vars MYVAR : @Variable .
+
+	vars E RES INST O OLD : OCL-Exp .
+	vars VAR  MYVAR : @Variable .
 	var MAYBEVAR : Maybe{@LocalVariable} .
 	var CLASS : @Class .
 	var CLASSIFIER : @Classifier .
@@ -290,10 +290,10 @@ mod KERMETA is
 	var OP : @Operation . 
 	var LO LEXP : List{OCL-Exp} .
 	var K : KConfig .
+	var ATT : @Attribute .
+	var REF : @Reference .
 	
 	op newOid : Nat -> Oid .
-	
-	var VAR : @Variable .
 	eq newOid(N) = qid("O" + string(N, 10)) .
 	
 	op run : KConfig -> KConfig .
@@ -339,7 +339,8 @@ mod KERMETA is
 		< LABNxt , LABNULL > := nxt(LAB) /\
 		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
 		OP := lookup(OPNAME, CLASS) 
-	.
+	. --- Having O : CLASS in the to-be-rewritten KConfig causes Maude trying to match ALL
+	--- objects in the model before giving up
 	ceq exec(<| LAB, S, < MM { < O : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
 			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, null |) !!! S, < MM { OBJSET } ## (putVar(self <- O, createLocalEnv(OP))) >, N |>
 		if INST . OPNAME < LO > := statements( MM ) [ LAB ] /\
@@ -348,5 +349,36 @@ mod KERMETA is
 		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
 		OP := lookup(OPNAME, CLASS) 
 	.
-
+	ceq exec(<| LAB, S, < MM { < O : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, MYVAR |) !!! S, < MM { OBJSET } ## (putVar(self <- O, createLocalEnv(OP))) >, N |>
+		if MYVAR .:=. INST . OPNAME <> := statements( MM ) [ LAB ] /\
+		< LABNxt , LABNULL > := nxt(LAB) /\
+		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
+		OP := lookup(OPNAME, CLASS) 
+	. --- Having O : CLASS in the to-be-rewritten KConfig causes Maude trying to match ALL
+	--- objects in the model before giving up
+	ceq exec(<| LAB, S, < MM { < O : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, MYVAR |) !!! S, < MM { OBJSET } ## (putVar(self <- O, createLocalEnv(OP))) >, N |>
+		if MYVAR .:=. INST . OPNAME < LO > := statements( MM ) [ LAB ] /\
+		< LABNxt , LABNULL > := nxt(LAB) /\
+		LEXP := eval-EL(LO, env(VPSET), none) /\
+		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
+		OP := lookup(OPNAME, CLASS) 
+	.
+	
+	ceq exec(<| LAB, S, < MM { OBJSET } ## ((MYVAR <- OLD) # VPSET) >, N |>) = <| LABNxt, S, < MM { OBJSET } ## (putVar(MYVAR <- RES, VPSET)) >, N |>
+			if  MYVAR .:=. E := statements( MM ) [ LAB ] /\ < LABNxt , LABNULL > := nxt(LAB) /\ 
+			RES := << E ; env((MYVAR <- OLD) # VPSET) ; MM { OBJSET } >>		
+	.
+	ceq exec(<| LAB, S, < MM { < O : CLASS | ATT : OLD # SFIS > OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { < O : CLASS | ATT : RES # SFIS > OBJSET } ## VPSET >, N |>
+			if  INST . ATT .:=. E := statements( MM ) [ LAB ] /\ < LABNxt , LABNULL > := nxt(LAB) /\ 
+			O :=   << INST ; env(VPSET) ; MM { < O : CLASS | ATT : OLD # SFIS > OBJSET } >> /\ O :: Oid /\
+			RES := << E    ; env(VPSET) ; MM { < O : CLASS | ATT : OLD # SFIS > OBJSET } >>		
+	.
+	ceq exec(<| LAB, S, < MM { < O : CLASS | REF : OLD # SFIS > OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { < O : CLASS | REF : RES # SFIS > OBJSET } ## VPSET >, N |>
+			if  INST . REF .:=. E := statements( MM ) [ LAB ] /\ < LABNxt , LABNULL > := nxt(LAB) /\ 
+			O :=   << INST ; env(VPSET) ; MM { < O : CLASS | REF : OLD # SFIS > OBJSET } >> /\ O :: Oid /\ not(isMany(REF)) /\ opposite(REF) == null /\
+			RES := << E    ; env(VPSET) ; MM { < O : CLASS | REF : OLD # SFIS > OBJSET } >>		
+	.
+		
 endm
