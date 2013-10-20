@@ -1,0 +1,210 @@
+/*
+ * $Id:$ 
+ * Creation		: May 15, 2012
+ * Licence		: EPL 
+ * Copyright (c) 2012 Supelec.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors	:
+ *     	Computer Science Department, Supelec
+ * Contacts		:
+ *     	Cecile.Hardebolle@supelec.fr
+ *     	Christophe.Jacquet@supelec.fr
+ *     	Frederic.Boulanger@supelec.fr
+ * Authors		: 
+ * 		hardebolle
+ */
+package spem;
+
+require kermeta
+
+// include de la syntaxe abstraite definie dans le MM Ecore
+require "http://simplifiedspem/1.0"
+
+using spem
+using kermeta::standard
+using kermeta::persistence
+using kermeta::exceptions
+
+/*
+ * Ajout des methodes d'execution a la classe Process
+ */
+aspect class Process {
+	operation allActivitiesFinished() : Boolean is do
+		result := self.activities.forAll{a|
+			a.state == ActivityStateKind.finished
+		}
+	end
+}
+
+/*
+ * Evenements acceptes par les Activity
+ */
+class Event {
+	attribute kind : ActivityEventKind
+
+	operation initialize(k : ActivityEventKind) : Event is do
+		self.kind := k
+		result := self
+	end 
+
+	method toString() : String is do
+		var kindString : String
+		if self.kind == ActivityEventKind.start then
+			kindString := "start"
+		else
+			kindString := "stop"
+		end 
+	
+		result := "<" + kindString + ">"
+	end 
+}
+
+/*
+ * Enumerations pour les types d'evenements
+ */
+enumeration ActivityEventKind { start ; stop ; }
+
+
+
+/*
+ * Ajout des methodes d'execution a la classe Activity
+ */
+aspect class Activity {
+
+	attribute state : ActivityStateKind
+	attribute timeState : ActivityTimeStateKind
+	attribute startTime : Integer
+	attribute duration : Integer
+
+	// faire un initialise avec des parametres : nom, duree min, duree max
+	operation initialize() : Activity is do 
+		self.state := ActivityStateKind.notStarted
+		self.timeState := ActivityTimeStateKind.undefined
+		self.startTime := 0
+		self.duration := 0
+		stdio.writeln("  * initialized activity : "+self.toString())
+		result := self 
+	end
+		
+	/* Run : 
+	 * on demarre une tache qui recoit un evenement start et peut etre demarree, 
+	 * on termine une tache qui recoit un evenement stop et qui peut etre terminee
+	 */
+	operation run(e : ActivityEventKind, time : Integer) : Void is do
+		if e == ActivityEventKind.start and self.startable() then 
+			self.start(time)
+		else
+			if e == ActivityEventKind.stop and self.finishable() then
+				self.finish(time)
+			else
+				self.updateTimeState(time)
+			end
+		end
+		stdio.writeln("  * updated activity : "+self.toString())
+	end
+
+	operation updateTimeState(time : Integer) : Void is do
+		if(self.state != ActivityStateKind.notStarted) then
+			self.duration := time - self.startTime
+			if self.duration < self.durationmin then
+				self.timeState := ActivityTimeStateKind.tooEarly
+			else
+				if self.duration >= self.durationmin and self.duration < self.durationmax then
+					self.timeState := ActivityTimeStateKind.ok
+				else
+					self.timeState := ActivityTimeStateKind.tooLate
+				end
+			end
+		end
+	end
+
+	operation startable() :  Boolean is	do
+		// on peut demarrer une activite si elle n'est pas deja demarree
+		if self.state == ActivityStateKind.notStarted then
+			// et si il n'existe pas d'activite precedente qui ne permette pas le demarrage
+			if not self.linkToPredecessor.exists{l| 
+					(l.kind == WorkSequenceKind.startToStart and not (l.predecessor.state == ActivityStateKind.inProgress or l.predecessor.state == ActivityStateKind.finished))
+					or
+					(l.kind == WorkSequenceKind.finishToStart and not (l.predecessor.state == ActivityStateKind.finished))
+				} then
+				result := true
+			end
+		else
+			result := false
+		end
+	end
+	
+	operation start(time : Integer) :  Void is do
+		stdio.writeln("  => starting activity "+self.name)
+		self.state := ActivityStateKind.inProgress
+		self.timeState := ActivityTimeStateKind.tooEarly
+		self.startTime := time
+		self.duration := 0
+	end
+
+	operation finishable() :  Boolean is do
+		var predecessorState : Boolean init true
+		// on peut terminer une activite si elle est deja demarree et pas encore terminee
+		if self.state == ActivityStateKind.inProgress then
+			// et si il n'existe pas d'activite precedente qui ne permette pas la terminaison
+			if not self.linkToPredecessor.exists{l| 
+					(l.kind == WorkSequenceKind.startToFinish and not (l.predecessor.state == ActivityStateKind.inProgress or l.predecessor.state == ActivityStateKind.finished))
+					or
+					(l.kind == WorkSequenceKind.finishToFinish and not (l.predecessor.state == ActivityStateKind.finished))
+				} then
+				result := true
+			end
+		else
+			result := false
+		end
+		
+	end
+	
+	operation finish(time : Integer) :  Void is do
+		stdio.writeln("  => finishing activity "+self.name)
+		self.state := ActivityStateKind.finished
+		self.updateTimeState(time)
+	end
+	
+	method toString() : String is do
+		var statePrint : String init ""
+		if self.state == ActivityStateKind.notStarted then 
+			statePrint := "notStarted"
+		else
+			if self.state == ActivityStateKind.inProgress then
+				statePrint := "inProgress" 
+			else 
+				statePrint := "finished" 
+			end
+		end
+		
+		var timeStatePrint : String init "undefined"
+		if self.timeState == ActivityTimeStateKind.ok then 
+			timeStatePrint := "ok"
+		else
+			if self.timeState == ActivityTimeStateKind.tooEarly then
+				timeStatePrint := "tooEarly" 
+			else 
+				if self.timeState == ActivityTimeStateKind.tooLate then
+					timeStatePrint := "tooLate" 
+				end
+			end
+		end
+		
+		result := self.name+" -> "+statePrint+", "+timeStatePrint + if self.state != ActivityStateKind.notStarted then ", started at " + self.startTime.toString + ", duration " +self.duration.toString else "" end
+	end
+		
+}
+
+/*
+ * Enumerations pour l'etat des Activity
+ */
+enumeration ActivityStateKind { notStarted ; inProgress ; finished ; }
+enumeration ActivityTimeStateKind { ok ; tooLate ; tooEarly ; undefined ; }
+
+
+
