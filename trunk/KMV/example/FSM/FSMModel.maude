@@ -1,3 +1,5 @@
+--- set trace on .
+
 mod FSM-MODEL is
 	protecting FSM-MM .
 	protecting MAUDELING .
@@ -49,18 +51,21 @@ endm
 
 --- Testing Control Flow
 
---- reduce nxt([FSM, FSM@FSM, getStart@FSM@FSM,  2]) .
- reduce nxt([FSM, FSM@FSM, accept@FSM@FSM,    6]) .
-
+--- reduce nxt([FSM, FSM@FSM, fire@State@FSM,  1]) .
+--- reduce nxt([FSM, FSM@FSM, accept@FSM@FSM,    6]) .
+--- reduce nxt([FSM, Label@FSM, set@Label@FSM,     1]) .
 --- reduce nxt([FSM, FSM@FSM, fire@State@FSM,    2]) .
+--- reduce nxt([FSM, FSM@FSM, simplify@FSM@FSM, 1]) .
 
---- reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, getStart@FSM@FSM,  2]] .
+--- reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, fire@State@FSM,  1]] .
 --- reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, accept@FSM@FSM,    8]] .
- reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, accept@FSM@FSM,    6]] .
+--- reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, accept@FSM@FSM,    6]] .
+--- reduce statements(FiniteStateMachine)[[FSM, Label@FSM, set@Label@FSM,     1]] .
+--- reduce statements(FiniteStateMachine)[[FSM, FSM@FSM, simplify@FSM@FSM, 1]] .
 
 --- Testing Expression parsing / evaluation
 
---- reduce << i@getStart@FSM@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce << i@getStart@FSM@FSM + 1 :: @DataType ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
 --- reduce << states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
 --- reduce << i@getStart@FSM@FSM .=. states@FSM@FSM -> size() ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
 --- reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM ; env( putVar(i@getStart@FSM@FSM <- 3, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
@@ -71,7 +76,8 @@ endm
 --- reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM ; env( putVar(i@getStart@FSM@FSM <- 2, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
 
 --- reduce << states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
----reduce << states@FSM@FSM -> at(1) . kind@State@FSM ; empty ; FSMModel >> .
+--- reduce << states@FSM@FSM -> at(1) . kind@State@FSM ; empty ; FSMModel >> .
+--- reduce << self . out@State@FSM -> asSequence() ; env(putVar(self <- 'two, empty)) ; FSMModel >> .
 
 --- Testing ConditionalStmt
 -----------------------------------------------------------------------------------
@@ -100,11 +106,17 @@ endm
 --- reduce << current@accept@FSM@FSM ; env(putVar(current@accept@FSM@FSM <- 'one , putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm , empty)))) ; FSMModel >> .
 
 --- reduce << toEval@accept@FSM@FSM -> at(i@accept@FSM@FSM) ; env(putVar(toEval@accept@FSM@FSM  <- Sequence{"a" # "b" # "c"} , putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 1, putVar(self <- 'fsm , empty))))) ; FSMModel >> .
---- reduce exec(<| [FSM, FSM@FSM, accept@FSM@FSM,    3], NOPE , < FSMModel ## putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 0, putVar(self <- 'fsm, empty))) > , 0 |>) .
+--- reduce exec(<| [FSM, FSM@FSM, accept@FSM@FSM,    1], NOPE , < FSMModel ## putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 0, putVar(self <- 'fsm, empty))) > , 0 |>) .
 
 --- Testing AssignStmt
 -----------------------------------------------------------------------------------
----reduce << self . states@FSM@FSM -> at(i@getStart@FSM@FSM) . in@State@FSM  ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce << self . states@FSM@FSM -> at(i@getStart@FSM@FSM) ; env( putVar(i@getStart@FSM@FSM <- 1, putVar(self <- 'fsm, empty)) ) ; FSMModel >> .
+--- reduce putVar(toEval@accept@FSM@FSM <- Sequence {"a" # "b" # "c"} , putVar(isNull@accept@FSM@FSM <- false , putVar(final@accept@FSM@FSM <- 'three , putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 1, putVar(self <- 'fsm, empty)))))) .
+
+--- reduce exec(<| [FSM, FSM@FSM, getStart@FSM@FSM,  3], NOPE , < FSMModel ## putVar(i@getStart@FSM@FSM <- 1, empty) > , 0 |>) .
+--- reduce exec(<| [FSM, FSM@FSM, accept@FSM@FSM,    9], NOPE , < FSMModel ## putVar(toEval@accept@FSM@FSM <- Sequence {"a" # "b" # "c"} , putVar(isNull@accept@FSM@FSM <- false , putVar(final@accept@FSM@FSM <- 'three , putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 1, putVar(self <- 'fsm, empty)))))) > , 0 |>) .
+--- reduce exec( exec(<| [FSM, FSM@FSM, fire@State@FSM,  1], NOPE , < FSMModel ## putVar(trans@fire@State@FSM <- null , putVar(self <- 'two, empty)) > , 0 |>) ) .
+--- reduce exec(<| [FSM, FSM@FSM, simplify@FSM@FSM, 1], NOPE , < FSMModel ## putVar(self <- 'fsm, empty) > , 0 |>) .
 
 
 --- Testing PROGRAM
@@ -112,6 +124,9 @@ endm
 --- reduce exec(<| [FSM, FSM@FSM, accept@FSM@FSM,    6], NOPE , < FSMModel ## 
 --- 	putVar(toEval@accept@FSM@FSM <- Sequence {"a" # "b" # "c"} , putVar(isNull@accept@FSM@FSM <- false , putVar(final@accept@FSM@FSM <- 'three , putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 1, putVar(self <- 'fsm, empty)))))) > , 0 |>) .
 
-reduce exec(<| [FSM, FSM@FSM, accept@FSM@FSM,    7], NOPE , < FSMModel ##
-	putVar(toEval@accept@FSM@FSM <- Sequence {"a" # "b" # "c"} , putVar(isNull@accept@FSM@FSM <- false , putVar(final@accept@FSM@FSM <- 'three , putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 1, putVar(self <- 'fsm, empty)))))) > , 0 |>) .
+--- reduce exec(<| [FSM, FSM@FSM, accept@FSM@FSM,    7], NOPE , < FSMModel ##
+--- 	putVar(toEval@accept@FSM@FSM <- Sequence {"a" # "b" # "c"} , putVar(isNull@accept@FSM@FSM <- false , putVar(final@accept@FSM@FSM <- 'three , putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 1, putVar(self <- 'fsm, empty)))))) > , 0 |>) .
+
+--- reduce run(<| [FSM, FSM@FSM, fire@State@FSM,    2], NOPE , < FSMModel ##
+---	putVar(trans@fire@State@FSM <- null , empty) > , 0 |>) .
 	
