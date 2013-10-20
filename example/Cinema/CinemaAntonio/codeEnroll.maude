@@ -1,0 +1,645 @@
+--- File generated automatically by a M2M and a M2T transformation.
+--- Author: Antonio Manuel Moreno Delgado
+--- Files necessary in the verification
+in mOdCL-pre.maude
+in stack.maude
+in transformation-aux.maude
+
+mod CLASSES-INTERACTIONCLIENTGOCINEMA is
+
+	protecting mOdCL-pre .
+	--- Class Client
+	sort Client .
+	subsort Client < Cid .
+
+
+	--- Class DebitCard
+	sort DebitCard .
+	subsort DebitCard < Cid .
+
+
+	--- Class Bank
+	sort Bank .
+	subsort Bank < Cid .
+
+
+	--- Class Session
+	sort Session .
+	subsort Session < Cid .
+
+
+	--- Class Ticket
+	sort Ticket .
+	subsort Ticket < Cid .
+
+
+	--- Class Cinema
+	sort Cinema .
+	subsort Cinema < Cid .
+
+
+	--- Class Account
+	sort Account .
+	subsort Account < Cid .
+	op cinema : -> AttributeName [ctor ] .
+	op startTime : -> Arg [ctor ] .
+	op amount : -> Arg [ctor ] .
+	op sessions : -> AttributeName [ctor ] .
+	op amount : -> Arg [ctor ] .
+	op balance : -> AttributeName [ctor ] .
+	op endTime : -> AttributeName [ctor ] .
+	op value : -> AttributeName [ctor ] .
+	op Ticket : -> Ticket .
+	op setSession : -> OpName [ctor ] .
+	op debitCard : -> Arg [ctor ] .
+	op capacity : -> AttributeName [ctor ] .
+	op setClient : -> OpName [ctor ] .
+	op name : -> AttributeName [ctor ] .
+	op bank : -> AttributeName [ctor ] .
+	op amount : -> Arg [ctor ] .
+	op cinema : -> Arg [ctor ] .
+	op DebitCard : -> DebitCard [ctor ] .
+	op Bank : -> Bank [ctor ] .
+	op accounts : -> AttributeName [ctor ] .
+	op locateSession : -> OpName [ctor ] .
+	op client : -> AttributeName [ctor ] .
+	op startTime : -> Arg [ctor ] .
+	op includeTicket : -> OpName [ctor ] .
+	op cinemas : -> AttributeName [ctor ] .
+	op decreaseAmount : -> OpName [ctor ] .
+	op pay : -> OpName [ctor ] .
+	op cinema : -> Arg [ctor ] .
+	op startTime : -> AttributeName [ctor ] .
+	op sessions : -> AttributeName [ctor ] .
+	op debitCard : -> Arg [ctor ] .
+	op debitCards : -> AttributeName [ctor ] .
+	op decreaseAmount : -> OpName [ctor ] .
+	op amount : -> Arg [ctor ] .
+	op debitCard : -> Arg [ctor ] .
+	op number : -> AttributeName [ctor ] .
+	op accounts : -> AttributeName [ctor ] .
+	op locateAccount : -> OpName [ctor ] .
+	op startTime : -> Arg [ctor ] .
+	op Account : -> Account [ctor ] .
+	op buyTicket : -> OpName [ctor ] .
+	op startTime : -> Arg [ctor ] .
+	op client : -> Arg [ctor ] .
+	op Cinema : -> Cinema [ctor ] .
+	op ses : -> Arg [ctor ] .
+	op cl : -> Arg [ctor ] .
+	op bank : -> AttributeName [ctor ] .
+	op debitCard : -> Arg [ctor ] .
+	op account : -> Arg [ctor ] .
+	op account : -> Arg [ctor ] .
+	op price : -> AttributeName [ctor ] .
+	op amount : -> Arg [ctor ] .
+	op goCinema : -> OpName [ctor ] .
+	op Session : -> Session [ctor ] .
+	op cinema : -> AttributeName [ctor ] .
+	op client : -> AttributeName [ctor ] .
+	op number : -> AttributeName [ctor ] .
+	op startTime : -> Arg [ctor ] .
+	op startTime : -> Arg [ctor ] .
+	op debitCards : -> AttributeName [ctor ] .
+	op tk : -> Arg [ctor ] .
+	op clients : -> AttributeName [ctor ] .
+	op ses : -> Arg [ctor ] .
+	op client : -> Arg [ctor ] .
+	op cl : -> Arg [ctor ] .
+	op account : -> AttributeName [ctor ] .
+	op Client : -> Client [ctor ] .
+	op Ticket : -> AttributeName [ctor ] .
+	op tk : -> Arg [ctor ] .
+
+endm
+
+set include BOOL off .
+
+mod INTERACTIONCLIENTGOCINEMA is
+
+	protecting CLASSES-INTERACTIONCLIENTGOCINEMA * (sort Int to Integer, sort Bool to Boolean) .
+	protecting TRANSFORMATION-AUX * (sort Int to Integer, sort Bool to Boolean) .
+	op auxTk : -> Arg [ctor ] .
+	op payStatus : -> Arg [ctor ] .
+	op Ticket : -> Arg [ctor ] .
+	op acc : -> Arg [ctor ] .
+	op auxSession : -> Arg [ctor ] .
+
+	rl [1:BUYTICKET_MESSAGE::CINEMA] :
+	{ <  ctx :  Context |    opN :  goCinema ,   obj :  Self:Oid ,   args :  (  arg(cinema, Cinema1:OclType) ,   arg(startTime, StartTime2:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  goCinema ,   obj :  Self:Oid ,   args :  (  arg(cinema, Cinema1:OclType) ,   arg(startTime, StartTime2:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 call(buyTicket, Cinema1:OclType, (  arg(startTime, evl(startTime,  <  ctx :  Context |    opN :  goCinema ,   obj :  Self:Oid ,   args :  (  arg(cinema, Cinema1:OclType) ,   arg(startTime, StartTime2:Integer)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))  ,  arg(client, evl(self,  <  ctx :  Context |    opN :  goCinema ,   obj :  Self:Oid ,   args :  (  arg(cinema, Cinema1:OclType) ,   arg(startTime, StartTime2:Integer)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >    Cf:Configuration)) ))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [1:BUYTICKET_MESSAGE::CINEMA-RESUME] :
+	{ <  ctx :  Context |    opN :  goCinema ,   obj :  Self:Oid ,   args :  (  arg(cinema, Cinema1:OclType) ,   arg(startTime, StartTime2:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 resume(buyTicket, Rst:OclType)
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  goCinema ,   obj :  Self:Oid ,   args :  (  arg(cinema, Cinema1:OclType) ,   arg(startTime, StartTime2:Integer) ,   AL-1:ArgsList  ,  arg(auxTk, Rst:OclType) ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} .
+
+	rl [MESSAGERETURN::] :
+	{ <  ctx :  Context |    opN :  goCinema ,   obj :  Self:Oid ,   args :  (  arg(cinema, Cinema1:OclType) ,   arg(startTime, StartTime2:Integer) ,   arg(auxTk, VAR37:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  goCinema ,   obj :  Self:Oid ,   args :  (  arg(cinema, Cinema1:OclType) ,   arg(startTime, StartTime2:Integer) ,   arg(auxTk, VAR37:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 ) ] >
+	 <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 return(evl(not auxTk . oclIsUndefined(),  <  ctx :  Context |    opN :  goCinema ,   obj :  Self:Oid ,   args :  (  arg(cinema, Cinema1:OclType) ,   arg(startTime, StartTime2:Integer) ,   arg(auxTk, VAR37:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [1:LOCATESESSION_MESSAGE::CINEMA] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 call(locateSession, Self:Oid, (  arg(startTime, evl(startTime,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration)) ))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [1:LOCATESESSION_MESSAGE::CINEMA-RESUME] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 resume(locateSession, Rst:OclType)
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   AL-1:ArgsList  ,  arg(auxSession, Rst:OclType) ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} .
+
+	crl [CombinedFragment-1] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} if evl(auxSession . oclIsUndefined() or
+	auxSession . capacity = auxSession . Ticket -> size(),  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration) .
+
+	crl [CombinedFragment-ELSE] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} if evl(not auxSession . oclIsUndefined() or
+	auxSession . capacity = auxSession . Ticket -> size(),  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration) .
+
+	rl [2:MESSAGE_RETURNNULL::] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 return(evl(null,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [MESSAGE_PAY::CINEMA] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  5 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 call(pay, Self:Oid, (  arg(debitCard, evl(client . debitCards -> asSequence() -> first() . number,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))  ,  arg(amount, evl(auxSession . price,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration)) ))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [MESSAGE_PAY::CINEMA-RESUME] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  5 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 resume(pay, Rst:OclType)
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   AL-1:ArgsList  ,  arg(payStatus, Rst:OclType) ) ,   seq :  [  (  1 |  6 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} .
+
+	crl [CombinedFragment0-1] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  6 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} if evl(payStatus,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration) .
+
+	rl [MESSAGECREATETICKET] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 next-Oid(NewOid:Integer)
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean) ,   AL-1:ArgsList  ,  arg(Ticket, NewOid:Integer) ) ,   seq :  [  (  1 |  7 )    (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 next-Oid( NewOid:Integer +  1)
+	 <  NewOid:Integer :  Ticket |    sessions :  null ,   clients :  null >
+	 Cf:Configuration
+	 
+	} .
+
+	rl [SETSESSION_MESSAGE::TICKET] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 call(setSession, VAR36:OclType, (  arg(ses, evl(auxSession,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration)) ))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [SETCLIENT_MESSAGE::TICKET] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 resume(setSession, Rst:OclType)
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  4 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 call(setClient, VAR36:OclType, (  arg(cl, evl(client,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration)) ))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [INCLUDETICKET_MESSAGE::CLIENT] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  4 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 resume(setClient, Rst:OclType)
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  5 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 call(includeTicket, Client4:OclType, (  arg(tk, VAR36:OclType) ))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [MESSAGERETURNTICKET::] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  5 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 resume(includeTicket, Rst:OclType)
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  1 |  6 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 return(evl(tk,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(Ticket, VAR36:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))
+	 Cf:Configuration
+	 
+	} .
+
+	crl [CombinedFragment0-2] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  6 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  2 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} if evl(not payStatus,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration) .
+
+	rl [MESSAGE::] :
+	{ <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  2 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  7 )    (  2 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 return(evl(null,  <  ctx :  Context |    opN :  buyTicket ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime3:Integer) ,   arg(client, Client4:OclType) ,   arg(auxSession, VAR38:OclType) ,   arg(payStatus, VAR39:Boolean)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [1:MESSAGERETURNLOCATESESSION::] :
+	{ <  ctx :  Context |    opN :  locateSession ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime5:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  locateSession ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime5:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 return(evl(if self . sessions -> select( $V$ | $V$ . startTime = startTime ) -> size() > 0 then self . sessions -> select( $V$ | $V$ . startTime = startTime ) -> asSequence() -> first() else null endif,  <  ctx :  Context |    opN :  locateSession ,   obj :  Self:Oid ,   args :  (  arg(startTime, StartTime5:Integer)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [1:SETSESSION_MESSAGE::TICKET] :
+	{ <  ctx :  Context |    opN :  setSession ,   obj :  Self:Oid ,   args :  (  arg(ses, Ses6:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  T:Ticket |    sessions :  VAR27:OclType ,    clients :  VAR28:OclType  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  setSession ,   obj :  Self:Oid ,   args :  (  arg(ses, Ses6:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  T:Ticket |    sessions :  evl(ses,  <  ctx :  Context |    opN :  setSession ,   obj :  Self:Oid ,   args :  (  arg(ses, Ses6:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  T:Ticket |    sessions :  VAR27:OclType ,    clients :  VAR28:OclType  ,  AS-1:AttributeSet >    Cf:Configuration) ,    clients :  VAR28:OclType  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} .
+
+	rl [2:RETURN] :
+	{ <  ctx :  Context |    opN :  setSession ,   obj :  Self:Oid ,   args :  (  arg(ses, Ses6:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  T:Ticket |    sessions :  VAR27:OclType ,    clients :  VAR28:OclType  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  setSession ,   obj :  Self:Oid ,   args :  (  arg(ses, Ses6:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  T:Ticket |    sessions :  VAR27:OclType ,    clients :  VAR28:OclType  ,  AS-1:AttributeSet >
+	 return(null)
+	 Cf:Configuration
+	 
+	} .
+
+	rl [1:MESSAGE_FOUNDESETCLIENT::TICKET] :
+	{ <  ctx :  Context |    opN :  setClient ,   obj :  Self:Oid ,   args :  (  arg(cl, Cl7:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  T:Ticket |    sessions :  VAR27:OclType ,    clients :  VAR28:OclType  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  setClient ,   obj :  Self:Oid ,   args :  (  arg(cl, Cl7:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  T:Ticket |    clients :  evl(cl,  <  ctx :  Context |    opN :  setClient ,   obj :  Self:Oid ,   args :  (  arg(cl, Cl7:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  T:Ticket |    sessions :  VAR27:OclType ,    clients :  VAR28:OclType  ,  AS-1:AttributeSet >    Cf:Configuration) ,    sessions :  VAR27:OclType  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} .
+
+	rl [2:RETURN] :
+	{ <  ctx :  Context |    opN :  setClient ,   obj :  Self:Oid ,   args :  (  arg(cl, Cl7:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  T:Ticket |    sessions :  VAR27:OclType ,    clients :  VAR28:OclType  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  setClient ,   obj :  Self:Oid ,   args :  (  arg(cl, Cl7:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  T:Ticket |    sessions :  VAR27:OclType ,    clients :  VAR28:OclType  ,  AS-1:AttributeSet >
+	 return(null)
+	 Cf:Configuration
+	 
+	} .
+
+	rl [1:MESSAGEFOUNDINCLUDETICKET::CLIENT] :
+	{ <  ctx :  Context |    opN :  includeTicket ,   obj :  Self:Oid ,   args :  (  arg(tk, Tk8:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  includeTicket ,   obj :  Self:Oid ,   args :  (  arg(tk, Tk8:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Client |    Ticket :  evl(self . Ticket -> including ( tk ),  <  ctx :  Context |    opN :  includeTicket ,   obj :  Self:Oid ,   args :  (  arg(tk, Tk8:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >    Cf:Configuration) ,    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} .
+
+	rl [2:RETURN] :
+	{ <  ctx :  Context |    opN :  includeTicket ,   obj :  Self:Oid ,   args :  (  arg(tk, Tk8:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  includeTicket ,   obj :  Self:Oid ,   args :  (  arg(tk, Tk8:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Client |    debitCards :  SET9:Collection ,    accounts :  SET11:Collection ,    Ticket :  SET12:Collection ,    cinemas :  SET7:Collection  ,  AS-1:AttributeSet >
+	 return(null)
+	 Cf:Configuration
+	 
+	} .
+
+	rl [LOCATEACCOUNT_MESSAGE::CINEMA] :
+	{ <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 call(locateAccount, Self:Oid, (  arg(debitCard, evl(debitCard,  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration)) ))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [LOCATEACCOUNT_MESSAGE::CINEMA-RESUME] :
+	{ <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 resume(locateAccount, Rst:OclType)
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   AL-1:ArgsList  ,  arg(acc, Rst:OclType) ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} .
+
+	crl [CombinedFragment-1] :
+	{ <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} if evl(acc . oclIsUndefined() or acc . balance < amount,  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration) .
+
+	rl [MESSAGERETURNFALSE::] :
+	{ <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 return(evl(false,  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))
+	 Cf:Configuration
+	 
+	} .
+
+	crl [CombinedFragment-2] :
+	{ <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  2 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} if evl((not acc . oclIsUndefined()) and acc . balance > amount,  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration) .
+
+	rl [DECREASEAMOUNT_MESSAGE::CINEMA] :
+	{ <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  2 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  2 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 call(decreaseAmount, Self:Oid, (  arg(amount, evl(amount,  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))  ,  arg(account, evl(acc,  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration)) ))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [MESSAGERETURNTRUE::] :
+	{ <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  2 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 resume(decreaseAmount, Rst:OclType)
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  4 )    (  2 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 return(evl(true,  <  ctx :  Context |    opN :  pay ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard9:Integer) ,   arg(amount, Amount10:Integer) ,   arg(acc, VAR40:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [MESSAGE::] :
+	{ <  ctx :  Context |    opN :  locateAccount ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard11:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  locateAccount ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard11:Integer)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 return(evl(self . bank . accounts -> select( $V$ | $V$ . debitCards -> collect ( $W$ . number) -> includes( debitCard ) ) -> asSequence() -> first() ,  <  ctx :  Context |    opN :  locateAccount ,   obj :  Self:Oid ,   args :  (  arg(debitCard, DebitCard11:Integer)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [DECREASEAMOUNT_MESSAGE::ACCOUNT] :
+	{ <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  arg(amount, Amount12:Integer) ,   arg(account, Account13:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  arg(amount, Amount12:Integer) ,   arg(account, Account13:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 call(decreaseAmount, Account13:OclType, (  arg(amount, evl(amount,  <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  arg(amount, Amount12:Integer) ,   arg(account, Account13:OclType)  ,  AL-1:ArgsList ) >     <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >    Cf:Configuration)) ))
+	 Cf:Configuration
+	 
+	} .
+
+	rl [2:RETURN] :
+	{ <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  arg(amount, Amount12:Integer) ,   arg(account, Account13:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 resume(decreaseAmount, Rst:OclType)
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  arg(amount, Amount12:Integer) ,   arg(account, Account13:OclType)  ,  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  C:Cinema |    name :  VAR14:String ,    bank :  VAR32:OclType ,    sessions :  SET10:Collection  ,  AS-1:AttributeSet >
+	 return(null)
+	 Cf:Configuration
+	 
+	} .
+
+	rl [DECREASEAMOUNT_MESSAGE::ACCOUNT] :
+	{ <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  AL-1:ArgsList ) ,   seq :  [  (  1 |  1 ) ] >
+	 <  Self:Oid :  A:Account |    balance :  VAR20:Integer ,    debitCards :  SET8:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  A:Account |    balance :  evl(self . balance - amount,  <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  AL-1:ArgsList ) >     <  Self:Oid :  A:Account |    balance :  VAR20:Integer ,    debitCards :  SET8:Collection  ,  AS-1:AttributeSet >    Cf:Configuration) ,    debitCards :  SET8:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	} .
+
+	rl [2:RETURN] :
+	{ <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  AL-1:ArgsList ) ,   seq :  [  (  1 |  2 ) ] >
+	 <  Self:Oid :  A:Account |    balance :  VAR20:Integer ,    debitCards :  SET8:Collection  ,  AS-1:AttributeSet >
+	 Cf:Configuration
+	 
+	}
+	=>
+	{  <  ctx :  Context |    opN :  decreaseAmount ,   obj :  Self:Oid ,   args :  (  AL-1:ArgsList ) ,   seq :  [  (  1 |  3 ) ] >
+	 <  Self:Oid :  A:Account |    balance :  VAR20:Integer ,    debitCards :  SET8:Collection  ,  AS-1:AttributeSet >
+	 return(null)
+	 Cf:Configuration
+	 
+	} .
+
+endm
