@@ -23,6 +23,7 @@ mod KERMETA-SL-CTORS is
 	subsort @Variable @Parameter < @LocalVariable < Vid .
 	subsort @Operation @Parameter @LocalVariable < @StructuralFeature .
 	op self : -> @LocalVariable .
+	op KRESULT : -> @LocalVariable .
 	op operations : @Class -> MyList . --- of @Operation
 	op isAbstract : @Operation -> Bool .
 	op from : @StructuralFeature -> Maybe{@Class} .
@@ -135,7 +136,7 @@ mod KERMETA-AL is
    	op _.:=. new`(_,_`) : @Variable @CollItem @Classifier -> @InstanceCreationStmt [ctor] .
    	op return    : -> @ReturnStmt [ctor] .
    	op return_   : OCL-Exp -> @ReturnStmt [ctor] .
-   	op _._<>   : OCL-Exp String -> @Call [ctor prec 15] .
+   	op _._<>   : OCL-Exp String -> @Call [ctor ] .
    	op _._<_>   : OCL-Exp String List{OCL-Exp} -> @Call [ctor] .
    	op _.:=._    : OCL-Exp @Call -> @CallStmt [ctor] .
    	
@@ -153,18 +154,23 @@ mod KERMETA-AL is
    	var LV VAL PARAM : @LocalVariable .
    	vars VPAIRS VPAIRSS VPSET : Set{VarPair} .
    	var VPELT : VarPair .
+   	var LEXP : List{OCL-Exp} .
+   	var EXP  : OCL-Exp .
    	
    	op createLocalEnv : @Operation -> Set{VarPair} .
    	eq createLocalEnv(O) = createLocalEnv$(variables(O)) .
+   	
+   	op createLocalEnv : @Operation List{OCL-Exp} -> Set{VarPair} .
+   	eq createLocalEnv(O, LEXP) = createParamBindings(parameters(O), LEXP) # createLocalEnv$(variables(O)) .
    	
    	op createLocalEnv$ : MyList -> Set{VarPair} . --- of @Variable
    	eq createLocalEnv$(nil) = empty .
    	eq createLocalEnv$(LV L) = putVar(LV <- defaultValue(LV), createLocalEnv$(L)) .
    	
-	op createParamBinding : List{OCL-Exp} MyList -> Set{VarPair} .
-	eq createParamBinding(mt-ord, nil)  = empty .
-	eq createParamBinding((VAL # VALLIST), (PARAM PARAMLIST)) = putVar(PARAM <- VAL, createParamBinding(VALLIST, PARAMLIST)) .
-  	
+   	op createParamBindings : MyList List{OCL-Exp} -> Set{VarPair} .
+   	eq createParamBindings(nil, mt-ord) = empty .
+   	eq createParamBindings(LV L, EXP # LEXP) = putVar(LV <- EXP, createParamBindings(L, LEXP)) .
+   	
    	
    	op lookup : String @Class -> @Operation .
    	eq lookup(ON , C) = 
@@ -228,11 +234,11 @@ fmod STACK{X :: TRIV} is
 	subsort X$Elt  < NeStack{X} < Stack{X} .
 
 	op NOPE : -> Stack{X} [ctor] .
-	op _!!!_ : X$Elt Stack{X} -> NeStack{X} [ctor] .
+	op _!!!_ : X$Elt Stack{X} -> NeStack{X} [ctor right id: NOPE] .
 
 	var E : X$Elt .
 	var S : Stack{X} .
-	eq (E !!! NOPE)  = E .
+---	eq (E !!! NOPE)  = E .
 	
 	op isEmpty_ : Stack{X} -> Bool .
 	eq isEmpty(NOPE) = true .
@@ -260,7 +266,7 @@ mod KERMETA-CONFIGURATION is
 	var D : Domain .
 	
 	op isStop : KConfig -> Bool .
-	eq isStop(<| [], S, D, N |>) = isEmpty(S) .
+	eq isStop(<| [], NOPE, D, N |>) = true .
 	eq isStop(<| LAB, S, D, N |>) = false [owise] .
 endm
 
@@ -269,21 +275,68 @@ mod KERMETA is
 	pr KERMETA-AL .
 	pr KERMETA-CONFIGURATION .
 	
-	
+	--- Create a "fresh" Oid (i.e. not present in a model's config)
+	--- Intended to be called with the "N" param in the config
+	op newOid : Nat -> Oid .
 	var N : Nat .
-	vars LAB LABNxt LABE LABT LABNULL : @Label .
+	eq newOid(N) = qid("O" + string(N, 10)) .
+
+	--- update(M, O, REF, EXP) updates object O in model M
+	--- with value EXP, preserving reference integrity 
+	op update : @Model Oid @Reference OCL-Exp -> @Model .
+	
+	vars MM : @Metamodel .
+	vars O O' X Y : Oid .
+	var SFIS SFISO SFISO' SFISX SFISY : Set{@StructuralFeatureInstance} .
+	var CLASSO CLASSO' CLASSX CLASSY : @Class .
+	vars P Q : @Reference .
+	var OBJSET : Set{@Object} .
+	var VALO' VALX VALY : OCL-Exp .
+
+	ceq update(MM{< O : CLASSO | P : X # SFISO > OBJSET}, O, REF, O') = 
+			MM{< O : CLASSO | P : O' # SFISO > OBJSET} 
+		if not(isMany(REF)) /\ null = opposite(REF) .
+	
+	ceq update(MM{< O : CLASSO | P : X    # SFISO > 
+				  < Y : CLASSY | P : O'   # SFISY > 
+				  < X : CLASSX | Q : VALX # SFISX > OBJSET}, O, REF, O') = 
+		MM{ < O : CLASSO | P : O'   # SFISO > 
+			< Y : CLASSY | P : null # SFISY >
+			< X : CLASSX | Q : null # SFISX > OBJSET} 
+		if not(isMany(P)) /\ not(isContainment(P)) /\ Q := opposite(P) .
+
+	ceq update(MM{< O  : CLASSO  | P : X     # SFISO  > 
+				  < O' : CLASSO' | Q : VALO' # SFISO' > 
+				  < Y  : CLASSY  | P : O'    # SFISY  > 
+				  < X  : CLASSX  | Q : VALX  # SFISX  > OBJSET}, O, REF, O') = 
+		MM{ < O  : CLASSO  | P : O'   # SFISO  > 
+			< O' : CLASSO' | Q : O    # SFISO  > 
+			< Y  : CLASSY  | P : null # SFISO' >
+			< X  : CLASSX  | Q : null # SFISX  > OBJSET} 
+		if not(isMany(P)) /\ isContainment(P) /\ Q := opposite(P) .
+
+	ceq update(MM{< O : CLASSO | P : X    # SFISO > 
+				  < Y : CLASSY | P : O'   # SFISY > 
+				  < X : CLASSX | Q : VALX # SFISX > OBJSET}, O, REF, O') = 
+		MM{ < O : CLASSO | P : O'   # SFISO > 
+			< Y : CLASSY | P : null # SFISY >
+			< X : CLASSX | Q : null # SFISX > OBJSET} 
+		if not(isMany(P)) /\ isContainer(P) /\ Q := opposite(P) .
+
+
+
+	
+	vars LAB LABNxt LABELSE LABTHEN LABNULL : @Label .
 	vars VPSET VPSETT : Set{VarPair} .
 	vars S : Stack{StackEntry} .
 	vars M MP : @Model .
-	vars MM : @Metamodel .
-	var SFIS : Set{@StructuralFeatureInstance} .
 
-	vars E RES INST O OLD : OCL-Exp .
+	vars E RES INST OLD EXP : OCL-Exp .
+	var OID : Oid .
 	vars VAR  MYVAR : @Variable .
 	var MAYBEVAR : Maybe{@LocalVariable} .
 	var CLASS : @Class .
 	var CLASSIFIER : @Classifier .
-	var OBJSET : Set{@Object} .
 	var SE : StackEntry .
 	var COLLITEM : @CollItem .
 	var OPNAME : String .
@@ -293,30 +346,59 @@ mod KERMETA is
 	var ATT : @Attribute .
 	var REF : @Reference .
 	
-	op newOid : Nat -> Oid .
-	eq newOid(N) = qid("O" + string(N, 10)) .
-	
 	op run : KConfig -> KConfig .
 	eq run(K) = if isStop(K) then K else run(exec(K)) fi .
 	
+		
 	
-	op exec : KConfig -> KConfig .
-	ceq exec( <| LAB, S, < M ## VPSET >, N |> ) = <| LABT, S, < M ## VPSET >, N |> 
-		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ < LABT , LABE > := nxt(LAB)
-			 /\ true = << E ; env(VPSET) ; M >> 	
-	.
-	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABE, S, < M ## VPSET >, N |> 
+	
+	op exec : KConfig -> KConfig [iter] .
+	
+	--- CondStmt
+	ceq exec( <| LAB, S, < M ## VPSET >, N |> ) = <| LABTHEN, S, < M ## VPSET >, N |> 
 		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
-			< LABT , LABE > := nxt(LAB) /\ false = << E ; env(VPSET) ; M >> 
+			< LABTHEN , LABELSE > := nxt(LAB)         /\ 
+			true = << E ; env(VPSET) ; M >> 	
 	.
+	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABELSE, S, < M ## VPSET >, N |> 
+		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
+			< LABTHEN , LABELSE > := nxt(LAB) 		  /\ 
+			false = << E ; env(VPSET) ; M >> 
+	.
+
+	--- ReturnStmt
+	ceq exec(<| LAB,   (| LABNxt , VPSETT, null |) !!! S, < M ## VPSET >,  N |>) = 
+			 <| LABNxt,                                S, < M ## VPSETT >, N |> 
+		if return :=  statements( meta(M) ) [ LAB ]
+	.
+	ceq exec(<| LAB, (| LABNxt , VPSETT, MYVAR |) !!! S, < M ## VPSET >,  N |>) = 
+			 <| LABNxt,                               S, < M ## putVar( MYVAR <- RES , VPSETT) >, N |> 
+		if  return( E ) :=  statements( meta(M) ) [ LAB ] /\
+			RES := << E ; env(VPSET) ; M >>
+	.
+	ceq exec(<| LAB, NOPE, < M ## VPSET >,  N |>) = 
+			 <| [] , NOPE, < M ## VPSET >, N |> 
+		if return :=  statements( meta(M) ) [ LAB ]
+	.
+	ceq exec(<| LAB, NOPE, < M ## VPSET >,  N |>) = 
+			 <| [] , NOPE, < M ## putVar( KRESULT <- RES , VPSET) >, N |> 
+		if  return( E ) :=  statements( meta(M) ) [ LAB ] /\
+			RES := << E ; env(VPSET) ; M >>
+	.
+
 	
-	ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { complete(< newOid(N) : CLASSIFIER | empty >) OBJSET } ## (putVar(MYVAR <- newOid(N), VPSET)) >, (N + 1) |>
-			if  MYVAR .:=. new ( CLASSIFIER ) := statements( MM ) [ LAB ] /\ CLASSIFIER :: @Class /\ 
-			< LABNxt , LABNULL > := nxt(LAB)
+	--- NewInstStmt: depends on the object's type created
+	ceq exec(<| LAB,    S, < MM { OBJSET } ## VPSET >, N |>) = 
+			 <| LABNxt, S, < MM { complete(< newOid(N) : CLASSIFIER | empty >) OBJSET } ## (putVar(MYVAR <- newOid(N), VPSET)) >, (N + 1) |>
+			if  MYVAR .:=. new ( CLASSIFIER ) := statements( MM ) [ LAB ] /\ 
+			< LABNxt , LABNULL > := nxt(LAB)  							  /\
+			CLASSIFIER :: @Class 
 	.
-	ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { OBJSET } ## (putVar(MYVAR <- defaultValue(CLASSIFIER), VPSET)) >, N |>
-			if  MYVAR .:=. new ( CLASSIFIER ) := statements( MM ) [ LAB ] /\ CLASSIFIER :: @DataType /\ 
-			< LABNxt , LABNULL > := nxt(LAB)
+	ceq exec(<| LAB,    S, < MM { OBJSET } ## VPSET >, N |>) = 
+			 <| LABNxt, S, < MM { OBJSET } ## (putVar(MYVAR <- defaultValue(CLASSIFIER), VPSET)) >, N |>
+			if  MYVAR .:=. new ( CLASSIFIER ) := statements( MM ) [ LAB ] /\  
+			< LABNxt , LABNULL > := nxt(LAB) /\
+			CLASSIFIER :: @DataType
 	.
 	
 	ceq exec(<| LAB, S, < MM { OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { OBJSET } ## (putVar(MYVAR <- default(COLLITEM , CLASSIFIER), VPSET)) >, N |>
@@ -324,61 +406,69 @@ mod KERMETA is
 			< LABNxt , LABNULL > := nxt(LAB)
 	.
 	
-	ceq exec(<| LAB, (| LABNxt , VPSETT, null |) !!! S, < M ## VPSET >, N |>) = <| LABNxt, S, < M ## VPSETT >, N |> if
-		return :=  statements( meta(M) ) [ LAB ]
-	.
-	ceq exec(<| LAB, (| LABNxt , VPSETT, MYVAR |) !!! S, < M ## VPSET >, N |>) = <| LABNxt, S, < M ## VPSETT >, N |> if
-		return( E ) :=  statements( meta(M) ) [ LAB ] /\
-		RES := << E ; env(VPSET) ; M >>
-	. --- evaluate E within VPSET, then update MYVAR inside VPSETT
 	
 	
-	ceq exec(<| LAB, S, < MM { < O : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
-			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, null |) !!! S, < MM { OBJSET } ## (putVar(self <- O, createLocalEnv(OP))) >, N |>
+	--- CallStmt
+	ceq exec(<| LAB, S, < MM { < OID : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, null |) !!! S, < MM { < OID : CLASS | SFIS > OBJSET } ## (putVar(self <- OID, createLocalEnv(OP))) >, N |>
 		if INST . OPNAME <> := statements( MM ) [ LAB ] /\
 		< LABNxt , LABNULL > := nxt(LAB) /\
-		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
+		OID := << INST ; env(VPSET) ; MM { < OID : CLASS | SFIS > OBJSET } >> /\ OID :: Oid /\
 		OP := lookup(OPNAME, CLASS) 
 	. --- Having O : CLASS in the to-be-rewritten KConfig causes Maude trying to match ALL
 	--- objects in the model before giving up
-	ceq exec(<| LAB, S, < MM { < O : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
-			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, null |) !!! S, < MM { OBJSET } ## (putVar(self <- O, createLocalEnv(OP))) >, N |>
+	ceq exec(<| LAB, S, < MM { < OID : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, null |) !!! S, < MM { < OID : CLASS | SFIS > OBJSET } ## (putVar(self <- OID, createLocalEnv(OP, LEXP))) >, N |>
 		if INST . OPNAME < LO > := statements( MM ) [ LAB ] /\
 		< LABNxt , LABNULL > := nxt(LAB) /\
 		LEXP := eval-EL(LO, env(VPSET), none) /\
-		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
+		OID := << INST ; env(VPSET) ; MM { < OID : CLASS | SFIS > OBJSET } >> /\ OID :: Oid /\
 		OP := lookup(OPNAME, CLASS) 
 	.
-	ceq exec(<| LAB, S, < MM { < O : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
-			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, MYVAR |) !!! S, < MM { OBJSET } ## (putVar(self <- O, createLocalEnv(OP))) >, N |>
+	ceq exec(<| LAB, S, < MM { < OID : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, MYVAR |) !!! S, < MM { < OID : CLASS | SFIS > OBJSET } ## (putVar(self <- OID, createLocalEnv(OP))) >, N |>
 		if MYVAR .:=. INST . OPNAME <> := statements( MM ) [ LAB ] /\
 		< LABNxt , LABNULL > := nxt(LAB) /\
-		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
+		OID := << INST ; env(VPSET) ; MM { < OID : CLASS | SFIS > OBJSET } >> /\ OID :: Oid /\
 		OP := lookup(OPNAME, CLASS) 
 	. --- Having O : CLASS in the to-be-rewritten KConfig causes Maude trying to match ALL
 	--- objects in the model before giving up
-	ceq exec(<| LAB, S, < MM { < O : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
-			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, MYVAR |) !!! S, < MM { OBJSET } ## (putVar(self <- O, createLocalEnv(OP))) >, N |>
+	ceq exec(<| LAB, S, < MM { < OID : CLASS | SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| [ package(containingClass(OP)) , containingClass(OP) , OP , 1 ] , (| LABNxt , VPSET, MYVAR |) !!! S, < MM { < OID : CLASS | SFIS > OBJSET } ## (putVar(self <- OID, createLocalEnv(OP, LEXP))) >, N |>
 		if MYVAR .:=. INST . OPNAME < LO > := statements( MM ) [ LAB ] /\
 		< LABNxt , LABNULL > := nxt(LAB) /\
 		LEXP := eval-EL(LO, env(VPSET), none) /\
-		O := << INST ; env(VPSET) ; MM { < O : CLASS | SFIS > OBJSET } >> /\ O :: Oid /\
+		OID := << INST ; env(VPSET) ; MM { < OID : CLASS | SFIS > OBJSET } >> /\ OID :: Oid /\
 		OP := lookup(OPNAME, CLASS) 
 	.
 	
-	ceq exec(<| LAB, S, < MM { OBJSET } ## ((MYVAR <- OLD) # VPSET) >, N |>) = <| LABNxt, S, < MM { OBJSET } ## (putVar(MYVAR <- RES, VPSET)) >, N |>
-			if  MYVAR .:=. E := statements( MM ) [ LAB ] /\ < LABNxt , LABNULL > := nxt(LAB) /\ 
-			RES := << E ; env((MYVAR <- OLD) # VPSET) ; MM { OBJSET } >>		
+	--- AssignStmt
+	ceq exec(<| LAB,    S, < MM { OBJSET } ## ((MYVAR <- OLD) # VPSET) >,      N |>) = 
+			 <| LABNxt, S, < MM { OBJSET } ## (putVar(MYVAR <- RES, VPSET)) >, N |>
+			if  MYVAR .:=. E := statements( MM ) [ LAB ] /\ 
+				< LABNxt , LABNULL > := nxt(LAB) /\ 
+				RES := << E ; env((MYVAR <- OLD) # VPSET) ; MM { OBJSET } >>		
 	.
-	ceq exec(<| LAB, S, < MM { < O : CLASS | ATT : OLD # SFIS > OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { < O : CLASS | ATT : RES # SFIS > OBJSET } ## VPSET >, N |>
-			if  INST . ATT .:=. E := statements( MM ) [ LAB ] /\ < LABNxt , LABNULL > := nxt(LAB) /\ 
-			O :=   << INST ; env(VPSET) ; MM { < O : CLASS | ATT : OLD # SFIS > OBJSET } >> /\ O :: Oid /\
-			RES := << E    ; env(VPSET) ; MM { < O : CLASS | ATT : OLD # SFIS > OBJSET } >>		
+	ceq exec(<| LAB,    S, < MM { < O : CLASS | ATT : OLD # SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| LABNxt, S, < MM { < O : CLASS | ATT : RES # SFIS > OBJSET } ## VPSET >, N |>
+			if  INST . ATT .:=. E := statements( MM ) [ LAB ] /\ 
+				< LABNxt , LABNULL > := nxt(LAB) /\ 
+				O   := << INST ; env(VPSET) ; MM { < O : CLASS | ATT : OLD # SFIS > OBJSET } >> /\ 
+				O   :: Oid /\
+				RES := << E    ; env(VPSET) ; MM { < O : CLASS | ATT : OLD # SFIS > OBJSET } >>		
 	.
-	ceq exec(<| LAB, S, < MM { < O : CLASS | REF : OLD # SFIS > OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { < O : CLASS | REF : RES # SFIS > OBJSET } ## VPSET >, N |>
-			if  INST . REF .:=. E := statements( MM ) [ LAB ] /\ < LABNxt , LABNULL > := nxt(LAB) /\ 
-			O :=   << INST ; env(VPSET) ; MM { < O : CLASS | REF : OLD # SFIS > OBJSET } >> /\ O :: Oid /\ not(isMany(REF)) /\ opposite(REF) == null /\
-			RES := << E    ; env(VPSET) ; MM { < O : CLASS | REF : OLD # SFIS > OBJSET } >>		
+	ceq exec(<| LAB,    S, < MM { < O : CLASS | REF : OLD # SFIS > OBJSET } ## VPSET >, N |>) = 
+			 <| LABNxt, S, < update(MM { < O : CLASS | REF : RES # SFIS > OBJSET }, O, REF, RES) ## VPSET >, N |>
+			if  INST . REF .:=. E := statements( MM ) [ LAB ] /\ 
+				< LABNxt , LABNULL > := nxt(LAB) /\ 
+				O   := << INST ; env(VPSET) ; MM { < O : CLASS | REF : OLD # SFIS > OBJSET } >> /\ 
+				O   :: Oid /\ --- not(isMany(REF)) /\ opposite(REF) == null /\
+				RES := << E ; env(VPSET) ; MM { < O : CLASS | REF : OLD # SFIS > OBJSET } >>		
 	.
+---	ceq exec(<| LAB, S, < MM { < O : CLASS | REF : OLD # SFIS > OBJSET } ## VPSET >, N |>) = <| LABNxt, S, < MM { < O : CLASS | REF : RES # SFIS > OBJSET } ## VPSET >, N |>
+---			if  INST . REF .:=. E := statements( MM ) [ LAB ] /\ < LABNxt , LABNULL > := nxt(LAB) /\ 
+---			O :=   << INST ; env(VPSET) ; MM { < O : CLASS | REF : OLD # SFIS > OBJSET } >> /\ O :: Oid /\ not(isMany(REF)) /\ OPP := opposite(REF) /\
+---			RES := << E    ; env(VPSET) ; MM { < O : CLASS | REF : OLD # SFIS > OBJSET } >>		
+---	.
 		
 endm
