@@ -1,0 +1,33 @@
+		< 'd : Activity@XSPEM | name@Activity@XSPEM : "Development" #
+								process@Activity@XSPEM : 'p #
+								min@Activity@XSPEM : 5 #
+								max@Activity@XSPEM : 9 # 
+								lpred@Activity@XSPEM : OrderedSet{'c2d} #
+								lsucc@Activity@XSPEM : OrderedSet{'d2rt} >
+
+		< 'rt : Activity@XSPEM | name@Activity@XSPEM : "RedactionTest" #
+								process@Activity@XSPEM : 'p #
+								min@Activity@XSPEM : 5 #
+								max@Activity@XSPEM : 9 # 
+								lpred@Activity@XSPEM : OrderedSet{'d2rt # 'c2rt} #
+								lsucc@Activity@XSPEM : OrderedSet{} >
+
+		< 'c2rd2 : WorkSequence@XSPEM | kind@WorkSequence@XSPEM : Start2Start@WSKind@XSPEM #
+										process@WorkSequence@XSPEM : 'p #
+										succ@WorkSequence@XSPEM : 'rd #
+										pred@WorkSequence@XSPEM : 'c >
+
+		< 'c2d : WorkSequence@XSPEM | kind@WorkSequence@XSPEM : Finish2Start@WSKind@XSPEM #
+										process@WorkSequence@XSPEM : 'p #
+										succ@WorkSequence@XSPEM : 'd #
+										pred@WorkSequence@XSPEM : 'c >
+
+		< 'd2rt : WorkSequence@XSPEM | kind@WorkSequence@XSPEM : Finish2Finish@WSKind@XSPEM #
+										process@WorkSequence@XSPEM : 'p #
+										succ@WorkSequence@XSPEM : 'rt #
+										pred@WorkSequence@XSPEM : 'd >
+
+		< 'c2rt : WorkSequence@XSPEM | kind@WorkSequence@XSPEM : Start2Start@WSKind@XSPEM #
+										process@WorkSequence@XSPEM : 'p #
+										succ@WorkSequence@XSPEM : 'rt #
+										pred@WorkSequence@XSPEM : 'c >

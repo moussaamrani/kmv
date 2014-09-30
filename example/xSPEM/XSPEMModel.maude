@@ -1,0 +1,83 @@
+mod XSPEM-MODEL is
+	protecting XSPEM-MM .
+	protecting MAUDELING .
+	
+	op XSPEMModel : -> @Model .
+	eq XSPEMModel = ExecutableSPEM {
+		< 'p : Process@XSPEM |  activities@Process@XSPEM    : OrderedSet{'c # 'rd # 'd # 'rt} # 
+							   	workSequences@Process@XSPEM : OrderedSet{'c2rd1 # 'c2rd2 # 'c2d # 'c2rt # 'd2rt} >
+		
+		< 'c : Activity@XSPEM | name@Activity@XSPEM : "Conception" #
+								process@Activity@XSPEM : 'p #
+								min@Activity@XSPEM : 1 #
+								max@Activity@XSPEM : 5 # 
+								lpred@Activity@XSPEM : OrderedSet{} #
+								lsucc@Activity@XSPEM : OrderedSet{'c2rd1 # 'c2rd2 # 'c2d # 'c2rt} #
+								state@Activity@XSPEM : NOTSTARTED@AStateKind@XSPEM #
+								time@Activity@XSPEM : UNDEFINED@ATimeKind@XSPEM #
+								start@Activity@XSPEM : 0 #
+								duration@Activity@XSPEM : 0 >
+		
+		< 'rd : Activity@XSPEM | name@Activity@XSPEM : "RedactionDoc" #
+								process@Activity@XSPEM : 'p #
+								min@Activity@XSPEM : 5 #
+								max@Activity@XSPEM : 9 # 
+								lpred@Activity@XSPEM : OrderedSet{'c2rd1 # 'c2rd2} #
+								lsucc@Activity@XSPEM : OrderedSet{} #
+								state@Activity@XSPEM : NOTSTARTED@AStateKind@XSPEM #
+								time@Activity@XSPEM : UNDEFINED@ATimeKind@XSPEM #
+								start@Activity@XSPEM : 0 #
+								duration@Activity@XSPEM : 0 >
+		
+		< 'd : Activity@XSPEM | name@Activity@XSPEM : "Development" #
+								process@Activity@XSPEM : 'p #
+								min@Activity@XSPEM : 5 #
+								max@Activity@XSPEM : 9 # 
+								lpred@Activity@XSPEM : OrderedSet{'c2d} #
+								lsucc@Activity@XSPEM : OrderedSet{'d2rt} #
+								state@Activity@XSPEM : NOTSTARTED@AStateKind@XSPEM #
+								time@Activity@XSPEM : UNDEFINED@ATimeKind@XSPEM #
+								start@Activity@XSPEM : 0 #
+								duration@Activity@XSPEM : 0 >
+
+		< 'rt : Activity@XSPEM | name@Activity@XSPEM : "RedactionTest" #
+								process@Activity@XSPEM : 'p #
+								min@Activity@XSPEM : 5 #
+								max@Activity@XSPEM : 9 # 
+								lpred@Activity@XSPEM : OrderedSet{'d2rt # 'c2rt} #
+								lsucc@Activity@XSPEM : OrderedSet{} #
+								state@Activity@XSPEM : NOTSTARTED@AStateKind@XSPEM #
+								time@Activity@XSPEM : UNDEFINED@ATimeKind@XSPEM #
+								start@Activity@XSPEM : 0 #
+								duration@Activity@XSPEM : 0 >
+
+		< 'c2rd1 : WorkSequence@XSPEM | kind@WorkSequence@XSPEM : Finish2Finish@WSKind@XSPEM #
+										process@WorkSequence@XSPEM : 'p #
+										succ@WorkSequence@XSPEM : 'rd #
+										pred@WorkSequence@XSPEM : 'c >
+	
+		< 'c2rd2 : WorkSequence@XSPEM | kind@WorkSequence@XSPEM : Start2Start@WSKind@XSPEM #
+										process@WorkSequence@XSPEM : 'p #
+										succ@WorkSequence@XSPEM : 'rd #
+										pred@WorkSequence@XSPEM : 'c >
+
+		< 'c2d : WorkSequence@XSPEM | kind@WorkSequence@XSPEM : Finish2Start@WSKind@XSPEM #
+										process@WorkSequence@XSPEM : 'p #
+										succ@WorkSequence@XSPEM : 'd #
+										pred@WorkSequence@XSPEM : 'c >
+
+		< 'd2rt : WorkSequence@XSPEM | kind@WorkSequence@XSPEM : Finish2Finish@WSKind@XSPEM #
+										process@WorkSequence@XSPEM : 'p #
+										succ@WorkSequence@XSPEM : 'rt #
+										pred@WorkSequence@XSPEM : 'd >
+
+		< 'c2rt : WorkSequence@XSPEM | kind@WorkSequence@XSPEM : Start2Start@WSKind@XSPEM #
+										process@WorkSequence@XSPEM : 'p #
+										succ@WorkSequence@XSPEM : 'rt #
+										pred@WorkSequence@XSPEM : 'c >
+
+	} .
+	
+endm
+
+red validModel(XSPEMModel) .

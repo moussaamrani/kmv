@@ -1,0 +1,623 @@
+cd /cygdrive/f/Workspace/Maude/KMV/
+load syntax/model-checker.maude 
+load syntax/mmOdCL.maude
+load syntax/MMGDefinitions.maude
+load syntax/KERMETA-SL.maude
+
+mod XSPEM-MM is
+	protecting KERMETA .
+
+	-------------------------------
+	*** 	Metamodel			***
+	***      Package			***
+	-------------------------------
+
+	--- Metamodel declaration	  
+	op ExecutableSPEM : -> @Metamodel .
+	eq name(ExecutableSPEM) = "xSPEM" .
+	eq packages (ExecutableSPEM) = XSPEM .
+	
+	--- Package declaration
+	op XSPEM : -> @Package .
+	eq name(XSPEM) = "XSPEM" .
+	eq metamodel(XSPEM) = ExecutableSPEM .
+	eq superPackage(XSPEM) = null .
+	eq subPackages(XSPEM) = nil .
+	eq classes(XSPEM) = __( Process@XSPEM , Activity@XSPEM , WorkSequence@XSPEM ) .
+	
+	-------------------------------
+	*** 		Enumeration		***
+	-------------------------------
+
+	--- WSKind
+	
+	sort WSKind@XSPEM .
+	subsorts WSKind@XSPEM < @EnumerationInstance .
+	op WSKind@XSPEM : -> @Enumeration . 
+	op Finish2Finish@WSKind@XSPEM : -> WSKind@XSPEM .
+	op Finish2Start@WSKind@XSPEM : -> WSKind@XSPEM .
+	op Start2Start@WSKind@XSPEM : -> WSKind@XSPEM .
+	op Start2Finish@WSKind@XSPEM : -> WSKind@XSPEM .
+	eq metaAux( X:WSKind@XSPEM ) = WSKind@XSPEM .
+	eq name( WSKind@XSPEM ) = "WSKind" .
+	eq package( WSKind@XSPEM ) = XSPEM .
+	eq defaultValue( WSKind@XSPEM ) = Finish2Finish@WSKind@XSPEM .
+	eq literals( WSKind@XSPEM ) = __( Finish2Finish@WSKind@XSPEM , Finish2Start@WSKind@XSPEM , 
+						Start2Start@WSKind@XSPEM , Start2Finish@WSKind@XSPEM ) .
+
+	--- ActivityEventKind
+	
+	sort ActivityEvent@XSPEM .
+	subsorts ActivityEvent@XSPEM < @EnumerationInstance .
+	op ActivityEvent@XSPEM : -> @Enumeration . 
+	op START@ActivityEvent@XSPEM : -> ActivityEvent@XSPEM .
+	op STOP@ActivityEvent@XSPEM : -> ActivityEvent@XSPEM .
+	eq metaAux( X:ActivityEvent@XSPEM ) = ActivityEvent@XSPEM .
+	eq name( ActivityEvent@XSPEM ) = "ActivityEventKind" .
+	eq package( ActivityEvent@XSPEM ) = XSPEM .
+	eq defaultValue( ActivityEvent@XSPEM ) = START@ActivityEvent@XSPEM .
+	eq literals( ActivityEvent@XSPEM ) = __( START@ActivityEvent@XSPEM , STOP@ActivityEvent@XSPEM ) .
+	
+	--- AStateKind
+	
+	sort AStateKind@XSPEM .
+	subsorts AStateKind@XSPEM < @EnumerationInstance .
+	op AStateKind@XSPEM : -> @Enumeration . 
+	op NOTSTARTED@AStateKind@XSPEM : -> AStateKind@XSPEM .
+	op INPROGRESS@AStateKind@XSPEM : -> AStateKind@XSPEM .
+	op FINISHED@AStateKind@XSPEM : -> AStateKind@XSPEM .
+	eq metaAux( X:AStateKind@XSPEM ) = AStateKind@XSPEM .
+	eq name( AStateKind@XSPEM ) = "AStateKind" .
+	eq package( AStateKind@XSPEM ) = XSPEM .
+	eq defaultValue( AStateKind@XSPEM ) = NOTSTARTED@AStateKind@XSPEM .
+	eq literals( AStateKind@XSPEM ) = __( NOTSTARTED@AStateKind@XSPEM , INPROGRESS@AStateKind@XSPEM, 
+									FINISHED@AStateKind@XSPEM ) .
+
+	--- ATimeKind
+	
+	sort ATimeKind@XSPEM .
+	subsorts ATimeKind@XSPEM < @EnumerationInstance .
+	op ATimeKind@XSPEM : -> @Enumeration . 
+	op OK@ATimeKind@XSPEM : -> ATimeKind@XSPEM .
+	op TOOLATE@ATimeKind@XSPEM : -> ATimeKind@XSPEM .
+	op TOOEARLY@ATimeKind@XSPEM : -> ATimeKind@XSPEM .
+	op UNDEFINED@ATimeKind@XSPEM : -> ATimeKind@XSPEM .
+	eq metaAux( X:ATimeKind@XSPEM ) = ATimeKind@XSPEM .
+	eq name( ATimeKind@XSPEM ) = "ATimeKind" .
+	eq package( ATimeKind@XSPEM ) = XSPEM .
+	eq defaultValue( ATimeKind@XSPEM ) = UNDEFINED@ATimeKind@XSPEM .
+	eq literals( ATimeKind@XSPEM ) = __( OK@ATimeKind@XSPEM , TOOLATE@ATimeKind@XSPEM , 
+								TOOEARLY@ATimeKind@XSPEM , UNDEFINED@ATimeKind@XSPEM ) .
+
+
+	-------------------------------
+	*** 	Classes				***
+	-------------------------------
+	
+	--- Process
+	
+	sort Process@XSPEM .
+	subsort Process@XSPEM < @Class . 
+	op Process@XSPEM : -> Process@XSPEM .
+	eq name(Process@XSPEM) = "Process" .
+	eq isAbstract(Process@XSPEM) = false .
+	eq package(Process@XSPEM) = XSPEM .
+	eq superTypes (Process@XSPEM) = nil .
+	eq references (Process@XSPEM) = __(activities@Process@XSPEM, workSequences@Process@XSPEM) .
+	eq attributes (Process@XSPEM) = nil . 
+	
+	op activities@Process@XSPEM : -> @Reference .
+	eq name (activities@Process@XSPEM) = "activities" .
+	eq opposite (activities@Process@XSPEM) = process@Activity@XSPEM .
+	eq type (activities@Process@XSPEM) = Activity@XSPEM .
+	eq lowerBound (activities@Process@XSPEM) = 0 .
+	eq upperBound (activities@Process@XSPEM) = * .
+	eq containingClass (activities@Process@XSPEM) = Process@XSPEM .
+	eq isOrdered (activities@Process@XSPEM) = true .
+	eq isUnique (activities@Process@XSPEM) = true .
+	eq isContainment (activities@Process@XSPEM) = true .
+
+	op workSequences@Process@XSPEM : -> @Reference .
+	eq name (workSequences@Process@XSPEM) = "workSequences" .
+	eq opposite (workSequences@Process@XSPEM) = process@WorkSequence@XSPEM .
+	eq type (workSequences@Process@XSPEM) = WorkSequence@XSPEM .
+	eq lowerBound (workSequences@Process@XSPEM) = 0 .
+	eq upperBound (workSequences@Process@XSPEM) = * .
+	eq containingClass (workSequences@Process@XSPEM) = Process@XSPEM .
+	eq isOrdered (workSequences@Process@XSPEM) = true .
+	eq isUnique (workSequences@Process@XSPEM) = true .
+	eq isContainment (workSequences@Process@XSPEM) = true .
+
+
+	eq operations(Process@XSPEM) = allActivitiesFinished@Process@XSPEM .
+
+	sort allActivitiesFinished@Process@XSPEM .
+	subsort allActivitiesFinished@Process@XSPEM < @Operation .
+	op allActivitiesFinished@Process@XSPEM : -> allActivitiesFinished@Process@XSPEM . 
+	eq name(allActivitiesFinished@Process@XSPEM) = "allActivitiesFinished" .
+	eq isAbstract(allActivitiesFinished@Process@XSPEM) = false .
+	eq from(allActivitiesFinished@Process@XSPEM) = null .
+	eq type(allActivitiesFinished@Process@XSPEM) = @Bool .
+	eq lowerBound(allActivitiesFinished@Process@XSPEM) = 1 .
+	eq upperBound(allActivitiesFinished@Process@XSPEM) = 1 .
+	eq isOrdered(allActivitiesFinished@Process@XSPEM) = true .
+	eq isUnique(allActivitiesFinished@Process@XSPEM) = true .
+	eq containingClass (allActivitiesFinished@Process@XSPEM) = Process@XSPEM .
+	eq parameters(allActivitiesFinished@Process@XSPEM) = null .
+
+
+
+	--- Activity ---
+	
+	sort Activity@XSPEM .
+	subsort Activity@XSPEM < @Class .
+	op Activity@XSPEM : -> Activity@XSPEM .
+	eq name(Activity@XSPEM) = "Activity" .
+	eq isAbstract(Activity@XSPEM) = false .
+	eq package(Activity@XSPEM) = XSPEM .
+	eq superTypes (Activity@XSPEM) = nil .
+	eq references (Activity@XSPEM) = __( lsucc@Activity@XSPEM, lpred@Activity@XSPEM, 
+										process@Activity@XSPEM ) .
+	eq attributes (Activity@XSPEM) = __( name@Activity@XSPEM, min@Activity@XSPEM, 
+										max@Activity@XSPEM, state@Activity@XSPEM,
+										time@Activity@XSPEM, start@Activity@XSPEM,
+										duration@Activity@XSPEM ) . 
+	
+	
+	op name@Activity@XSPEM : -> @Attribute .
+	eq name (name@Activity@XSPEM) = "name" .
+	eq type (name@Activity@XSPEM) = @String .
+	eq lowerBound (name@Activity@XSPEM) = 1 .
+	eq upperBound (name@Activity@XSPEM) = 1 .
+	eq containingClass (name@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (name@Activity@XSPEM) = true .
+	eq isUnique (name@Activity@XSPEM) = true .
+  	eq isId (name@Activity@XSPEM) = true .
+	
+	op min@Activity@XSPEM : -> @Attribute .
+	eq name (min@Activity@XSPEM) = "name" .
+	eq type (min@Activity@XSPEM) = @Int .
+	eq lowerBound (min@Activity@XSPEM) = 1 .
+	eq upperBound (min@Activity@XSPEM) = 1 .
+	eq containingClass (min@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (min@Activity@XSPEM) = true .
+	eq isUnique (min@Activity@XSPEM) = true .
+  	eq isId (min@Activity@XSPEM) = false .
+	
+	op max@Activity@XSPEM : -> @Attribute .
+	eq name (max@Activity@XSPEM) = "name" .
+	eq type (max@Activity@XSPEM) = @Int .
+	eq lowerBound (max@Activity@XSPEM) = 1 .
+	eq upperBound (max@Activity@XSPEM) = 1 .
+	eq containingClass (max@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (max@Activity@XSPEM) = true .
+	eq isUnique (max@Activity@XSPEM) = true .
+  	eq isId (max@Activity@XSPEM) = false .
+  	
+ 	op state@Activity@XSPEM : -> @Attribute .
+	eq name (state@Activity@XSPEM) = "state" .
+	eq type (state@Activity@XSPEM) = AStateKind@XSPEM .
+	eq lowerBound (state@Activity@XSPEM) = 1 .
+	eq upperBound (state@Activity@XSPEM) = 1 .
+	eq containingClass (state@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (state@Activity@XSPEM) = true .
+	eq isUnique (state@Activity@XSPEM) = true .
+  	eq isId (state@Activity@XSPEM) = false .
+  	
+  	op time@Activity@XSPEM : -> @Attribute .
+	eq name (time@Activity@XSPEM) = "time" .
+	eq type (time@Activity@XSPEM) = ATimeKind@XSPEM .
+	eq lowerBound (time@Activity@XSPEM) = 1 .
+	eq upperBound (time@Activity@XSPEM) = 1 .
+	eq containingClass (time@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (time@Activity@XSPEM) = true .
+	eq isUnique (time@Activity@XSPEM) = true .
+  	eq isId (time@Activity@XSPEM) = false .
+  	
+	op start@Activity@XSPEM : -> @Attribute .
+	eq name (start@Activity@XSPEM) = "start" .
+	eq type (start@Activity@XSPEM) = @Int .
+	eq lowerBound (start@Activity@XSPEM) = 1 .
+	eq upperBound (start@Activity@XSPEM) = 1 .
+	eq containingClass (start@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (start@Activity@XSPEM) = true .
+	eq isUnique (start@Activity@XSPEM) = true .
+  	eq isId (start@Activity@XSPEM) = false .
+
+	op duration@Activity@XSPEM : -> @Attribute .
+	eq name (duration@Activity@XSPEM) = "duration" .
+	eq type (duration@Activity@XSPEM) = @Int .
+	eq lowerBound (duration@Activity@XSPEM) = 1 .
+	eq upperBound (duration@Activity@XSPEM) = 1 .
+	eq containingClass (duration@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (duration@Activity@XSPEM) = true .
+	eq isUnique (duration@Activity@XSPEM) = true .
+  	eq isId (duration@Activity@XSPEM) = false .
+
+	
+	op process@Activity@XSPEM : -> @Reference .
+	eq name (process@Activity@XSPEM) = "process" .
+	eq opposite (process@Activity@XSPEM) = activities@Process@XSPEM .
+	eq type (process@Activity@XSPEM) = Process@XSPEM .
+	eq lowerBound (process@Activity@XSPEM) = 1 .
+	eq upperBound (process@Activity@XSPEM) = 1 .
+	eq containingClass (process@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (process@Activity@XSPEM) = true .
+	eq isUnique (process@Activity@XSPEM) = true .
+	eq isContainment (process@Activity@XSPEM) = false .	
+	
+	op lsucc@Activity@XSPEM : -> @Reference .
+	eq name (lsucc@Activity@XSPEM) = "lsucc" .
+	eq opposite (lsucc@Activity@XSPEM) = pred@WorkSequence@XSPEM .
+	eq type (lsucc@Activity@XSPEM) = WorkSequence@XSPEM .
+	eq lowerBound (lsucc@Activity@XSPEM) = 0 .
+	eq upperBound (lsucc@Activity@XSPEM) = * .
+	eq containingClass (lsucc@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (lsucc@Activity@XSPEM) = true .
+	eq isUnique (lsucc@Activity@XSPEM) = true .
+	eq isContainment (lsucc@Activity@XSPEM) = false .	
+	
+	op lpred@Activity@XSPEM : -> @Reference .
+	eq name (lpred@Activity@XSPEM) = "lpred" .
+	eq opposite (lpred@Activity@XSPEM) = succ@WorkSequence@XSPEM .
+	eq type (lpred@Activity@XSPEM) = WorkSequence@XSPEM .
+	eq lowerBound (lpred@Activity@XSPEM) = 0 .
+	eq upperBound (lpred@Activity@XSPEM) = * .
+	eq containingClass (lpred@Activity@XSPEM) = Activity@XSPEM .
+	eq isOrdered (lpred@Activity@XSPEM) = true .
+	eq isUnique (lpred@Activity@XSPEM) = true .
+	eq isContainment (lpred@Activity@XSPEM) = false .	
+
+	eq operations(Activity@XSPEM) = initialize@Activity@XSPEM finish@Activity@XSPEM .
+
+	sort initialize@Activity@XSPEM .
+	subsort initialize@Activity@XSPEM < @Operation .
+	op initialize@Activity@XSPEM : -> initialize@Activity@XSPEM . 
+	eq name(initialize@Activity@XSPEM) = "initialize" .
+	eq isAbstract(initialize@Activity@XSPEM) = false .
+	eq from(initialize@Activity@XSPEM) = null .
+	eq type(initialize@Activity@XSPEM) = Activity@XSPEM .
+	eq lowerBound(initialize@Activity@XSPEM) = 1 .
+	eq upperBound(initialize@Activity@XSPEM) = 1 .
+	eq isOrdered(initialize@Activity@XSPEM) = false .
+	eq isUnique(initialize@Activity@XSPEM) = false .
+	eq containingClass (initialize@Activity@XSPEM) = Activity@XSPEM .
+	eq parameters(initialize@Activity@XSPEM) = null .
+	
+	sort finishable@Activity@XSPEM .
+	subsort finishable@Activity@XSPEM < @Operation .
+	op finishable@Activity@XSPEM : -> finishable@Activity@XSPEM . 
+	eq name(finishable@Activity@XSPEM) = "finishable" .
+	eq isAbstract(finishable@Activity@XSPEM) = false .
+	eq from(finishable@Activity@XSPEM) = null .
+	eq type(finishable@Activity@XSPEM) = @Bool .
+	eq lowerBound(finishable@Activity@XSPEM) = 1 .
+	eq upperBound(finishable@Activity@XSPEM) = 1 .
+	eq isOrdered(finishable@Activity@XSPEM) = false .
+	eq isUnique(finishable@Activity@XSPEM) = false .
+	eq containingClass (finishable@Activity@XSPEM) = Activity@XSPEM .
+	eq parameters(finishable@Activity@XSPEM) = null .
+	eq variables(finishable@Activity@XSPEM) = predState@finishable@Activity@XSPEM .
+	
+	sort predState@finishable@Activity@XSPEM .
+	op predState@finishable@Activity@XSPEM : -> predState@finishable@Activity@XSPEM .
+	subsort predState@finishable@Activity@XSPEM < @Variable .
+	eq name(predState@finishable@Activity@XSPEM) = "predState" .
+	eq type(predState@finishable@Activity@XSPEM) = @Bool .
+	eq lowerBound(predState@finishable@Activity@XSPEM) = 1 .
+	eq upperBound(predState@finishable@Activity@XSPEM) = 1 .
+	eq isOrdered(predState@finishable@Activity@XSPEM) = false .
+	eq isUnique(predState@finishable@Activity@XSPEM) = false .
+	eq containingOperation(predState@finishable@Activity@XSPEM) = finishable@Activity@XSPEM .
+	
+
+	--- Result Type is @Bool 
+	--- Until we know how to handle Void
+	sort finish@Activity@XSPEM .
+	subsort finish@Activity@XSPEM < @Operation .
+	op finish@Activity@XSPEM : -> finish@Activity@XSPEM . 
+	eq name(finish@Activity@XSPEM) = "finish" .
+	eq isAbstract(finish@Activity@XSPEM) = false .
+	eq from(finish@Activity@XSPEM) = null .
+	eq type(finish@Activity@XSPEM) = @Bool .
+	eq lowerBound(finish@Activity@XSPEM) = 1 .
+	eq upperBound(finish@Activity@XSPEM) = 1 .
+	eq isOrdered(finish@Activity@XSPEM) = false .
+	eq isUnique(finish@Activity@XSPEM) = false .
+	eq containingClass (finish@Activity@XSPEM) = Activity@XSPEM .
+	eq parameters(finish@Activity@XSPEM) = time@finish@Activity@XSPEM .
+
+	sort time@finish@Activity@XSPEM .
+	subsort time@finish@Activity@XSPEM < @Parameter .
+	op time@finish@Activity@XSPEM : -> time@finish@Activity@XSPEM .
+	eq name(time@finish@Activity@XSPEM) = "time" .
+	eq type(time@finish@Activity@XSPEM) = @Int .
+	eq lowerBound(time@finish@Activity@XSPEM) = 1 .
+	eq upperBound(time@finish@Activity@XSPEM) = 1 .
+	eq isOrdered(time@finish@Activity@XSPEM) = true .
+	eq isUnique(time@finish@Activity@XSPEM) = true .
+
+
+	--- Result Type is @Bool 
+	--- Until we know how to handle Void
+	sort start@Activity@XSPEM .
+	subsort start@Activity@XSPEM < @Operation .
+	op start@Activity@XSPEM : -> start@Activity@XSPEM . 
+	eq name(start@Activity@XSPEM) = "start" .
+	eq isAbstract(start@Activity@XSPEM) = false .
+	eq from(start@Activity@XSPEM) = null .
+	eq type(start@Activity@XSPEM) = @Bool .
+	eq lowerBound(start@Activity@XSPEM) = 1 .
+	eq upperBound(start@Activity@XSPEM) = 1 .
+	eq isOrdered(start@Activity@XSPEM) = false .
+	eq isUnique(start@Activity@XSPEM) = false .
+	eq containingClass (start@Activity@XSPEM) = Activity@XSPEM .
+	eq parameters(start@Activity@XSPEM) = time@start@Activity@XSPEM .
+
+	sort time@start@Activity@XSPEM .
+	subsort time@start@Activity@XSPEM < @Parameter .
+	op time@start@Activity@XSPEM : -> time@start@Activity@XSPEM .
+	eq name(time@start@Activity@XSPEM) = "time" .
+	eq type(time@start@Activity@XSPEM) = @Int .
+	eq lowerBound(time@start@Activity@XSPEM) = 1 .
+	eq upperBound(time@start@Activity@XSPEM) = 1 .
+	eq isOrdered(time@start@Activity@XSPEM) = true .
+	eq isUnique(time@start@Activity@XSPEM) = true .
+
+	sort startable@Activity@XSPEM .
+	subsort startable@Activity@XSPEM < @Operation .
+	op startable@Activity@XSPEM : -> startable@Activity@XSPEM . 
+	eq name(startable@Activity@XSPEM) = "startable" .
+	eq isAbstract(startable@Activity@XSPEM) = false .
+	eq from(startable@Activity@XSPEM) = null .
+	eq type(startable@Activity@XSPEM) = @Bool .
+	eq lowerBound(startable@Activity@XSPEM) = 1 .
+	eq upperBound(startable@Activity@XSPEM) = 1 .
+	eq isOrdered(startable@Activity@XSPEM) = false .
+	eq isUnique(startable@Activity@XSPEM) = false .
+	eq containingClass (startable@Activity@XSPEM) = Activity@XSPEM .
+	eq parameters(startable@Activity@XSPEM) = null .
+
+	sort update@Activity@XSPEM .
+	subsort update@Activity@XSPEM < @Operation .
+	op update@Activity@XSPEM : -> update@Activity@XSPEM . 
+	eq name(update@Activity@XSPEM) = "update" .
+	eq isAbstract(update@Activity@XSPEM) = false .
+	eq from(update@Activity@XSPEM) = null .
+	eq type(update@Activity@XSPEM) = @Bool .
+	eq lowerBound(update@Activity@XSPEM) = 1 .
+	eq upperBound(update@Activity@XSPEM) = 1 .
+	eq isOrdered(update@Activity@XSPEM) = false .
+	eq isUnique(update@Activity@XSPEM) = false .
+	eq containingClass (update@Activity@XSPEM) = Activity@XSPEM .
+	eq parameters(update@Activity@XSPEM) = time@update@Activity@XSPEM .
+
+	sort time@update@Activity@XSPEM .
+	subsort time@update@Activity@XSPEM < @Parameter .
+	op time@update@Activity@XSPEM : -> time@update@Activity@XSPEM .
+	eq name(time@update@Activity@XSPEM) = "time" .
+	eq type(time@update@Activity@XSPEM) = @Int .
+	eq lowerBound(time@update@Activity@XSPEM) = 1 .
+	eq upperBound(time@update@Activity@XSPEM) = 1 .
+	eq isOrdered(time@update@Activity@XSPEM) = true .
+	eq isUnique(time@update@Activity@XSPEM) = true .
+
+	sort run@Activity@XSPEM .
+	subsort run@Activity@XSPEM < @Operation .
+	op run@Activity@XSPEM : -> run@Activity@XSPEM . 
+	eq name(run@Activity@XSPEM) = "run" .
+	eq isAbstract(run@Activity@XSPEM) = false .
+	eq from(run@Activity@XSPEM) = null .
+	eq type(run@Activity@XSPEM) = @Bool .
+	eq lowerBound(run@Activity@XSPEM) = 1 .
+	eq upperBound(run@Activity@XSPEM) = 1 .
+	eq isOrdered(run@Activity@XSPEM) = false .
+	eq isUnique(run@Activity@XSPEM) = false .
+	eq containingClass (run@Activity@XSPEM) = Activity@XSPEM .
+	eq parameters(run@Activity@XSPEM) = time@run@Activity@XSPEM e@run@Activity@XSPEM .
+	eq variables(run@Activity@XSPEM) = isStartable@run@Activity@XSPEM isFinishable@run@Activity@XSPEM .
+
+	sort time@run@Activity@XSPEM .
+	subsort time@run@Activity@XSPEM < @Parameter .
+	op time@run@Activity@XSPEM : -> time@run@Activity@XSPEM .
+	eq name(time@run@Activity@XSPEM) = "time" .
+	eq type(time@run@Activity@XSPEM) = @Int .
+	eq lowerBound(time@run@Activity@XSPEM) = 1 .
+	eq upperBound(time@run@Activity@XSPEM) = 1 .
+	eq isOrdered(time@run@Activity@XSPEM) = true .
+	eq isUnique(time@run@Activity@XSPEM) = true .
+	
+	sort e@run@Activity@XSPEM .
+	subsort e@run@Activity@XSPEM < @Parameter .
+	op e@run@Activity@XSPEM : -> e@run@Activity@XSPEM .
+	eq name(e@run@Activity@XSPEM) = "e" .
+	eq type(e@run@Activity@XSPEM) = ActivityEvent@XSPEM .
+	eq lowerBound(e@run@Activity@XSPEM) = 1 .
+	eq upperBound(e@run@Activity@XSPEM) = 1 .
+	eq isOrdered(e@run@Activity@XSPEM) = true .
+	eq isUnique(e@run@Activity@XSPEM) = true .
+	
+	sort isStartable@run@Activity@XSPEM .
+	op isStartable@run@Activity@XSPEM : -> isStartable@run@Activity@XSPEM .
+	subsort isStartable@run@Activity@XSPEM < @Variable .
+	eq type(isStartable@run@Activity@XSPEM) = @Bool .
+	eq lowerBound(isStartable@run@Activity@XSPEM) = 1 .
+	eq upperBound(isStartable@run@Activity@XSPEM) = 1 .
+	eq isOrdered(isStartable@run@Activity@XSPEM) = true .
+	eq isUnique(isStartable@run@Activity@XSPEM) = true .
+	eq containingOperation(isStartable@run@Activity@XSPEM) = run@Activity@XSPEM .
+	
+	sort isFinishable@run@Activity@XSPEM .
+	op isFinishable@run@Activity@XSPEM : -> isFinishable@run@Activity@XSPEM .
+	subsort isFinishable@run@Activity@XSPEM < @Variable .
+	eq type(isFinishable@run@Activity@XSPEM) = @Bool .
+	eq lowerBound(isFinishable@run@Activity@XSPEM) = 1 .
+	eq upperBound(isFinishable@run@Activity@XSPEM) = 1 .
+	eq isOrdered(isFinishable@run@Activity@XSPEM) = true .
+	eq isUnique(isFinishable@run@Activity@XSPEM) = true .
+	eq containingOperation(isFinishable@run@Activity@XSPEM) = run@Activity@XSPEM .
+	
+		
+	--- WorkSequence ---
+	
+	sort WorkSequence@XSPEM .
+	subsort WorkSequence@XSPEM < @Class .
+	op WorkSequence@XSPEM : -> WorkSequence@XSPEM .
+	eq name(WorkSequence@XSPEM) = "WorkSequence" .
+	eq isAbstract(WorkSequence@XSPEM) = false .
+	eq package(WorkSequence@XSPEM) = XSPEM .
+	eq superTypes (WorkSequence@XSPEM) = nil .
+	eq references (WorkSequence@XSPEM) = __( succ@WorkSequence@XSPEM, pred@WorkSequence@XSPEM, 
+										process@WorkSequence@XSPEM ) .
+	eq attributes (WorkSequence@XSPEM) = kind@WorkSequence@XSPEM . 
+	
+	
+	op kind@WorkSequence@XSPEM : -> @Attribute .
+	eq name (kind@WorkSequence@XSPEM) = "kind" .
+	eq type (kind@WorkSequence@XSPEM) = WSKind@XSPEM .
+	eq lowerBound (kind@WorkSequence@XSPEM) = 1 .
+	eq upperBound (kind@WorkSequence@XSPEM) = 1 .
+	eq containingClass (kind@WorkSequence@XSPEM) = WorkSequence@XSPEM .
+	eq isOrdered (kind@WorkSequence@XSPEM) = true .
+	eq isUnique (kind@WorkSequence@XSPEM) = true .
+  	eq isId (kind@WorkSequence@XSPEM) = true .	
+	
+	op process@WorkSequence@XSPEM : -> @Reference .
+	eq name (process@WorkSequence@XSPEM) = "process" .
+	eq opposite (process@WorkSequence@XSPEM) = workSequences@Process@XSPEM .
+	eq type (process@WorkSequence@XSPEM) = Process@XSPEM .
+	eq lowerBound (process@WorkSequence@XSPEM) = 1 .
+	eq upperBound (process@WorkSequence@XSPEM) = 1 .
+	eq containingClass (process@WorkSequence@XSPEM) = WorkSequence@XSPEM .
+	eq isOrdered (process@WorkSequence@XSPEM) = true .
+	eq isUnique (process@WorkSequence@XSPEM) = true .
+	eq isContainment (process@WorkSequence@XSPEM) = false .	
+	
+	op succ@WorkSequence@XSPEM : -> @Reference .
+	eq name (succ@WorkSequence@XSPEM) = "succ" .
+	eq opposite (succ@WorkSequence@XSPEM) = lpred@Activity@XSPEM .
+	eq type (succ@WorkSequence@XSPEM) = Activity@XSPEM .
+	eq lowerBound (succ@WorkSequence@XSPEM) = 1 .
+	eq upperBound (succ@WorkSequence@XSPEM) = 1 .
+	eq containingClass (succ@WorkSequence@XSPEM) = WorkSequence@XSPEM .
+	eq isOrdered (succ@WorkSequence@XSPEM) = true .
+	eq isUnique (succ@WorkSequence@XSPEM) = true .
+	eq isContainment (succ@WorkSequence@XSPEM) = false .	
+	
+	op pred@WorkSequence@XSPEM : -> @Reference .
+	eq name (pred@WorkSequence@XSPEM) = "pred" .
+	eq opposite (pred@WorkSequence@XSPEM) = lsucc@Activity@XSPEM .
+	eq type (pred@WorkSequence@XSPEM) = Activity@XSPEM .
+	eq lowerBound (pred@WorkSequence@XSPEM) = 1 .
+	eq upperBound (pred@WorkSequence@XSPEM) = 1 .
+	eq containingClass (pred@WorkSequence@XSPEM) = WorkSequence@XSPEM .
+	eq isOrdered (pred@WorkSequence@XSPEM) = true .
+	eq isUnique (pred@WorkSequence@XSPEM) = true .
+	eq isContainment (pred@WorkSequence@XSPEM) = false .
+
+	--- Event
+	
+	sort Event@XSPEM .
+	subsort Event@XSPEM < @Class . 
+	op Event@XSPEM : -> Event@XSPEM .
+	eq name(Event@XSPEM) = "Event" .
+	eq isAbstract(Event@XSPEM) = false .
+	eq package(Event@XSPEM) = XSPEM .
+	eq superTypes (Event@XSPEM) = nil .
+	eq references (Event@XSPEM) = nil .
+	eq attributes (Event@XSPEM) = kind@Event@XSPEM .
+	
+	op kind@Event@XSPEM : -> @Attribute .
+	eq name (kind@Event@XSPEM) = "kind" .
+	eq type (kind@Event@XSPEM) = ActivityEvent@XSPEM .
+	eq lowerBound (kind@Event@XSPEM) = 1 .
+	eq upperBound (kind@Event@XSPEM) = 1 .
+	eq containingClass (kind@Event@XSPEM) = Event@XSPEM .
+	eq isOrdered (kind@Event@XSPEM) = true .
+	eq isUnique (kind@Event@XSPEM) = true .
+  	eq isId (kind@Event@XSPEM) = false .	
+
+	eq operations(Event@XSPEM) = initialize@Event@XSPEM .
+
+	sort initialize@Event@XSPEM .
+	subsort initialize@Event@XSPEM < @Operation .
+	op initialize@Event@XSPEM : -> initialize@Event@XSPEM . 
+	eq name(initialize@Event@XSPEM) = "initialize" .
+	eq isAbstract(initialize@Event@XSPEM) = false .
+	eq from(initialize@Event@XSPEM) = null .
+	eq type(initialize@Event@XSPEM) = Event@XSPEM .
+	eq lowerBound(initialize@Event@XSPEM) = 1 .
+	eq upperBound(initialize@Event@XSPEM) = 1 .
+	eq isOrdered(initialize@Event@XSPEM) = false .
+	eq isUnique(initialize@Event@XSPEM) = false .
+	eq containingClass (initialize@Event@XSPEM) = Event@XSPEM .
+	eq parameters(initialize@Event@XSPEM) = k@initialize@Event@XSPEM .
+
+	sort k@initialize@Event@XSPEM .
+	subsort k@initialize@Event@XSPEM < @Parameter .
+	op k@initialize@Event@XSPEM : -> k@initialize@Event@XSPEM .
+	eq name(k@initialize@Event@XSPEM) = "k" .
+	eq type(k@initialize@Event@XSPEM) = ActivityEvent@XSPEM .
+	eq lowerBound(k@initialize@Event@XSPEM) = 1 .
+	eq upperBound(k@initialize@Event@XSPEM) = 1 .
+	eq isOrdered(k@initialize@Event@XSPEM) = true .
+	eq isUnique(k@initialize@Event@XSPEM) = true .
+	
+    ops a l : -> Vid .
+	eq statements(ExecutableSPEM) = 
+[XSPEM, Process@XSPEM, allActivitiesFinished@Process@XSPEM, 1] |-> return (self . activities@Process@XSPEM -> forAll( a | a . state@Activity@XSPEM .=. FINISHED@AStateKind@XSPEM)),
+
+[XSPEM, Event@XSPEM, initialize@Event@XSPEM, 1] |-> self . kind@Event@XSPEM .:=. k@initialize@Event@XSPEM ,
+[XSPEM, Event@XSPEM, initialize@Event@XSPEM, 2] |-> return self ,
+
+
+[XSPEM, Activity@XSPEM, initialize@Activity@XSPEM, 1] |-> self . state@Activity@XSPEM .:=. NOTSTARTED@AStateKind@XSPEM ,
+[XSPEM, Activity@XSPEM, initialize@Activity@XSPEM, 2] |-> self . time@Activity@XSPEM .:=. UNDEFINED@ATimeKind@XSPEM ,
+[XSPEM, Activity@XSPEM, initialize@Activity@XSPEM, 3] |-> self . start@Activity@XSPEM .:=. 0 ,
+[XSPEM, Activity@XSPEM, initialize@Activity@XSPEM, 4] |-> self . duration@Activity@XSPEM .:=. 0 ,
+[XSPEM, Activity@XSPEM, initialize@Activity@XSPEM, 5] |-> return self ,
+  
+[XSPEM, Activity@XSPEM, run@Activity@XSPEM, 1]        |-> isStartable@run@Activity@XSPEM .:=. self . "startable" <> ,
+[XSPEM, Activity@XSPEM, run@Activity@XSPEM, 2]        |-> iff( (e@run@Activity@XSPEM .=. START@ActivityEvent@XSPEM) and (isStartable@run@Activity@XSPEM) ) ,        
+[XSPEM, Activity@XSPEM, run@Activity@XSPEM, 3]        |-> self . "start" < time@run@Activity@XSPEM > ,
+[XSPEM, Activity@XSPEM, run@Activity@XSPEM, 4]        |-> isFinishable@run@Activity@XSPEM .:=. self . "finishable" <> ,
+[XSPEM, Activity@XSPEM, run@Activity@XSPEM, 5]        |-> iff( (e@run@Activity@XSPEM .=. STOP@ActivityEvent@XSPEM) and (isFinishable@run@Activity@XSPEM) ) ,
+[XSPEM, Activity@XSPEM, run@Activity@XSPEM, 6]        |-> self . "finish" < time@run@Activity@XSPEM > ,
+[XSPEM, Activity@XSPEM, run@Activity@XSPEM, 7]        |-> self . "update" < time@run@Activity@XSPEM > ,
+[XSPEM, Activity@XSPEM, run@Activity@XSPEM, 8]        |-> return , 
+        
+[XSPEM, Activity@XSPEM, update@Activity@XSPEM, 1]     |-> iff(not(self . state@Activity@XSPEM .=. NOTSTARTED@AStateKind@XSPEM)) ,
+[XSPEM, Activity@XSPEM, update@Activity@XSPEM, 2]     |-> self . duration@Activity@XSPEM .:=. time@update@Activity@XSPEM - self . start@Activity@XSPEM , 
+[XSPEM, Activity@XSPEM, update@Activity@XSPEM, 3]     |-> iff(self . duration@Activity@XSPEM < self . min@Activity@XSPEM) ,
+[XSPEM, Activity@XSPEM, update@Activity@XSPEM, 4]     |-> self . time@Activity@XSPEM .:=. TOOEARLY@ATimeKind@XSPEM ,
+[XSPEM, Activity@XSPEM, update@Activity@XSPEM, 5]     |-> iff((self . duration@Activity@XSPEM >= self . min@Activity@XSPEM) and (self . duration@Activity@XSPEM < self . max@Activity@XSPEM)) , 
+[XSPEM, Activity@XSPEM, update@Activity@XSPEM, 6]     |-> self . time@Activity@XSPEM .:=. OK@ATimeKind@XSPEM ,
+[XSPEM, Activity@XSPEM, update@Activity@XSPEM, 7]     |-> self . time@Activity@XSPEM .:=. TOOLATE@ATimeKind@XSPEM ,
+
+[XSPEM, Activity@XSPEM, startable@Activity@XSPEM, 1]  |->  iff(self . state@Activity@XSPEM .=. NOTSTARTED@AStateKind@XSPEM) ,
+[XSPEM, Activity@XSPEM, startable@Activity@XSPEM, 2]  |->  iff(not(self . lpred@Activity@XSPEM -> exists (l | 
+		(l . kind@WorkSequence@XSPEM .=.  Start2Start@WSKind@XSPEM and not (l . pred@WorkSequence@XSPEM . state@Activity@XSPEM .=. INPROGRESS@AStateKind@XSPEM or l . pred@WorkSequence@XSPEM . state@Activity@XSPEM .=. FINISHED@AStateKind@XSPEM))
+	or  (l . kind@WorkSequence@XSPEM .=. Finish2Start@WSKind@XSPEM and not (l . pred@WorkSequence@XSPEM . state@Activity@XSPEM .=. FINISHED@AStateKind@XSPEM)) ))) , 
+[XSPEM, Activity@XSPEM, startable@Activity@XSPEM, 3]  |->  return true ,
+[XSPEM, Activity@XSPEM, startable@Activity@XSPEM, 4]  |->  return false ,
+
+[XSPEM, Activity@XSPEM, finishable@Activity@XSPEM, 1]  |->  predState@finishable@Activity@XSPEM .:=. true , 
+[XSPEM, Activity@XSPEM, finishable@Activity@XSPEM, 2]  |->  iff(self . state@Activity@XSPEM .=. INPROGRESS@AStateKind@XSPEM) ,
+[XSPEM, Activity@XSPEM, finishable@Activity@XSPEM, 3]  |->  iff(not(self . lpred@Activity@XSPEM -> exists (l | 
+		(l . kind@WorkSequence@XSPEM .=.  Start2Finish@WSKind@XSPEM and not (l . pred@WorkSequence@XSPEM . state@Activity@XSPEM .=. INPROGRESS@AStateKind@XSPEM or l . pred@WorkSequence@XSPEM . state@Activity@XSPEM .=. FINISHED@AStateKind@XSPEM))
+	or  (l . kind@WorkSequence@XSPEM .=. Finish2Finish@WSKind@XSPEM and not (l . pred@WorkSequence@XSPEM . state@Activity@XSPEM .=. FINISHED@AStateKind@XSPEM)) ))) , 
+[XSPEM, Activity@XSPEM, finishable@Activity@XSPEM, 4]  |->  return true ,
+[XSPEM, Activity@XSPEM, finishable@Activity@XSPEM, 5]  |->  return false ,
+
+[XSPEM, Activity@XSPEM, start@Activity@XSPEM, 1]  |->  self . state@Activity@XSPEM .:=. INPROGRESS@AStateKind@XSPEM ,
+[XSPEM, Activity@XSPEM, start@Activity@XSPEM, 2]  |->  self . time@Activity@XSPEM  .:=. TOOEARLY@ATimeKind@XSPEM ,
+[XSPEM, Activity@XSPEM, start@Activity@XSPEM, 3]  |->  self . start@Activity@XSPEM  .:=. time@start@Activity@XSPEM ,
+[XSPEM, Activity@XSPEM, start@Activity@XSPEM, 4]  |->  self . duration@Activity@XSPEM  .:=. 0 ,
+[XSPEM, Activity@XSPEM, start@Activity@XSPEM, 5]  |->  return true ,
+
+[XSPEM, Activity@XSPEM, finish@Activity@XSPEM, 1]  |->  self . state@Activity@XSPEM .:=. FINISHED@AStateKind@XSPEM ,
+[XSPEM, Activity@XSPEM, finish@Activity@XSPEM, 2]  |->  self . "update" < time@finish@Activity@XSPEM > ,
+[XSPEM, Activity@XSPEM, finish@Activity@XSPEM, 3]  |->  return true 
+
+.	 
+endm
