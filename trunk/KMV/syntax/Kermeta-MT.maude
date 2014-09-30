@@ -1,0 +1,165 @@
+cd /cygdrive/z/Workspace/Maude/KMV/
+load syntax/model-checker.maude 
+load syntax/mmOdCL.maude
+load syntax/MMGDefinitions.maude
+
+
+view @Class from TRIV to METAMODEL-CTORS is
+  sort Elt to @Class .
+endv
+
+mod KERMETA-STMT-PREP is
+	sort @Statement .
+endm
+
+mod KERMETA-SL-CTORS is
+	pr METAMODEL-PROP .
+	pr MGLIST{@NamedElement} * (sort MGList{@NamedElement} to MyList) .
+
+	pr MGMAYBE{@Class} . 
+
+	--- Operation & Parameters signature
+	sort @Operation @Parameter @Variable @LocalVariable .
+	subsort @Variable @Parameter < @LocalVariable < Vid .
+	subsort @Operation @Parameter @LocalVariable < @StructuralFeature .
+	op self : -> @LocalVariable .
+	op operations : @Class -> MyList . --- of @Operation
+	op isAbstract : @Operation -> Bool .
+	op from : @StructuralFeature -> Maybe{@Class} .
+	op containingOperation : @Parameter -> @Operation .
+	op containingOperation : @Variable  -> @Operation .
+   	op parameters : @Operation -> MyList . --- of @Parameter
+	op variables : @Operation -> MyList .  --- of @Variable
+					
+	--- Label
+	sort @Label @LabelNxt .
+	op [_,_,_,_] : @Package @Class @Operation Nat -> @Label [ctor] .
+	--- default label
+	op [] : -> @Label .
+	op <_,_> : @Label @Label -> @LabelNxt [ctor] .
+	op nxt : @Label -> @LabelNxt .
+	op labels : @Operation -> MyList . --- of @Label
+	
+	var LV : @LocalVariable .
+	op defaultValue : @LocalVariable -> OCL-Type .
+	eq defaultValue(LV) = 
+		if isMany(LV) then
+			if isOrdered(LV) then
+				if isUnique(LV) then
+					OrderedSet{}
+				else
+					Sequence{}
+				fi
+			else
+				if isUnique(LV) then
+					Set{}
+				else
+					Bag{}
+				fi
+			fi
+		else 
+			if type(LV) :: @DataType then
+				defaultValue(type(LV))
+			else
+				null
+			fi
+		fi .
+endm
+
+view @Label from TRIV to KERMETA-SL-CTORS is
+  	sort Elt to @Label .
+endv
+
+view @Statement from TRIV to KERMETA-STMT-PREP is
+ 	sort Elt to @Statement .
+endv
+
+view @Operation from TRIV to KERMETA-SL-CTORS is
+ 	sort Elt to @Operation .
+endv
+
+view @LocalVariable from TRIV to KERMETA-SL-CTORS is
+	sort Elt to @LocalVariable .	
+endv
+
+view OCL-Type from TRIV to MGmOdCL is
+    sort Elt to OCL-Type .
+endv
+
+mod KERMETA-STATEMENTS-MAP is
+	pr MAP{@Label, @Statement} .
+	pr MAP{@LocalVariable, OCL-Type} .
+endm
+
+mod KERMETA-MT is
+	pr KERMETA-SL-CTORS .
+	pr KERMETA-STATEMENTS-MAP .
+	pr MGMAYBE{@Reference} .
+	op statements : @Metamodel -> Map{@Label, @Statement} .
+	
+	var C C'     : @Class .
+	var ATT ATT' : @Attribute .
+	var REF REF' : @Reference .
+	var SF SF'   : @StructuralFeature .
+	var OP OP'   : @Operation .
+	var P P'     : @Parameter .
+	var L L'     : MyList .
+	
+	
+	op isCorresponding : @StructuralFeature @StructuralFeature -> Bool .
+	eq isCorresponding(SF', SF) = 
+		(name(SF) == name(SF') and-then 
+		lowerBound(SF) == lowerBound(SF') and-then
+		upperBound(SF) == upperBound(SF') and-then
+		isOrdered(SF)  == isOrdered(SF')  and-then
+		isUnique(SF)   == isUnique(SF')
+		) . 
+	
+	op _<#_ : @Attribute @Attribute -> Bool .
+	eq ATT' <# ATT =  isCorresponding(ATT', ATT) .
+	
+	op _<#_ : @Reference @Reference -> Bool .
+	eq REF' <# REF =  isCorresponding(REF', REF) and-then
+		(isContainment(REF') == isContainment(REF)) and-then 
+		(not(opposite(REF) == null) implies (not(opposite(REF') == null) and-then name(opposite(REF)) == name(opposite(REF')))) and-then
+		true . --- add type correspondance check.
+		
+	op _<#_ : @Operation @Operation -> Bool .
+	eq OP' <# OP = isCorresponding(OP', OP) and-then
+		isCorrespondingParameters(parameters(OP), parameters(OP')) and-then
+		true . --- add type correspondance check 
+	
+	op isCorrespondingParameters : MyList MyList -> Bool . --- of @Parameter @Parameter
+	eq isCorrespondingParameters(nil, nil)   = true .
+	eq isCorrespondingParameters(P' L', P L) = 
+		isCorrespondingParameter(P', P) and-then
+		isCorrespondingParameters(L', L) .
+	eq isCorrespondingParameters(L', L) = false [owise] .
+		
+	op isCorrespondingParameter : @Parameter @Parameter -> Bool .
+	eq isCorrespondingParameter(P', P) = 
+		isCorresponding(P', P) and-then
+		true . --- add type correspondance check
+	
+	op lookupCorrespondingSF : @StructuralFeature MyList -> Bool . --- @StructuralFeature
+	eq lookupCorrespondingSF(SF, nil) = false .
+	eq lookupCorrespondingSF(SF, SF' L) = SF <# SF' or-else 
+	   lookupCorrespondingSF(SF,     L) .
+	
+	op lookupCorresponding : MyList MyList -> Bool . --- @StructuralFeature, @StructuralFeature
+	eq lookupCorresponding(nil, L) = true .
+	eq lookupCorresponding(SF L, L') = lookupCorrespondingSF(SF, L') and-then  lookupCorresponding(L, L') .
+	
+	op _<#_ : @Class @Class -> Bool .
+	eq C' <# C = name(C) == name(C') and-then
+		lookupCorresponding(operations(C), operations(C')) and-then
+		lookupCorresponding(attributes(C), attributes(C')) and-then
+		lookupCorresponding(references(C), references(C')) . --- map over the list of SFs and operations with previous <# preds.
+	
+	op _<<#_ : @Class @Class -> Bool .
+	eq C' <<# C = name(C) == name(C') and-then
+		isAbstract(C') implies isAbstract(C) and-then 
+		lookupCorresponding(operations(C), operations(C')) and-then
+		lookupCorresponding(attributes(C), attributes(C')) and-then
+		lookupCorresponding(references(C), references(C')) . --- and-then .
+endm
