@@ -1,0 +1,310 @@
+mod CN-MM is
+	protecting KERMETA-MT .
+	
+	*** Metamodel & Package ***
+
+	--- Metamodel declaration	  
+	op ColoredNodeMM : -> @Metamodel .
+	eq name(ColoredNode) = "ColoredNode" .
+	eq packages (ColoredNode) = DEFAULTPACKAGE .
+
+	--- Package declaration
+	op DEFAULTPACKAGE : -> @Package .
+	eq name(DEFAULTPACKAGE) = "_default" .
+	eq metamodel(DEFAULTPACKAGE) = ColoredNodeMM .
+	eq superPackage(DEFAULTPACKAGE) = null .
+	eq subPackages(DEFAULTPACKAGE) = nil .
+	eq classes(DEFAULTPACKAGE) = __(ColoredNode, Color) .
+
+	*** Classes ***
+	
+	--- ColoredNode
+	
+	sort ColoredNode .
+	subsort ColoredNode < @Class .
+	op ColoredNode : -> ColoredNode .
+	eq name(ColoredNode) = "ColoredNode" .
+	eq isAbstract(ColoredNode) = false .
+	eq package(ColoredNode) = DEFAULTPACKAGE .
+	eq superTypes (ColoredNode) = nil .
+	eq references (ColoredNode) = color@ColoredNode .
+	eq attributes (ColoredNode) = nil . 
+	
+	eq operations(ColoredNode) = setColor@ColoredNode getColor@ColoredNode .
+
+	op color@ColoredNode : -> @Reference .
+	eq name (color@ColoredNode) = "color" .
+	eq opposite (color@ColoredNode) = null .
+	eq type (color@ColoredNode) = Color .
+	eq lowerBound (color@ColoredNode) = 0 .
+	eq upperBound (color@ColoredNode) = 1 .
+	eq containingClass (color@ColoredNode) = ColoredNode .
+	eq isOrdered (color@ColoredNode) = false .
+	eq isUnique (color@ColoredNode) = false .
+	eq isContainment (color@ColoredNode) = false .
+
+	
+	sort setColor@ColoredNode .
+	subsort setColor@ColoredNode < @Operation .
+	op setColor@ColoredNode : -> setColor@ColoredNode . 
+	eq name(setColor@ColoredNode) = "setColor" .
+	eq isAbstract(setColor@ColoredNode) = false .
+	eq from(setColor@ColoredNode) = null .
+	eq type(setColor@ColoredNode) = null .
+	eq lowerBound(setColor@ColoredNode) = 1 .
+	eq upperBound(setColor@ColoredNode) = 1 .
+	eq isOrdered(setColor@ColoredNode) = false .
+	eq isUnique(setColor@ColoredNode) = false .
+	eq containingClass (setColor@ColoredNode) = ColoredNode .
+	eq parameters(setColor@ColoredNode) = newColor@setColor@ColoredNode .
+
+	sort newColor@setColor@ColoredNode .
+	subsort newColor@setColor@ColoredNode < @Parameter .
+	op newColor@setColor@ColoredNode : -> newColor@setColor@ColoredNode .
+	eq name(newColor@setColor@ColoredNode) = "newColor" .
+	eq type(newColor@setColor@ColoredNode) = Color .
+	eq lowerBound(newColor@setColor@ColoredNode) = 1 .
+	eq upperBound(newColor@setColor@ColoredNode) = 1 .
+	eq isOrdered(newColor@setColor@ColoredNode) = true .
+	eq isUnique(newColor@setColor@ColoredNode) = true .
+
+
+	sort getColor@ColoredNode .
+	subsort getColor@ColoredNode < @Operation .
+	op getColor@ColoredNode : -> getColor@ColoredNode . 
+	eq name(getColor@ColoredNode) = "getColor" .
+	eq isAbstract(getColor@ColoredNode) = false .
+	eq from(getColor@ColoredNode) = null .
+	eq type(getColor@ColoredNode) = Color .
+	eq lowerBound(getColor@ColoredNode) = 1 .
+	eq upperBound(getColor@ColoredNode) = 1 .
+	eq isOrdered(getColor@ColoredNode) = false .
+	eq isUnique(getColor@ColoredNode) = false .
+	eq containingClass (getColor@ColoredNode) = ColoredNode .
+	eq parameters(getColor@ColoredNode) = nil .
+	
+	--- Color
+	
+	sort Color .
+	subsort Color < @Class .
+	op Color : -> Color .
+	eq name(Color) = "Color" .
+	eq isAbstract(ColoredNode) = false .
+	eq package(Color) = DEFAULTPACKAGE .
+	eq superTypes (Color) = nil .
+	eq references (Color) = nil .
+	eq attributes (Color) = name@Color . 
+
+	eq operations(Color) = nil . --- getColor@ColoredNode .
+	
+	op name@Color  : -> @Attribute .
+  	eq name (name@Color) = "name" .
+  	eq type (name@Color) = @String .
+  	eq lowerBound (name@Color) = 1 .
+  	eq upperBound (name@Color) = 1 .
+  	eq containingClass (name@Color) = Color .
+  	eq isOrdered (name@Color) = true .
+  	eq isUnique (name@Color) = true .
+  	eq isId (name@Color) = true .
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+	*** Metamodel & Package ***
+
+	--- Metamodel declaration	  
+	op ColoredNodeMM' : -> @Metamodel .
+	eq name(ColoredNode') = "ColoredNode" .
+	eq packages (ColoredNode') = DEFAULTPACKAGE' .
+
+	--- Package declaration
+	op DEFAULTPACKAGE' : -> @Package .
+	eq name(DEFAULTPACKAGE') = "_default" .
+	eq metamodel(DEFAULTPACKAGE') = ColoredNodeMM' .
+	eq superPackage(DEFAULTPACKAGE') = null .
+	eq subPackages(DEFAULTPACKAGE') = nil .
+	eq classes(DEFAULTPACKAGE') = __(ColoredNode', Color', RGBEncoding) .
+	*** Classes ***
+	
+	--- ColoredNode'
+	
+	sort ColoredNode' .
+	subsort ColoredNode' < @Class .
+	op ColoredNode' : -> ColoredNode' .
+	eq name(ColoredNode') = "ColoredNode" .
+	eq isAbstract(ColoredNode') = false .
+	eq package(ColoredNode') = nil .
+	eq superTypes (ColoredNode') = nil .
+	eq references (ColoredNode') = color@ColoredNode' .
+	eq attributes (ColoredNode') = name@ColoredNode' . 
+	
+	eq operations(ColoredNode') = setColor@ColoredNode' getColor@ColoredNode' getName@ColoredNode' setName@ColoredNode' .
+
+	op name@ColoredNode'  : -> @Attribute .
+  	eq name (name@ColoredNode') = "name" .
+  	eq type (name@ColoredNode') = @String .
+  	eq lowerBound (name@ColoredNode') = 1 .
+  	eq upperBound (name@ColoredNode') = 1 .
+  	eq containingClass (name@ColoredNode') = ColoredNode' .
+  	eq isOrdered (name@ColoredNode') = true .
+  	eq isUnique (name@ColoredNode') = true .
+  	eq isId (name@ColoredNode') = true .
+
+
+	op color@ColoredNode' : -> @Reference .
+	eq name (color@ColoredNode') = "color" .
+	eq opposite (color@ColoredNode') = null .
+	eq type (color@ColoredNode') = Color' .
+	eq lowerBound (color@ColoredNode') = 0 .
+	eq upperBound (color@ColoredNode') = 1 .
+	eq containingClass (color@ColoredNode') = ColoredNode' .
+	eq isOrdered (color@ColoredNode') = false .
+	eq isUnique (color@ColoredNode') = false .
+	eq isContainment (color@ColoredNode') = false .
+
+	
+	sort setColor@ColoredNode' .
+	subsort setColor@ColoredNode' < @Operation .
+	op setColor@ColoredNode' : -> setColor@ColoredNode' . 
+	eq name(setColor@ColoredNode') = "setColor" .
+	eq isAbstract(setColor@ColoredNode') = false .
+	eq from(setColor@ColoredNode') = null .
+	eq type(setColor@ColoredNode') = null .
+	eq lowerBound(setColor@ColoredNode') = 1 .
+	eq upperBound(setColor@ColoredNode') = 1 .
+	eq isOrdered(setColor@ColoredNode') = false .
+	eq isUnique(setColor@ColoredNode') = false .
+	eq containingClass (setColor@ColoredNode') = ColoredNode' .
+	eq parameters(setColor@ColoredNode') = newColor@setColor@ColoredNode' .
+
+	sort newColor@setColor@ColoredNode' .
+	subsort newColor@setColor@ColoredNode' < @Parameter .
+	op newColor@setColor@ColoredNode' : -> newColor@setColor@ColoredNode' .
+	eq name(newColor@setColor@ColoredNode') = "newColor" .
+	eq type(newColor@setColor@ColoredNode') = Color .
+	eq lowerBound(newColor@setColor@ColoredNode') = 1 .
+	eq upperBound(newColor@setColor@ColoredNode') = 1 .
+	eq isOrdered(newColor@setColor@ColoredNode') = true .
+	eq isUnique(newColor@setColor@ColoredNode') = true .
+
+
+	sort getColor@ColoredNode' .
+	subsort getColor@ColoredNode' < @Operation .
+	op getColor@ColoredNode' : -> getColor@ColoredNode' . 
+	eq name(getColor@ColoredNode') = "getColor" .
+	eq isAbstract(getColor@ColoredNode') = false .
+	eq from(getColor@ColoredNode') = null .
+	eq type(getColor@ColoredNode') = Color .
+	eq lowerBound(getColor@ColoredNode') = 1 .
+	eq upperBound(getColor@ColoredNode') = 1 .
+	eq isOrdered(getColor@ColoredNode') = false .
+	eq isUnique(getColor@ColoredNode') = false .
+	eq containingClass (getColor@ColoredNode') = ColoredNode' .
+	eq parameters(getColor@ColoredNode') = nil .
+
+	sort getName@ColoredNode' .
+	subsort getName@ColoredNode' < @Operation .
+	op getName@ColoredNode' : -> getName@ColoredNode' . 
+	eq name(getName@ColoredNode') = "getName" .
+	eq isAbstract(getName@ColoredNode') = false .
+	eq from(getName@ColoredNode') = null .
+	eq type(getName@ColoredNode') = Color .
+	eq lowerBound(getName@ColoredNode') = 1 .
+	eq upperBound(getName@ColoredNode') = 1 .
+	eq isOrdered(getName@ColoredNode') = false .
+	eq isUnique(getName@ColoredNode') = false .
+	eq containingClass (getName@ColoredNode') = ColoredNode' .
+	eq parameters(getName@ColoredNode') = nil .
+
+	sort setName@ColoredNode' .
+	subsort setName@ColoredNode' < @Operation .
+	op setName@ColoredNode' : -> setName@ColoredNode' . 
+	eq name(setName@ColoredNode') = "setName" .
+	eq isAbstract(setName@ColoredNode') = false .
+	eq from(setName@ColoredNode') = null .
+	eq type(setName@ColoredNode') = null .
+	eq lowerBound(setName@ColoredNode') = 1 .
+	eq upperBound(setName@ColoredNode') = 1 .
+	eq isOrdered(setName@ColoredNode') = false .
+	eq isUnique(setName@ColoredNode') = false .
+	eq containingClass (setName@ColoredNode') = ColoredNode' .
+	eq parameters(setName@ColoredNode') = newName@setName@ColoredNode' .
+
+	sort newName@setName@ColoredNode' .
+	subsort newName@setName@ColoredNode' < @Parameter .
+	op newName@setName@ColoredNode' : -> newName@setName@ColoredNode' .
+	eq name(newName@setName@ColoredNode') = "newName" .
+	eq type(newName@setName@ColoredNode') = Color .
+	eq lowerBound(newName@setName@ColoredNode') = 1 .
+	eq upperBound(newName@setName@ColoredNode') = 1 .
+	eq isOrdered(newName@setName@ColoredNode') = true .
+	eq isUnique(newName@setName@ColoredNode') = true .
+
+	
+	--- Color
+	
+	sort Color' .
+	subsort Color' < @Class .
+	op Color' : -> Color' .
+	eq name(Color') = "Color" .
+	eq isAbstract(ColoredNode') = false .
+	eq package(Color') = nil .
+	eq superTypes (Color') = nil .
+	eq references (Color') = encoding@Color' .
+	eq attributes (Color') = name@Color' . 
+
+	eq operations(Color') = nil . --- getColor@ColoredNode' .
+	
+	op name@Color'  : -> @Attribute .
+  	eq name (name@Color') = "name" .
+  	eq type (name@Color') = @String .
+  	eq lowerBound (name@Color') = 1 .
+  	eq upperBound (name@Color') = 1 .
+  	eq containingClass (name@Color') = Color .
+  	eq isOrdered (name@Color') = true .
+  	eq isUnique (name@Color') = true .
+  	eq isId (name@Color') = true .
+  	
+	op encoding@Color' : -> @Reference .
+	eq name (encoding@Color') = "encoding" .
+	eq opposite (encoding@Color') = null .
+	eq type (encoding@Color') = RGBEncoding .
+	eq lowerBound (encoding@Color') = 1 .
+	eq upperBound (encoding@Color') = 1 .
+	eq containingClass (encoding@Color') = ColoredNode' .
+	eq isOrdered (encoding@Color') = false .
+	eq isUnique (encoding@Color') = false .
+	eq isContainment (encoding@Color') = false .
+  	
+ 	--- RGBEncoding
+	
+	sort RGBEncoding .
+	subsort RGBEncoding < @Class .
+	op RGBEncoding : -> RGBEncoding .
+	eq name(RGBEncoding) = "RGBEncoding" .
+	eq isAbstract(ColoredNode') = false .
+	eq package(RGBEncoding) = nil .
+	eq superTypes (RGBEncoding) = nil .
+	eq references (RGBEncoding) = nil .
+	eq attributes (RGBEncoding) = red@RGBEncoding . 
+  	
+ 	op red@RGBEncoding  : -> @Attribute .
+  	eq name (red@RGBEncoding) = "red" .
+  	eq type (red@RGBEncoding) = @Int .
+  	eq lowerBound (red@RGBEncoding) = 1 .
+  	eq upperBound (red@RGBEncoding) = 1 .
+  	eq containingClass (red@RGBEncoding) = RGBEncoding .
+  	eq isOrdered (red@RGBEncoding) = true .
+  	eq isUnique (red@RGBEncoding) = true .
+  	eq isId (red@RGBEncoding) = true .
+  	
+  	
+  	
+  		
+endm 

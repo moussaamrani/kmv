@@ -336,6 +336,7 @@ mod FSM-MM is
 	eq isContainment (fsm@Transition@FSM) = false .
 	
 	eq operations(Transition@FSM) = nil .   
+
 	--- State
 		
 	sort State@FSM .
