@@ -214,8 +214,7 @@ mod KERMETA-DOMAIN is
 	pr KERMETA-SL-CTORS .
 	---pr MAP{@LocalVariable, OclType} .
 	sort Domain .
-	op <_##_> : @Model Set{VarPair} -> Domain [ctor] .
-		
+	op <_##_> : @Model Set{VarPair} -> Domain [ctor] .	
 endm
 
 mod KERMETA-STACK is
@@ -356,11 +355,13 @@ mod KERMETA is
 	
 	--- CondStmt
 	ceq exec( <| LAB, S, < M ## VPSET >, N |> ) = <| LABTHEN, S, < M ## VPSET >, N |> 
+	-------------------------------------------------------------------------------------
 		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
 			< LABTHEN , LABELSE > := nxt(LAB)         /\ 
 			true = << E ; env(VPSET) ; M >> 	
 	.
 	ceq exec(<| LAB, S, < M ## VPSET >, N |>) = <| LABELSE, S, < M ## VPSET >, N |> 
+	-------------------------------------------------------------------------------------
 		if  iff( E ) := statements( meta(M) ) [ LAB ] /\ 
 			< LABTHEN , LABELSE > := nxt(LAB) 		  /\ 
 			false = << E ; env(VPSET) ; M >> 
@@ -369,15 +370,18 @@ mod KERMETA is
 	--- ReturnStmt
 	ceq exec(<| LAB,   (| LABNxt , VPSETT, null |) !!! S, < M ## VPSET >,  N |>) = 
 			 <| LABNxt,                                S, < M ## VPSETT >, N |> 
+	-------------------------------------------------------------------------------------
 		if return :=  statements( meta(M) ) [ LAB ]
 	.
 	ceq exec(<| LAB, (| LABNxt , VPSETT, MYVAR |) !!! S, < M ## VPSET >,  N |>) = 
 			 <| LABNxt,                               S, < M ## putVar( MYVAR <- RES , VPSETT) >, N |> 
+	-----------------------------------------------------------------------------------------------------
 		if  return( E ) :=  statements( meta(M) ) [ LAB ] /\
 			RES := << E ; env(VPSET) ; M >>
 	.
 	ceq exec(<| LAB, NOPE, < M ## VPSET >,  N |>) = 
 			 <| [] , NOPE, < M ## VPSET >, N |> 
+	-------------------------------------------------------------------------------------
 		if return :=  statements( meta(M) ) [ LAB ]
 	.
 	ceq exec(<| LAB, NOPE, < M ## VPSET >,  N |>) = 
