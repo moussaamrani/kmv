@@ -1,0 +1,563 @@
+load /cygdrive/z/Workspace/KMV/trunk/KMV/syntax/Kermeta-MT.maude
+
+mod ColoredGraphPrimaryMT is
+	protecting KERMETA-MT .
+	
+	*** Metamodel & Package ***
+
+	--- Metamodel declaration	  
+	op ColoredGraphMT : -> @Metamodel .
+	eq name(ColoredGraphMT) = "ColoredGraphMT" .
+	eq packages (ColoredGraphMT) = CGPkg .
+
+	--- Package declaration
+	op CGPkg : -> @Package .
+	eq name(CGPkg) = "ColoredGraph" .
+	eq metamodel(CGPkg) = ColoredGraphMT .
+	eq superPackage(CGPkg) = null .
+	eq subPackages(CGPkg) = nil .
+	eq classes(CGPkg) = __(ColoredGraph@CGPkg, ColoredNode@CGPkg, Edge@CGPkg, Color@CGPkg) .
+
+	*** Classes ***
+	
+	--- ColoredGraph
+	
+	sort ColoredGraph@CGPkg .
+	subsort ColoredGraph@CGPkg < @Class .
+	op ColoredGraph@CGPkg : -> ColoredGraph@CGPkg .
+	eq name(ColoredGraph@CGPkg) = "ColoredGraph" .
+	eq isAbstract(ColoredGraph@CGPkg) = false .
+	eq package(ColoredGraph@CGPkg) = CGPkg .
+	eq superTypes (ColoredGraph@CGPkg) = nil .
+	eq references (ColoredGraph@CGPkg) = nodes@ColoredGraph@CGPkg edges@ColoredGraph@CGPkg .
+	eq attributes (ColoredGraph@CGPkg) = nil . 
+	
+	op nodes@ColoredGraph@CGPkg : -> @Reference .
+	eq name (nodes@ColoredGraph@CGPkg) = "nodes" .
+	eq opposite (nodes@ColoredGraph@CGPkg) = null .
+	eq type (nodes@ColoredGraph@CGPkg) = ColoredNode@CGPkg .
+	eq lowerBound (nodes@ColoredGraph@CGPkg) = 0 .
+	eq upperBound (nodes@ColoredGraph@CGPkg) = * .
+	eq containingClass (nodes@ColoredGraph@CGPkg) = ColoredGraph@CGPkg .
+	eq isOrdered (nodes@ColoredGraph@CGPkg) = false .
+	eq isUnique (nodes@ColoredGraph@CGPkg) = true .
+	eq isContainment (nodes@ColoredGraph@CGPkg) = true .
+	eq isReadOnly (nodes@ColoredGraph@CGPkg) = false .
+
+	op edges@ColoredGraph@CGPkg : -> @Reference .
+	eq name (edges@ColoredGraph@CGPkg) = "edges" .
+	eq opposite (edges@ColoredGraph@CGPkg) = null .
+	eq type (edges@ColoredGraph@CGPkg) = Edge@CGPkg .
+	eq lowerBound (edges@ColoredGraph@CGPkg) = 0 .
+	eq upperBound (edges@ColoredGraph@CGPkg) = * .
+	eq containingClass (edges@ColoredGraph@CGPkg) = ColoredGraph@CGPkg .
+	eq isOrdered (edges@ColoredGraph@CGPkg) = false .
+	eq isUnique (edges@ColoredGraph@CGPkg) = true .
+	eq isContainment (edges@ColoredGraph@CGPkg) = true .
+	eq isReadOnly (edges@ColoredGraph@CGPkg) = false .
+
+	eq operations(ColoredGraph@CGPkg) = nil . 
+	
+	--- ColoredNode
+	
+	sort ColoredNode@CGPkg .
+	subsort ColoredNode@CGPkg < @Class .
+	op ColoredNode@CGPkg : -> ColoredNode@CGPkg .
+	eq name(ColoredNode@CGPkg) = "ColoredNode" .
+	eq isAbstract(ColoredNode@CGPkg) = false .
+	eq package(ColoredNode@CGPkg) = CGPkg .
+	eq superTypes (ColoredNode@CGPkg) = nil .
+	eq references (ColoredNode@CGPkg) = in@ColoredNode@CGPkg out@ColoredNode@CGPkg color@ColoredNode@CGPkg .
+	eq attributes (ColoredNode@CGPkg) = nil . 
+
+	op color@ColoredNode@CGPkg : -> @Reference .
+	eq name (color@ColoredNode@CGPkg) = "color" .
+	eq opposite (color@ColoredNode@CGPkg) = null .
+	eq type (color@ColoredNode@CGPkg) = Color@CGPkg .
+	eq lowerBound (color@ColoredNode@CGPkg) = 0 .
+	eq upperBound (color@ColoredNode@CGPkg) = 1 .
+	eq containingClass (color@ColoredNode@CGPkg) = ColoredNode@CGPkg .
+	eq isOrdered (color@ColoredNode@CGPkg) = true .
+	eq isUnique (color@ColoredNode@CGPkg) = true .
+	eq isContainment (color@ColoredNode@CGPkg) = false .
+	eq isReadOnly (color@ColoredNode@CGPkg) = false .
+
+	op in@ColoredNode@CGPkg : -> @Reference .
+	eq name (in@ColoredNode@CGPkg) = "in" .
+	eq opposite (in@ColoredNode@CGPkg) = target@Edge@CGPkg .
+	eq type (in@ColoredNode@CGPkg) = Edge@CGPkg .
+	eq lowerBound (in@ColoredNode@CGPkg) = 0 .
+	eq upperBound (in@ColoredNode@CGPkg) = * .
+	eq containingClass (in@ColoredNode@CGPkg) = ColoredNode@CGPkg .
+	eq isOrdered (in@ColoredNode@CGPkg) = false .
+	eq isUnique (in@ColoredNode@CGPkg) = true .
+	eq isContainment (in@ColoredNode@CGPkg) = false .
+	eq isReadOnly (in@ColoredNode@CGPkg) = false .
+
+	op out@ColoredNode@CGPkg : -> @Reference .
+	eq name (out@ColoredNode@CGPkg) = "out" .
+	eq opposite (out@ColoredNode@CGPkg) = source@Edge@CGPkg .
+	eq type (out@ColoredNode@CGPkg) = Edge@CGPkg .
+	eq lowerBound (out@ColoredNode@CGPkg) = 0 .
+	eq upperBound (out@ColoredNode@CGPkg) = * .
+	eq containingClass (out@ColoredNode@CGPkg) = ColoredNode@CGPkg .
+	eq isOrdered (out@ColoredNode@CGPkg) = false .
+	eq isUnique (out@ColoredNode@CGPkg) = true .
+	eq isContainment (out@ColoredNode@CGPkg) = false .
+	eq isReadOnly (out@ColoredNode@CGPkg) = false .
+
+	eq operations(ColoredNode@CGPkg) = get@ColoredNode@CGPkg set@ColoredNode@CGPkg .
+	
+	sort get@ColoredNode@CGPkg .
+	subsort get@ColoredNode@CGPkg < @Operation .
+	op get@ColoredNode@CGPkg : -> get@ColoredNode@CGPkg . 
+	eq name(get@ColoredNode@CGPkg) = "getColor" .
+	eq isAbstract(get@ColoredNode@CGPkg) = false .
+	eq from(get@ColoredNode@CGPkg) = null .
+	eq type(get@ColoredNode@CGPkg) = Color@CGPkg .
+	eq lowerBound(get@ColoredNode@CGPkg) = 1 .
+	eq upperBound(get@ColoredNode@CGPkg) = 1 .
+	eq isOrdered(get@ColoredNode@CGPkg) = false .
+	eq isUnique(get@ColoredNode@CGPkg) = false .
+	eq containingClass (get@ColoredNode@CGPkg) = ColoredNode@CGPkg .
+	eq parameters(get@ColoredNode@CGPkg) = null .
+	
+	sort set@ColoredNode@CGPkg .
+	subsort set@ColoredNode@CGPkg < @Operation .
+	op set@ColoredNode@CGPkg : -> set@ColoredNode@CGPkg . 
+	eq name(set@ColoredNode@CGPkg) = "setColor" .
+	eq isAbstract(set@ColoredNode@CGPkg) = false .
+	eq from(set@ColoredNode@CGPkg) = null .
+	eq type(set@ColoredNode@CGPkg) = null .
+	eq lowerBound(set@ColoredNode@CGPkg) = 1 .
+	eq upperBound(set@ColoredNode@CGPkg) = 1 .
+	eq isOrdered(set@ColoredNode@CGPkg) = false .
+	eq isUnique(set@ColoredNode@CGPkg) = false .
+	eq containingClass (set@ColoredNode@CGPkg) = ColoredNode@CGPkg .
+	eq parameters(set@ColoredNode@CGPkg) = newColor@set@ColoredNode@CGPkg .
+
+	sort newColor@set@ColoredNode@CGPkg .
+	subsort newColor@set@ColoredNode@CGPkg < @Parameter .
+	op newColor@set@ColoredNode@CGPkg : -> newColor@set@ColoredNode@CGPkg .
+	eq name(newColor@set@ColoredNode@CGPkg) = "newColor" .
+	eq type(newColor@set@ColoredNode@CGPkg) = Color@CGPkg .
+	eq lowerBound(newColor@set@ColoredNode@CGPkg) = 1 .
+	eq upperBound(newColor@set@ColoredNode@CGPkg) = 1 .
+	eq isOrdered(newColor@set@ColoredNode@CGPkg) = true .
+	eq isUnique(newColor@set@ColoredNode@CGPkg) = true .
+
+	--- Color
+	
+	sort Color@CGPkg .
+	subsort Color@CGPkg < @Class .
+	op Color@CGPkg : -> Color@CGPkg .
+	eq name(Color@CGPkg) = "Color" .
+	eq isAbstract(Color@CGPkg) = false .
+	eq package(Color@CGPkg) = CGPkg .
+	eq superTypes (Color@CGPkg) = nil .
+	eq references (Color@CGPkg) = nil .
+	eq attributes (Color@CGPkg) = name@Color@CGPkg . 
+
+	op name@Color@CGPkg  : -> @Attribute .
+  	eq name (name@Color@CGPkg) = "name" .
+  	eq type (name@Color@CGPkg) = @String .
+  	eq lowerBound (name@Color@CGPkg) = 1 .
+  	eq upperBound (name@Color@CGPkg) = 1 .
+  	eq containingClass (name@Color@CGPkg) = Color@CGPkg .
+  	eq isOrdered (name@Color@CGPkg) = true .
+  	eq isUnique (name@Color@CGPkg) = true .
+  	eq isId (name@Color@CGPkg) = true .
+	eq isReadOnly (name@Color@CGPkg) = false .
+
+	eq operations(Color@CGPkg) = nil . 
+
+	--- Edge
+	
+	sort Edge@CGPkg .
+	subsort Edge@CGPkg < @Class .
+	op Edge@CGPkg : -> Edge@CGPkg .
+	eq name(Edge@CGPkg) = "Edge" .
+	eq isAbstract(Edge@CGPkg) = false .
+	eq package(Edge@CGPkg) = CGPkg .
+	eq superTypes (Edge@CGPkg) = nil .
+	eq references (Edge@CGPkg) = source@Edge@CGPkg target@Edge@CGPkg .
+	eq attributes (Edge@CGPkg) = nil . 
+
+	op target@Edge@CGPkg : -> @Reference .
+	eq name (target@Edge@CGPkg) = "target" .
+	eq opposite (target@Edge@CGPkg) = in@ColoredNode@CGPkg .
+	eq type (target@Edge@CGPkg) = ColoredNode@CGPkg .
+	eq lowerBound (target@Edge@CGPkg) = 1 .
+	eq upperBound (target@Edge@CGPkg) = 1 .
+	eq containingClass (target@Edge@CGPkg) = Edge@CGPkg .
+	eq isOrdered (target@Edge@CGPkg) = true .
+	eq isUnique (target@Edge@CGPkg) = true .
+	eq isContainment (target@Edge@CGPkg) = false .
+	eq isReadOnly (target@Edge@CGPkg) = false .
+
+	op source@Edge@CGPkg : -> @Reference .
+	eq name (source@Edge@CGPkg) = "source" .
+	eq opposite (source@Edge@CGPkg) = out@ColoredNode@CGPkg .
+	eq type (source@Edge@CGPkg) = ColoredNode@CGPkg .
+	eq lowerBound (source@Edge@CGPkg) = 1 .
+	eq upperBound (source@Edge@CGPkg) = 1 .
+	eq containingClass (source@Edge@CGPkg) = Edge@CGPkg .
+	eq isOrdered (source@Edge@CGPkg) = true .
+	eq isUnique (source@Edge@CGPkg) = true .
+	eq isContainment (source@Edge@CGPkg) = false .
+	eq isReadOnly (source@Edge@CGPkg) = false .
+	
+	eq operations(Edge@CGPkg) = nil . 
+	
+endm
+
+mod ColoredGraphPrimedMT is
+	protecting KERMETA-MT .
+	
+	*** Metamodel & Package ***
+
+	--- Metamodel declaration	  
+	op RGBColoredGraphMT : -> @Metamodel .
+	eq name(RGBColoredGraphMT) = "RGBColoredGraphMT" .
+	eq packages (RGBColoredGraphMT) = CGPkg' .
+
+	--- Package declaration
+	op CGPkg' : -> @Package .
+	eq name(CGPkg') = "ColoredGraph" .
+	eq metamodel(CGPkg') = RGBColoredGraphMT .
+	eq superPackage(CGPkg') = null .
+	eq subPackages(CGPkg') = nil .
+	eq classes(CGPkg') = __(ColoredGraph@CGPkg', ColoredNode@CGPkg', Edge@CGPkg', Color@CGPkg', RGBEncoding@CGPkg') .
+
+	*** Classes ***
+	
+	--- ColoredGraph
+	
+	sort ColoredGraph@CGPkg' .
+	subsort ColoredGraph@CGPkg' < @Class .
+	op ColoredGraph@CGPkg' : -> ColoredGraph@CGPkg' .
+	eq name(ColoredGraph@CGPkg') = "ColoredGraph" .
+	eq isAbstract(ColoredGraph@CGPkg') = false .
+	eq package(ColoredGraph@CGPkg') = CGPkg' .
+	eq superTypes (ColoredGraph@CGPkg') = nil .
+	eq references (ColoredGraph@CGPkg') = nodes@ColoredGraph@CGPkg' edges@ColoredGraph@CGPkg' .
+	eq attributes (ColoredGraph@CGPkg') = nil . 
+	
+	op nodes@ColoredGraph@CGPkg' : -> @Reference .
+	eq name (nodes@ColoredGraph@CGPkg') = "nodes" .
+	eq opposite (nodes@ColoredGraph@CGPkg') = null .
+	eq type (nodes@ColoredGraph@CGPkg') = ColoredNode@CGPkg' .
+	eq lowerBound (nodes@ColoredGraph@CGPkg') = 0 .
+	eq upperBound (nodes@ColoredGraph@CGPkg') = * .
+	eq containingClass (nodes@ColoredGraph@CGPkg') = ColoredGraph@CGPkg' .
+	eq isOrdered (nodes@ColoredGraph@CGPkg') = false .
+	eq isUnique (nodes@ColoredGraph@CGPkg') = true .
+	eq isContainment (nodes@ColoredGraph@CGPkg') = true .
+	eq isReadOnly (nodes@ColoredGraph@CGPkg') = false .
+
+	op edges@ColoredGraph@CGPkg' : -> @Reference .
+	eq name (edges@ColoredGraph@CGPkg') = "edges" .
+	eq opposite (edges@ColoredGraph@CGPkg') = null .
+	eq type (edges@ColoredGraph@CGPkg') = Edge@CGPkg' .
+	eq lowerBound (edges@ColoredGraph@CGPkg') = 0 .
+	eq upperBound (edges@ColoredGraph@CGPkg') = * .
+	eq containingClass (edges@ColoredGraph@CGPkg') = ColoredGraph@CGPkg' .
+	eq isOrdered (edges@ColoredGraph@CGPkg') = false .
+	eq isUnique (edges@ColoredGraph@CGPkg') = true .
+	eq isContainment (edges@ColoredGraph@CGPkg') = true .
+	eq isReadOnly (edges@ColoredGraph@CGPkg') = false .
+
+	eq operations(ColoredGraph@CGPkg') = nil . 
+
+	--- ColoredNode
+	
+	sort ColoredNode@CGPkg' .
+	subsort ColoredNode@CGPkg' < @Class .
+	op ColoredNode@CGPkg' : -> ColoredNode@CGPkg' .
+	eq name(ColoredNode@CGPkg') = "ColoredNode" .
+	eq isAbstract(ColoredNode@CGPkg') = false .
+	eq package(ColoredNode@CGPkg') = CGPkg' .
+	eq superTypes (ColoredNode@CGPkg') = nil .
+	eq references (ColoredNode@CGPkg') = in@ColoredNode@CGPkg' out@ColoredNode@CGPkg' color@ColoredNode@CGPkg' .
+	eq attributes (ColoredNode@CGPkg') = name@ColoredNode@CGPkg' . 
+
+	op name@ColoredNode@CGPkg'  : -> @Attribute .
+  	eq name (name@ColoredNode@CGPkg') = "name" .
+  	eq type (name@ColoredNode@CGPkg') = @String .
+  	eq lowerBound (name@ColoredNode@CGPkg') = 1 .
+  	eq upperBound (name@ColoredNode@CGPkg') = 1 .
+  	eq containingClass (name@ColoredNode@CGPkg') = Color@CGPkg' .
+  	eq isOrdered (name@ColoredNode@CGPkg') = true .
+  	eq isUnique (name@ColoredNode@CGPkg') = true .
+  	eq isId (name@ColoredNode@CGPkg') = true .
+	eq isReadOnly (name@ColoredNode@CGPkg') = false .
+
+	op color@ColoredNode@CGPkg' : -> @Reference .
+	eq name (color@ColoredNode@CGPkg') = "color" .
+	eq opposite (color@ColoredNode@CGPkg') = null .
+	eq type (color@ColoredNode@CGPkg') = Color@CGPkg' .
+	eq lowerBound (color@ColoredNode@CGPkg') = 0 .
+	eq upperBound (color@ColoredNode@CGPkg') = 1 .
+	eq containingClass (color@ColoredNode@CGPkg') = ColoredNode@CGPkg' .
+	eq isOrdered (color@ColoredNode@CGPkg') = true .
+	eq isUnique (color@ColoredNode@CGPkg') = true .
+	eq isContainment (color@ColoredNode@CGPkg') = false .
+	eq isReadOnly (color@ColoredNode@CGPkg') = false .
+
+	op in@ColoredNode@CGPkg' : -> @Reference .
+	eq name (in@ColoredNode@CGPkg') = "in" .
+	eq opposite (in@ColoredNode@CGPkg') = target@Edge@CGPkg' .
+	eq type (in@ColoredNode@CGPkg') = Edge@CGPkg' .
+	eq lowerBound (in@ColoredNode@CGPkg') = 0 .
+	eq upperBound (in@ColoredNode@CGPkg') = * .
+	eq containingClass (in@ColoredNode@CGPkg') = ColoredNode@CGPkg' .
+	eq isOrdered (in@ColoredNode@CGPkg') = false .
+	eq isUnique (in@ColoredNode@CGPkg') = true .
+	eq isContainment (in@ColoredNode@CGPkg') = false .
+	eq isReadOnly (in@ColoredNode@CGPkg') = false .
+
+	op out@ColoredNode@CGPkg' : -> @Reference .
+	eq name (out@ColoredNode@CGPkg') = "out" .
+	eq opposite (out@ColoredNode@CGPkg') = source@Edge@CGPkg' .
+	eq type (out@ColoredNode@CGPkg') = Edge@CGPkg' .
+	eq lowerBound (out@ColoredNode@CGPkg') = 0 .
+	eq upperBound (out@ColoredNode@CGPkg') = * .
+	eq containingClass (out@ColoredNode@CGPkg') = ColoredNode@CGPkg' .
+	eq isOrdered (out@ColoredNode@CGPkg') = false .
+	eq isUnique (out@ColoredNode@CGPkg') = true .
+	eq isContainment (out@ColoredNode@CGPkg') = false .
+	eq isReadOnly (out@ColoredNode@CGPkg') = false .
+
+	eq operations(ColoredNode@CGPkg') = get@ColoredNode@CGPkg' set@ColoredNode@CGPkg' 
+		getName@ColoredNode@CGPkg' setName@ColoredNode@CGPkg' .
+	
+	sort get@ColoredNode@CGPkg' .
+	subsort get@ColoredNode@CGPkg' < @Operation .
+	op get@ColoredNode@CGPkg' : -> get@ColoredNode@CGPkg' . 
+	eq name(get@ColoredNode@CGPkg') = "getColor" .
+	eq isAbstract(get@ColoredNode@CGPkg') = false .
+	eq from(get@ColoredNode@CGPkg') = null .
+	eq type(get@ColoredNode@CGPkg') = Color@CGPkg' .
+	eq lowerBound(get@ColoredNode@CGPkg') = 1 .
+	eq upperBound(get@ColoredNode@CGPkg') = 1 .
+	eq isOrdered(get@ColoredNode@CGPkg') = false .
+	eq isUnique(get@ColoredNode@CGPkg') = false .
+	eq containingClass (get@ColoredNode@CGPkg') = ColoredNode@CGPkg' .
+	eq parameters(get@ColoredNode@CGPkg') = null .
+	
+	sort set@ColoredNode@CGPkg' .
+	subsort set@ColoredNode@CGPkg' < @Operation .
+	op set@ColoredNode@CGPkg' : -> set@ColoredNode@CGPkg' . 
+	eq name(set@ColoredNode@CGPkg') = "setColor" .
+	eq isAbstract(set@ColoredNode@CGPkg') = false .
+	eq from(set@ColoredNode@CGPkg') = null .
+	eq type(set@ColoredNode@CGPkg') = null .
+	eq lowerBound(set@ColoredNode@CGPkg') = 1 .
+	eq upperBound(set@ColoredNode@CGPkg') = 1 .
+	eq isOrdered(set@ColoredNode@CGPkg') = false .
+	eq isUnique(set@ColoredNode@CGPkg') = false .
+	eq containingClass (set@ColoredNode@CGPkg') = ColoredNode@CGPkg' .
+	eq parameters(set@ColoredNode@CGPkg') = newColor@set@ColoredNode@CGPkg' .
+
+	sort newColor@set@ColoredNode@CGPkg' .
+	subsort newColor@set@ColoredNode@CGPkg' < @Parameter .
+	op newColor@set@ColoredNode@CGPkg' : -> newColor@set@ColoredNode@CGPkg' .
+	eq name(newColor@set@ColoredNode@CGPkg') = "newColor" .
+	eq type(newColor@set@ColoredNode@CGPkg') = Color@CGPkg' .
+	eq lowerBound(newColor@set@ColoredNode@CGPkg') = 1 .
+	eq upperBound(newColor@set@ColoredNode@CGPkg') = 1 .
+	eq isOrdered(newColor@set@ColoredNode@CGPkg') = true .
+	eq isUnique(newColor@set@ColoredNode@CGPkg') = true .
+
+	sort getName@ColoredNode@CGPkg' .
+	subsort getName@ColoredNode@CGPkg' < @Operation .
+	op getName@ColoredNode@CGPkg' : -> getName@ColoredNode@CGPkg' . 
+	eq name(getName@ColoredNode@CGPkg') = "getName" .
+	eq isAbstract(getName@ColoredNode@CGPkg') = false .
+	eq from(getName@ColoredNode@CGPkg') = null .
+	eq type(getName@ColoredNode@CGPkg') = @String .
+	eq lowerBound(getName@ColoredNode@CGPkg') = 1 .
+	eq upperBound(getName@ColoredNode@CGPkg') = 1 .
+	eq isOrdered(getName@ColoredNode@CGPkg') = false .
+	eq isUnique(getName@ColoredNode@CGPkg') = false .
+	eq containingClass (getName@ColoredNode@CGPkg') = ColoredNode@CGPkg' .
+	eq parameters(getName@ColoredNode@CGPkg') = null .
+
+	sort setName@ColoredNode@CGPkg' .
+	subsort setName@ColoredNode@CGPkg' < @Operation .
+	op setName@ColoredNode@CGPkg' : -> setName@ColoredNode@CGPkg' . 
+	eq name(setName@ColoredNode@CGPkg') = "setName" .
+	eq isAbstract(setName@ColoredNode@CGPkg') = false .
+	eq from(setName@ColoredNode@CGPkg') = null .
+	eq type(setName@ColoredNode@CGPkg') = null .
+	eq lowerBound(setName@ColoredNode@CGPkg') = 1 .
+	eq upperBound(setName@ColoredNode@CGPkg') = 1 .
+	eq isOrdered(setName@ColoredNode@CGPkg') = false .
+	eq isUnique(setName@ColoredNode@CGPkg') = false .
+	eq containingClass (setName@ColoredNode@CGPkg') = ColoredNode@CGPkg' .
+	eq parameters(setName@ColoredNode@CGPkg') = newName@setName@ColoredNode@CGPkg' .
+
+	sort newName@setName@ColoredNode@CGPkg' .
+	subsort newName@setName@ColoredNode@CGPkg' < @Parameter .
+	op newName@setName@ColoredNode@CGPkg' : -> newName@setName@ColoredNode@CGPkg' .
+	eq name(newName@setName@ColoredNode@CGPkg') = "newName" .
+	eq type(newName@setName@ColoredNode@CGPkg') = @String .
+	eq lowerBound(newName@setName@ColoredNode@CGPkg') = 1 .
+	eq upperBound(newName@setName@ColoredNode@CGPkg') = 1 .
+	eq isOrdered(newName@setName@ColoredNode@CGPkg') = true .
+	eq isUnique(newName@setName@ColoredNode@CGPkg') = true .
+
+	--- Color
+	
+	sort Color@CGPkg' .
+	subsort Color@CGPkg' < @Class .
+	op Color@CGPkg' : -> Color@CGPkg' .
+	eq name(Color@CGPkg') = "Color" .
+	eq isAbstract(Color@CGPkg') = false .
+	eq package(Color@CGPkg') = CGPkg' .
+	eq superTypes (Color@CGPkg') = nil .
+	eq references (Color@CGPkg') = encoding@Color@CGPkg' .
+	eq attributes (Color@CGPkg') = name@Color@CGPkg' . 
+
+	op name@Color@CGPkg'  : -> @Attribute .
+  	eq name (name@Color@CGPkg') = "name" .
+  	eq type (name@Color@CGPkg') = @String .
+  	eq lowerBound (name@Color@CGPkg') = 1 .
+  	eq upperBound (name@Color@CGPkg') = 1 .
+  	eq containingClass (name@Color@CGPkg') = Color@CGPkg' .
+  	eq isOrdered (name@Color@CGPkg') = true .
+  	eq isUnique (name@Color@CGPkg') = true .
+  	eq isId (name@Color@CGPkg') = true .
+	eq isReadOnly (name@Color@CGPkg') = false .
+
+	op encoding@Color@CGPkg' : -> @Reference .
+	eq name (encoding@Color@CGPkg') = "encoding" .
+	eq opposite (encoding@Color@CGPkg') = null .
+	eq type (encoding@Color@CGPkg') = RGBEncoding@CGPkg' .
+	eq lowerBound (encoding@Color@CGPkg') = 1 .
+	eq upperBound (encoding@Color@CGPkg') = 1 .
+	eq containingClass (encoding@Color@CGPkg') = Color@CGPkg' .
+	eq isOrdered (encoding@Color@CGPkg') = true .
+	eq isUnique (encoding@Color@CGPkg') = true .
+	eq isContainment (encoding@Color@CGPkg') = false .
+	eq isReadOnly (encoding@Color@CGPkg') = false .
+
+	eq operations(Color@CGPkg') = nil . 
+
+	--- Edge
+	
+	sort Edge@CGPkg' .
+	subsort Edge@CGPkg' < @Class .
+	op Edge@CGPkg' : -> Edge@CGPkg' .
+	eq name(Edge@CGPkg') = "Edge" .
+	eq isAbstract(Edge@CGPkg') = false .
+	eq package(Edge@CGPkg') = CGPkg' .
+	eq superTypes (Edge@CGPkg') = nil .
+	eq references (Edge@CGPkg') = source@Edge@CGPkg' target@Edge@CGPkg' .
+	eq attributes (Edge@CGPkg') = nil . 
+
+	op target@Edge@CGPkg' : -> @Reference .
+	eq name (target@Edge@CGPkg') = "target" .
+	eq opposite (target@Edge@CGPkg') = in@ColoredNode@CGPkg' .
+	eq type (target@Edge@CGPkg') = ColoredNode@CGPkg' .
+	eq lowerBound (target@Edge@CGPkg') = 1 .
+	eq upperBound (target@Edge@CGPkg') = 1 .
+	eq containingClass (target@Edge@CGPkg') = Edge@CGPkg' .
+	eq isOrdered (target@Edge@CGPkg') = true .
+	eq isUnique (target@Edge@CGPkg') = true .
+	eq isContainment (target@Edge@CGPkg') = false .
+	eq isReadOnly (target@Edge@CGPkg') = false .
+
+	op source@Edge@CGPkg' : -> @Reference .
+	eq name (source@Edge@CGPkg') = "source" .
+	eq opposite (source@Edge@CGPkg') = out@ColoredNode@CGPkg' .
+	eq type (source@Edge@CGPkg') = ColoredNode@CGPkg' .
+	eq lowerBound (source@Edge@CGPkg') = 1 .
+	eq upperBound (source@Edge@CGPkg') = 1 .
+	eq containingClass (source@Edge@CGPkg') = Edge@CGPkg' .
+	eq isOrdered (source@Edge@CGPkg') = true .
+	eq isUnique (source@Edge@CGPkg') = true .
+	eq isContainment (source@Edge@CGPkg') = false .
+	eq isReadOnly (source@Edge@CGPkg') = false .
+
+	eq operations(Edge@CGPkg') = nil . 
+	
+	--- RGBEncoding
+	
+	sort RGBEncoding@CGPkg' .
+	subsort RGBEncoding@CGPkg' < @Class .
+	op RGBEncoding@CGPkg' : -> RGBEncoding@CGPkg' .
+	eq name(RGBEncoding@CGPkg') = "RGBEncoding" .
+	eq isAbstract(RGBEncoding@CGPkg') = false .
+	eq package(RGBEncoding@CGPkg') = CGPkg' .
+	eq superTypes (RGBEncoding@CGPkg') = nil .
+	eq references (RGBEncoding@CGPkg') = nil .
+	eq attributes (RGBEncoding@CGPkg') = red@RGBEncoding@CGPkg' green@RGBEncoding@CGPkg' . 
+
+	op red@RGBEncoding@CGPkg'  : -> @Attribute .
+  	eq name (red@RGBEncoding@CGPkg') = "red" .
+  	eq type (red@RGBEncoding@CGPkg') = @Int .
+  	eq lowerBound (red@RGBEncoding@CGPkg') = 1 .
+  	eq upperBound (red@RGBEncoding@CGPkg') = 1 .
+  	eq containingClass (red@RGBEncoding@CGPkg') = RGBEncoding@CGPkg' .
+  	eq isOrdered (red@RGBEncoding@CGPkg') = true .
+  	eq isUnique (red@RGBEncoding@CGPkg') = true .
+  	eq isId (red@RGBEncoding@CGPkg') = false .
+	eq isReadOnly (red@RGBEncoding@CGPkg') = false .
+
+	op green@RGBEncoding@CGPkg'  : -> @Attribute .
+  	eq name (green@RGBEncoding@CGPkg') = "green" .
+  	eq type (green@RGBEncoding@CGPkg') = @Int .
+  	eq lowerBound (green@RGBEncoding@CGPkg') = 1 .
+  	eq upperBound (green@RGBEncoding@CGPkg') = 1 .
+  	eq containingClass (green@RGBEncoding@CGPkg') = RGBEncoding@CGPkg' .
+  	eq isOrdered (green@RGBEncoding@CGPkg') = true .
+  	eq isUnique (green@RGBEncoding@CGPkg') = true .
+  	eq isId (green@RGBEncoding@CGPkg') = false .
+	eq isReadOnly (green@RGBEncoding@CGPkg') = false .
+	
+	eq operations(RGBEncoding@CGPkg') = nil . 
+endm
+
+mod MODELTYPE-TEST is
+	pr ColoredGraphPrimaryMT .
+	pr ColoredGraphPrimedMT .
+endm
+
+--- red isReadOnly(edges@ColoredGraph@CGPkg) .
+
+--- red RGBEncoding@CGPkg' inside ColoredGraphMT .
+--- red RGBEncoding@CGPkg' inside RGBColoredGraphMT .
+
+--- red isCorrespondingProperties (source@Edge@CGPkg', source@Edge@CGPkg) .
+--- red isCorrespondingProperties (source@Edge@CGPkg', target@Edge@CGPkg) .
+
+--- red name@Color@CGPkg' <# name@Color@CGPkg .
+--- red name@Color@CGPkg  <# name@Color@CGPkg .
+--- red name@ColoredNode@CGPkg' <# name@Color@CGPkg .
+
+--- red in@ColoredNode@CGPkg' <# in@ColoredNode@CGPkg .
+--- red in@ColoredNode@CGPkg  <# in@ColoredNode@CGPkg .
+--- red in@ColoredNode@CGPkg' <# out@ColoredNode@CGPkg .
+
+--- red isCorrespondingParameter(newColor@set@ColoredNode@CGPkg', newColor@set@ColoredNode@CGPkg) .
+--- red isCorrespondingParameter(newName@setName@ColoredNode@CGPkg', newColor@set@ColoredNode@CGPkg) . should work, because same multiple type
+
+--- red set@ColoredNode@CGPkg' <# set@ColoredNode@CGPkg .
+--- red set@ColoredNode@CGPkg' <# get@ColoredNode@CGPkg .
+
+--- red lookupCorrespondingSF(set@ColoredNode@CGPkg', operations(ColoredNode@CGPkg')) .
+--- red lookupCorrespondingSF(name@ColoredNode@CGPkg', attributes(ColoredNode@CGPkg')) .
+--- red lookupCorrespondingSF(in@ColoredNode@CGPkg', references(ColoredNode@CGPkg')) .
+--- red lookupCorrespondingSF(source@Edge@CGPkg', references(ColoredNode@CGPkg')) .
+
+--- red isCorrespondingClasses(Edge@CGPkg', Edge@CGPkg) .
+--- red isCorrespondingClasses(Edge@CGPkg, Edge@CGPkg') .
+--- red isCorrespondingClasses(ColoredNode@CGPkg', ColoredNode@CGPkg) .
+--- red isCorrespondingClasses(ColoredNode@CGPkg, ColoredNode@CGPkg) .
+--- red isCorrespondingClasses(ColoredNode@CGPkg, ColoredNode@CGPkg') .
+
+red Edge@CGPkg' <# Edge@CGPkg .
+red ColoredNode@CGPkg' <# ColoredNode@CGPkg .
+red ColoredNode@CGPkg <# ColoredNode@CGPkg .
+red ColoredNode@CGPkg <# ColoredNode@CGPkg' .

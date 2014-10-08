@@ -23,6 +23,8 @@ mod KERMETA-SL-CTORS is
 	subsort @Variable @Parameter < @LocalVariable < Vid .
 	subsort @Operation @Parameter @LocalVariable < @StructuralFeature .
 	op self : -> @LocalVariable .
+	op isReadOnly : @Attribute -> Bool . --- Added for compatibility
+	op isReadOnly : @Reference -> Bool . --- Added for compatibility
 	op operations : @Class -> MyList . --- of @Operation
 	op isAbstract : @Operation -> Bool .
 	op from : @StructuralFeature -> Maybe{@Class} .
@@ -91,12 +93,28 @@ mod KERMETA-STATEMENTS-MAP is
 	pr MAP{@LocalVariable, OCL-Type} .
 endm
 
+mod GOAL is
+	pr METAMODEL-PROP .
+	sort Goal .
+	op <_,_> : @Class @Class -> Goal [ctor] .
+endm
+
+view Goal from TRIV to GOAL is
+    sort Elt to Goal .
+endv
+
+
 mod KERMETA-MT is
 	pr KERMETA-SL-CTORS .
 	pr KERMETA-STATEMENTS-MAP .
 	pr MGMAYBE{@Reference} .
+	pr GOAL .
+	pr OCL-SET{Goal} .
 	op statements : @Metamodel -> Map{@Label, @Statement} .
 	
+	sort @ModelType .
+	subsort @Metamodel < @ModelType .
+
 	var C C'     : @Class .
 	var ATT ATT' : @Attribute .
 	var REF REF' : @Reference .
@@ -104,32 +122,37 @@ mod KERMETA-MT is
 	var OP OP'   : @Operation .
 	var P P'     : @Parameter .
 	var L L'     : MyList .
+    var GS GS'   : Set{Goal} .
+    var G        : Goal .
+	var MT MT'   : @ModelType .
 	
-	
-	op isCorresponding : @StructuralFeature @StructuralFeature -> Bool .
-	eq isCorresponding(SF', SF) = 
-		(name(SF) == name(SF') and-then 
-		lowerBound(SF) == lowerBound(SF') and-then
-		upperBound(SF) == upperBound(SF') and-then
-		isOrdered(SF)  == isOrdered(SF')  and-then
-		isUnique(SF)   == isUnique(SF')
-		) . 
-	
+	op _inside_ : @Class @ModelType -> Bool .
+	eq C inside MT = (C in allClasses(MT)) .
+
+	op isCorrespondingProperties : @StructuralFeature @StructuralFeature -> Bool .
+	eq isCorrespondingProperties(SF', SF) = (name(SF') == name(SF)) and-then 
+		(isReadOnly(SF') implies isReadOnly(SF))  and-then
+		(isUnique(SF')     ==    isUnique(SF))    and-then
+		(isOrdered(SF)   implies isOrdered(SF'))  and-then 
+		(lowerBound(SF)    ==    lowerBound(SF')) and-then
+		(upperBound(SF)    ==    upperBound(SF')) .
+
 	op _<#_ : @Attribute @Attribute -> Bool .
-	eq ATT' <# ATT =  isCorresponding(ATT', ATT) .
-	
+	eq ATT' <# ATT = ( isCorrespondingProperties(ATT', ATT) ) and-then
+		( (type(ATT') == type(ATT)) or-else ( isReadOnly(ATT) and-then subTypeOf(type(ATT'), type(ATT)) ) ) .
+
 	op _<#_ : @Reference @Reference -> Bool .
-	eq REF' <# REF =  isCorresponding(REF', REF) and-then
+	eq REF' <# REF =  isCorrespondingProperties(REF', REF) and-then
 		(isContainment(REF') == isContainment(REF)) and-then 
-		(not(opposite(REF) == null) implies (not(opposite(REF') == null) and-then name(opposite(REF)) == name(opposite(REF')))) and-then
-		true . --- add type correspondance check.
-		
+		( not(opposite(REF) == null) implies not(opposite(REF') == null) ) and-then 
+		(name(opposite(REF)) == name(opposite(REF'))) .
+
 	op _<#_ : @Operation @Operation -> Bool .
-	eq OP' <# OP = isCorresponding(OP', OP) and-then
-		isCorrespondingParameters(parameters(OP), parameters(OP')) and-then
-		true . --- add type correspondance check 
+	eq OP' <# OP = (name(OP') == name(OP)) and-then
+		isCorrespondingParameters(parameters(OP), parameters(OP')) .
 	
 	op isCorrespondingParameters : MyList MyList -> Bool . --- of @Parameter @Parameter
+	eq isCorrespondingParameters(null, null)   = true . --- empty parameter lists
 	eq isCorrespondingParameters(nil, nil)   = true .
 	eq isCorrespondingParameters(P' L', P L) = 
 		isCorrespondingParameter(P', P) and-then
@@ -138,28 +161,33 @@ mod KERMETA-MT is
 		
 	op isCorrespondingParameter : @Parameter @Parameter -> Bool .
 	eq isCorrespondingParameter(P', P) = 
-		isCorresponding(P', P) and-then
-		true . --- add type correspondance check
-	
+		(lowerBound(P')   ==    lowerBound(P)) and-then
+		(upperBound(P')   ==    upperBound(P)) and-then
+		(isUnique(P')     ==    isUnique(P))   and-then
+		(isOrdered(P')  implies isOrdered(P))  .
+
 	op lookupCorrespondingSF : @StructuralFeature MyList -> Bool . --- @StructuralFeature
 	eq lookupCorrespondingSF(SF, nil) = false .
-	eq lookupCorrespondingSF(SF, SF' L) = SF <# SF' or-else 
-	   lookupCorrespondingSF(SF,     L) .
+	eq lookupCorrespondingSF(SF, SF' L) = (SF <# SF') or-else lookupCorrespondingSF(SF, L) .
 	
 	op lookupCorresponding : MyList MyList -> Bool . --- @StructuralFeature, @StructuralFeature
 	eq lookupCorresponding(nil, L) = true .
-	eq lookupCorresponding(SF L, L') = lookupCorrespondingSF(SF, L') and-then  lookupCorresponding(L, L') .
+	eq lookupCorresponding(SF L, L') = lookupCorrespondingSF(SF, L') and-then lookupCorresponding(L, L') .
 	
-	op _<#_ : @Class @Class -> Bool .
-	eq C' <# C = name(C) == name(C') and-then
-		lookupCorresponding(operations(C), operations(C')) and-then
-		lookupCorresponding(attributes(C), attributes(C')) and-then
-		lookupCorresponding(references(C), references(C')) . --- map over the list of SFs and operations with previous <# preds.
-	
-	op _<<#_ : @Class @Class -> Bool .
-	eq C' <<# C = name(C) == name(C') and-then
-		isAbstract(C') implies isAbstract(C) and-then 
+	op isCorrespondingClasses : @Class @Class -> Bool .
+	eq isCorrespondingClasses(C', C) = (name(C) == name(C')) and-then
 		lookupCorresponding(operations(C), operations(C')) and-then
 		lookupCorresponding(attributes(C), attributes(C')) and-then
 		lookupCorresponding(references(C), references(C')) . --- and-then .
+
+	op computeDependencies : Goal -> Set{Goal} .
+	eq computeDependencies(< C', C >) = empty . --- computeRefDependencies() computeOpDependencies() .
+
+	op evaluate : Set{Goal} Set{Goal} -> Bool .
+	eq evaluate(empty, GS')  = true .
+	eq evaluate( (< C', C >, GS), GS') = ( (< C', C > in GS') and-then evaluate(GS, GS') ) or-else
+		( not((< C', C > in GS')) and-then (isCorrespondingClasses(C', C) and-then evaluate((computeDependencies(< C', C >), GS), (< C', C >, GS')) ) ) . 
+
+	op _<#_ : @Class @Class -> Bool .
+	eq C' <# C = evaluate(< C', C >, empty) .
 endm
