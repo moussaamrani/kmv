@@ -93,23 +93,39 @@ mod KERMETA-STATEMENTS-MAP is
 	pr MAP{@LocalVariable, OCL-Type} .
 endm
 
-mod GOAL is
-	pr METAMODEL-PROP .
-	sort Goal .
-	op <_,_> : @Class @Class -> Goal [ctor] .
+mod PAIRS is
+	pr KERMETA-SL-CTORS .
+	pr MGMAYBE{Bool} .
+	sorts EmptyPair AttributePair ReferencePair OperationPair ParameterPair ClassPair Pair .
+	sorts BoolPair BoolPairSet .
+	subsort EmptyPair AttributePair ReferencePair OperationPair ParameterPair ClassPair < Pair .
+	subsort BoolPair < BoolPairSet .
+	op <_,_> : @Class @Class -> ClassPair [ctor] .
+	op <_,_> : @Parameter @Parameter -> ParameterPair [ctor] .
+	op <_,_> : @Operation @Operation -> OperationPair [ctor] .
+	op <_,_> : @Reference @Reference -> ReferencePair [ctor] .
+	op <_,_> : @Attribute @Attribute -> AttributePair [ctor] .
+	
+	op [_||_] : Maybe{Bool} Pair -> BoolPair .
+	op [] : -> BoolPairSet .
+	op __ : BoolPairSet BoolPairSet -> BoolPairSet [assoc comm] .
+	
+	var BP : BoolPairSet .
+	var AP : AttributePair .
+	var RP : ReferencePair .
+	
+	eq BP BP = BP .
+	eq [] BP = BP .
+	eq [ true || AP ] BP = BP .
+	eq [ true || RP ] BP = BP .
 endm
-
-view Goal from TRIV to GOAL is
-    sort Elt to Goal .
-endv
-
 
 mod KERMETA-MT is
 	pr KERMETA-SL-CTORS .
 	pr KERMETA-STATEMENTS-MAP .
 	pr MGMAYBE{@Reference} .
-	pr GOAL .
-	pr OCL-SET{Goal} .
+	pr PAIRS .
+	
 	op statements : @Metamodel -> Map{@Label, @Statement} .
 	
 	sort @ModelType .
@@ -122,8 +138,9 @@ mod KERMETA-MT is
 	var OP OP'   : @Operation .
 	var P P'     : @Parameter .
 	var L L'     : MyList .
-    var GS GS'   : Set{Goal} .
-    var G        : Goal .
+    var BG BG'   : BoolPair .
+	var B B4     : Bool .
+    var G        : Pair .
 	var MT MT'   : @ModelType .
 	
 	op _inside_ : @Class @ModelType -> Bool .
@@ -178,16 +195,62 @@ mod KERMETA-MT is
 	eq isCorrespondingClasses(C', C) = (name(C) == name(C')) and-then
 		lookupCorresponding(operations(C), operations(C')) and-then
 		lookupCorresponding(attributes(C), attributes(C')) and-then
-		lookupCorresponding(references(C), references(C')) . --- and-then .
+		lookupCorresponding(references(C), references(C')) .
 
-	op computeDependencies : Goal -> Set{Goal} .
-	eq computeDependencies(< C', C >) = empty . --- computeRefDependencies() computeOpDependencies() .
+	op refgoal : @Reference @Reference @ModelType @ModelType -> BoolPair .
+	eq refgoal(REF', REF, MT', MT) = 
+		if ((type(REF') inside MT') and-then (type(REF) inside MT)) then
+			[ true || < type(REF'), type(REF) > ]
+		else
+			[ ( ( isReadOnly(REF) and-then subTypeOf(type(REF), type(REF')) ) or-else (type(REF') == type(REF)) ) || < REF', REF > ] 
+		fi .
+	--- return [ check ||  ]
 
-	op evaluate : Set{Goal} Set{Goal} -> Bool .
-	eq evaluate(empty, GS')  = true .
-	eq evaluate( (< C', C >, GS), GS') = ( (< C', C > in GS') and-then evaluate(GS, GS') ) or-else
-		( not((< C', C > in GS')) and-then (isCorrespondingClasses(C', C) and-then evaluate((computeDependencies(< C', C >), GS), (< C', C >, GS')) ) ) . 
+	op attgoal : @Attribute @Attribute @ModelType @ModelType -> BoolPair .
+	eq attgoal(ATT', ATT, MT', MT) = 
+		[ ( ( isReadOnly(ATT) and-then subTypeOf(type(ATT), type(ATT')) ) or-else (type(ATT') == type(ATT)) ) || < ATT', ATT > ] .
+		
+	op opgoal : @Operation @Operation @ModelType @ModelType -> BoolPair .
+	eq opgoal(OP', OP, MT', MT) = 
+		if ((type(OP') == null) and-then (type(OP) == null)) then
+			[ true || < OP', OP > ]
+		else if ((type(OP') inside MT') and-then (type(OP) inside MT)) then
+				[ true || < OP', OP > ]
+			else
+				[ type(OP') == type(OP) || < OP', OP > ] 
+			fi 
+		fi .
 
-	op _<#_ : @Class @Class -> Bool .
-	eq C' <# C = evaluate(< C', C >, empty) .
+	op paramgoal : @Parameter @Parameter @ModelType @ModelType -> BoolPair .
+	eq paramgoal(P', P, MT', MT) = 
+		if ((type(P') inside MT') and-then (type(P) inside MT)) then
+			[ true || < type(P'), type(P) > ]
+		else
+			[ type(P') == type(P) || < containingOperation(P'), containingOperation(P) > ] 
+		fi .
+
+	op lookupDependenciesSF : @StructuralFeature MyList -> BoolPairSet . --- @StructuralFeature
+	eq lookupDependenciesSF(SF, nil) = [] .
+	eq lookupDependenciesSF(SF, SF' L) = 
+		if(name(SF) == name(SF')) then --- should be generic over @SF
+			refgoal(SF, SF', metamodel(SF), metamodel(SF')) 
+		else 
+			lookupDependenciesSF(SF, L) 
+		fi .
+	
+	op lookupDependencies : MyList MyList -> BoolPairSet . --- @StructuralFeature, @StructuralFeature
+	eq lookupDependencies(nil, L) = [] .
+	eq lookupDependencies(SF L, L') = lookupDependenciesSF(SF, L') lookupDependencies(L, L') .
+	
+	op computeReferencesDependencies : Pair -> BoolPairSet .
+	eq computeReferencesDependencies( < C', C > ) = lookupDependencies(references(C), references(C')) . 
+	
+	op computeOperationsDependencies : Pair -> BoolPairSet .
+	eq computeOperationsDependencies(G) = [] .
+	
+	op computeDependencies : Pair -> BoolPairSet .
+	eq computeDependencies (G) = computeReferencesDependencies(G) .
+
+	op _<##_ : @Class @Class -> BoolPairSet .
+	eq C' <## C = computeDependencies( < C', C > ) .
 endm
