@@ -557,7 +557,28 @@ endm
 --- red isCorrespondingClasses(ColoredNode@CGPkg, ColoredNode@CGPkg) .
 --- red isCorrespondingClasses(ColoredNode@CGPkg, ColoredNode@CGPkg') .
 
-red Edge@CGPkg' <# Edge@CGPkg .
-red ColoredNode@CGPkg' <# ColoredNode@CGPkg .
-red ColoredNode@CGPkg <# ColoredNode@CGPkg .
-red ColoredNode@CGPkg <# ColoredNode@CGPkg' .
+--- red Edge@CGPkg' <# Edge@CGPkg .
+--- red ColoredNode@CGPkg' <# ColoredNode@CGPkg .
+--- red ColoredNode@CGPkg <# ColoredNode@CGPkg .
+--- red ColoredNode@CGPkg <# ColoredNode@CGPkg' .
+
+--- red [ true  || < Edge@CGPkg', Edge@CGPkg >] .
+--- red [ false || < Edge@CGPkg', Edge@CGPkg >] .
+--- red [ true  || null ] .
+
+--- red refgoal(nodes@ColoredGraph@CGPkg', nodes@ColoredGraph@CGPkg, RGBColoredGraphMT, ColoredGraphMT) .
+--- red refgoal(nodes@ColoredGraph@CGPkg', nodes@ColoredGraph@CGPkg, ColoredGraphMT, ColoredGraphMT) .
+--- red refgoal(nodes@ColoredGraph@CGPkg, nodes@ColoredGraph@CGPkg, RGBColoredGraphMT, RGBColoredGraphMT) .
+
+--- red attgoal(name@ColoredNode@CGPkg', name@Color@CGPkg, RGBColoredGraphMT, ColoredGraphMT) .
+
+--- red opgoal(set@ColoredNode@CGPkg', set@ColoredNode@CGPkg, RGBColoredGraphMT, ColoredGraphMT) .
+
+--- red computeDependencies( < ColoredGraph@CGPkg', ColoredGraph@CGPkg >) .
+--- red computeDependencies( < ColoredNode@CGPkg', ColoredNode@CGPkg >) .
+
+--- red Edge@CGPkg' <#  Edge@CGPkg .
+--- red Edge@CGPkg  <#  Edge@CGPkg' .
+red ColoredNode@CGPkg' <##  ColoredNode@CGPkg .
+red ColoredNode@CGPkg  <##  ColoredNode@CGPkg .
+red ColoredNode@CGPkg  <##  ColoredNode@CGPkg' .
