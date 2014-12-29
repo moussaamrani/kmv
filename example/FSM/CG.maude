@@ -524,6 +524,8 @@ mod MODELTYPE-TEST is
 	pr ColoredGraphPrimedMT .
 endm
 
+--- set trace on . set trace select on . trace select check eval .
+
 --- red isReadOnly(edges@ColoredGraph@CGPkg) .
 
 --- red RGBEncoding@CGPkg' inside ColoredGraphMT .
@@ -558,7 +560,7 @@ endm
 --- red isCorrespondingClasses(ColoredNode@CGPkg, ColoredNode@CGPkg') .
 
 --- red Edge@CGPkg' <# Edge@CGPkg .
---- red ColoredNode@CGPkg' <# ColoredNode@CGPkg .
+--- red ColoredNode@CGPkg' <## ColoredNode@CGPkg .
 --- red ColoredNode@CGPkg <# ColoredNode@CGPkg .
 --- red ColoredNode@CGPkg <# ColoredNode@CGPkg' .
 
@@ -577,8 +579,25 @@ endm
 --- red computeDependencies( < ColoredGraph@CGPkg', ColoredGraph@CGPkg >) .
 --- red computeDependencies( < ColoredNode@CGPkg', ColoredNode@CGPkg >) .
 
---- red Edge@CGPkg' <#  Edge@CGPkg .
---- red Edge@CGPkg  <#  Edge@CGPkg' .
-red ColoredNode@CGPkg' <##  ColoredNode@CGPkg .
-red ColoredNode@CGPkg  <##  ColoredNode@CGPkg .
-red ColoredNode@CGPkg  <##  ColoredNode@CGPkg' .
+--- red Edge@CGPkg' <##  Edge@CGPkg .
+--- red Edge@CGPkg  <##  Edge@CGPkg' .
+--- red ColoredNode@CGPkg' <##  ColoredNode@CGPkg .
+--- red ColoredNode@CGPkg  <##  ColoredNode@CGPkg .
+--- red ColoredNode@CGPkg  <##  ColoredNode@CGPkg' .
+--- red ColoredGraph@CGPkg' <## ColoredGraph@CGPkg .
+
+--- red eval(<> ° ColoredNode@CGPkg' <##  ColoredNode@CGPkg) .
+--- red eval(<> ° ([true || < get@ColoredNode@CGPkg',get@ColoredNode@CGPkg >], [true || < set@ColoredNode@CGPkg',set@ColoredNode@CGPkg >], [true || < newColor@set@ColoredNode@CGPkg',newColor@set@ColoredNode@CGPkg' >], [null || < Edge@CGPkg',Edge@CGPkg >], [false || < Color@CGPkg',Color@CGPkg >])) .
+
+--- red eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>) .
+--- red eval(eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>)) .
+--- red eval(eval(eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>))) .
+--- red eval(eval(eval(eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>)))) .
+--- red eval(eval(eval(eval(eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>))))) .
+--- red eval(eval(eval(eval(eval(eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>)))))) .
+--- red eval(eval(eval(eval(eval(eval(eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>))))))) .
+--- red eval(eval(eval(eval(eval(eval(eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>))))))) == eval(eval(eval(eval(eval(eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>)))))) .
+
+--- red verdict(eval(eval(eval(eval(eval(<| < ColoredNode@CGPkg', ColoredNode@CGPkg > ; empty |>)))))) .
+
+red ColoredNode@CGPkg' <# ColoredNode@CGPkg .
