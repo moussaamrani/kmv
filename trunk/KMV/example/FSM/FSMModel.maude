@@ -1,8 +1,6 @@
---- set trace on .
-
 mod FSM-MODEL is
 	protecting FSM-MM .
-	protecting MAUDELING .
+	protecting KERMETA .
 	
 	op FSMModel : -> @Model .
 	eq FSMModel = FiniteStateMachine {
@@ -113,5 +111,7 @@ endm
 --- reduce << current@accept@FSM@FSM ; env(putVar(current@accept@FSM@FSM <- 'one , putVar(i@getStart@FSM@FSM <- 0, putVar(self <- 'fsm , empty)))) ; FSMModel >> .
 
 --- reduce << toEval@accept@FSM@FSM -> at(i@accept@FSM@FSM) ; env(putVar(toEval@accept@FSM@FSM  <- Sequence{"a" # "b" # "c"} , putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 1, putVar(self <- 'fsm , empty))))) ; FSMModel >> .
+
 --- reduce exec(<| [FSM, FSM@FSM, accept@FSM@FSM,    1], NOPE , < FSMModel ## putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 0, putVar(self <- 'fsm, empty))) > , 0 |>) .
 
+reduce run(<| [FSM, FSM@FSM, accept@FSM@FSM,    1], NOPE , < FSMModel ## putVar(current@accept@FSM@FSM <- 'one , putVar(i@accept@FSM@FSM <- 0, putVar(self <- 'fsm, empty))) > , 0 |>) .

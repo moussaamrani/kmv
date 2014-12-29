@@ -29,7 +29,7 @@ mod FSM-MM is
 	eq name( Kind@FSM ) = "Kind" .
 	eq package( Kind@FSM ) = FSM .
 	eq defaultValue( Kind@FSM ) = NORMAL@Kind@FSM .
-	eq literals( Kind@FSM ) = __( NORMAL@Kind@FSM , START@Kind@FSM , STOP@Kind@FSM ) .
+	eq literals( Kind@FSM ) = NORMAL@Kind@FSM # START@Kind@FSM # STOP@Kind@FSM  .
 
 
 
