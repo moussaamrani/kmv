@@ -97,35 +97,39 @@ mod PAIRS is
 	pr KERMETA-SL-CTORS .
 	pr MGMAYBE{Bool} .
 	sorts EmptyPair AttributePair ReferencePair OperationPair ParameterPair ClassPair Pair .
-	sorts BoolPair BoolPairSet .
-	subsort EmptyPair AttributePair ReferencePair OperationPair ParameterPair ClassPair < Pair .
-	subsort BoolPair < BoolPairSet .
+	subsort EmptyPair < AttributePair ReferencePair OperationPair ParameterPair ClassPair < Pair .
+
+	op <<>>    : -> EmptyPair .
 	op <_,_> : @Class @Class -> ClassPair [ctor] .
 	op <_,_> : @Parameter @Parameter -> ParameterPair [ctor] .
 	op <_,_> : @Operation @Operation -> OperationPair [ctor] .
 	op <_,_> : @Reference @Reference -> ReferencePair [ctor] .
 	op <_,_> : @Attribute @Attribute -> AttributePair [ctor] .
 	
-	op [_||_] : Maybe{Bool} Pair -> BoolPair .
-	op [] : -> BoolPairSet .
-	op __ : BoolPairSet BoolPairSet -> BoolPairSet [assoc comm] .
-	
-	var BP : BoolPairSet .
-	var AP : AttributePair .
-	var RP : ReferencePair .
-	
-	eq BP BP = BP .
-	eq [] BP = BP .
-	eq [ true || AP ] BP = BP .
-	eq [ true || RP ] BP = BP .
+
+	sorts BoolPair .
+
+	op [_||_] : Maybe{Bool} Pair -> BoolPair [ctor] .
+endm
+
+view BoolPair from TRIV to PAIRS is
+	sort Elt to BoolPair .
+endv
+
+mod BOOLPAIRSET is
+	pr KERMETA-STATEMENTS-MAP .
+	pr PAIRS .
+	pr OCL-SET{BoolPair} * (sort Set{BoolPair} to BoolPairSet) .
+
+	var C C' : @Class .
+	var BPS  : BoolPairSet .
+	eq [ null || < C', C >], [ true  || < C', C >], BPS = [ true  || < C', C >], BPS .
+	eq [ null || < C', C >], [ false || < C', C >], BPS = [ false || < C', C >], BPS .
 endm
 
 mod KERMETA-MT is
-	pr KERMETA-SL-CTORS .
-	pr KERMETA-STATEMENTS-MAP .
 	pr MGMAYBE{@Reference} .
-	pr PAIRS .
-	
+	pr BOOLPAIRSET .
 	op statements : @Metamodel -> Map{@Label, @Statement} .
 	
 	sort @ModelType .
@@ -137,14 +141,32 @@ mod KERMETA-MT is
 	var SF SF'   : @StructuralFeature .
 	var OP OP'   : @Operation .
 	var P P'     : @Parameter .
+	var EXP EXP' : OCL-Exp .
+	var EL EL'   : List{OCL-Exp} .
 	var L L'     : MyList .
-    var BG BG'   : BoolPair .
+	var BP BP'   : BoolPair .
+    var BPS BPS' : BoolPairSet .
 	var B B4     : Bool .
-    var G        : Pair .
+    var PAIR PAIR' : Pair .
+    var CLASSPAIR CLASSPAIR' : ClassPair .
 	var MT MT'   : @ModelType .
+	var ENUM ENUM' : @Enumeration .
+	var EINST EINST' : @EnumerationInstance .
 	
 	op _inside_ : @Class @ModelType -> Bool .
 	eq C inside MT = (C in allClasses(MT)) .
+
+	op _<#_ : @Enumeration @Enumeration -> Bool .
+	eq ENUM' <# ENUM = (name(ENUM') == name(ENUM)) and-then 
+		isCorrespondingEnumerations(literals(ENUM'), literals(ENUM)) .
+	
+	op isCorrespondingEnumerations : List{OCL-Exp} List{OCL-Exp} -> Bool . --- @StructuralFeature, @StructuralFeature
+	eq isCorrespondingEnumerations(mt-ord, EL) = true .
+	eq isCorrespondingEnumerations(EXP # EL, EL') = isCorrespondingEnumerations$(EXP, EL') and-then isCorrespondingEnumerations(EL, EL') .
+	
+	op isCorrespondingEnumerations$ : OCL-Exp List{OCL-Exp} -> Bool .
+	eq isCorrespondingEnumerations$(EXP, mt-ord) = false .
+	eq isCorrespondingEnumerations$(EXP, EXP' # EL) = (name(EXP') == name(EXP)) or-else isCorrespondingEnumerations$(EXP, EL) .
 
 	op isCorrespondingProperties : @StructuralFeature @StructuralFeature -> Bool .
 	eq isCorrespondingProperties(SF', SF) = (name(SF') == name(SF)) and-then 
@@ -154,9 +176,26 @@ mod KERMETA-MT is
 		(lowerBound(SF)    ==    lowerBound(SF')) and-then
 		(upperBound(SF)    ==    upperBound(SF')) .
 
+	op requiredReferences : @Class -> @MyList . --- of @Reference
+	eq requiredReferences(C) = requiredReferences(references(C)) .
+	
+	op requiredReferences : MyList -> MyList . --- of @Reference
+	eq requiredReferences(nil) = nil .
+	eq requiredReferences(REF L) = 
+		if (isRequired(REF)) then
+			REF requiredReferences(L)
+		else
+			requiredReferences(L)
+		fi
+	.
+
 	op _<#_ : @Attribute @Attribute -> Bool .
 	eq ATT' <# ATT = ( isCorrespondingProperties(ATT', ATT) ) and-then
-		( (type(ATT') == type(ATT)) or-else ( isReadOnly(ATT) and-then subTypeOf(type(ATT'), type(ATT)) ) ) .
+		if(type(ATT') :: @Enumeration and-then type(ATT) :: @Enumeration) then
+			type(ATT') <# type(ATT')
+		else
+			( (type(ATT') == type(ATT)) or-else ( isReadOnly(ATT) and-then subTypeOf(type(ATT'), type(ATT)) ) ) 
+		fi .
 
 	op _<#_ : @Reference @Reference -> Bool .
 	eq REF' <# REF =  isCorrespondingProperties(REF', REF) and-then
@@ -197,60 +236,100 @@ mod KERMETA-MT is
 		lookupCorresponding(attributes(C), attributes(C')) and-then
 		lookupCorresponding(references(C), references(C')) .
 
-	op refgoal : @Reference @Reference @ModelType @ModelType -> BoolPair .
-	eq refgoal(REF', REF, MT', MT) = 
-		if ((type(REF') inside MT') and-then (type(REF) inside MT)) then
-			[ true || < type(REF'), type(REF) > ]
-		else
-			[ ( ( isReadOnly(REF) and-then subTypeOf(type(REF), type(REF')) ) or-else (type(REF') == type(REF)) ) || < REF', REF > ] 
-		fi .
-	--- return [ check ||  ]
+	op isCorrespondingInstanceClasses : @Class @Class -> Bool .
+	eq isCorrespondingInstanceClasses(C', C) = (name(C) == name(C')) and-then
+		(isAbstract(C') implies isAbstract(C)) and-then
+		lookupCorresponding(operations(C), operations(C')) and-then
+		lookupCorresponding(attributes(C), attributes(C')) and-then
+		lookupCorresponding(references(C), references(C')) and-then 
+		lookupCorresponding(references(C), references(C')) .
 
-	op attgoal : @Attribute @Attribute @ModelType @ModelType -> BoolPair .
-	eq attgoal(ATT', ATT, MT', MT) = 
-		[ ( ( isReadOnly(ATT) and-then subTypeOf(type(ATT), type(ATT')) ) or-else (type(ATT') == type(ATT)) ) || < ATT', ATT > ] .
+	op goal : @Reference @Reference @ModelType @ModelType -> BoolPairSet .
+	eq goal(REF', REF, MT', MT) = 
+		if ((type(REF) inside MT) and-then (type(REF') inside MT')) then
+			[ null || < type(REF), type(REF') > ]
+		else
+			[ ( ( isReadOnly(REF') and-then subTypeOf(type(REF'), type(REF)) ) or-else (type(REF) == type(REF')) ) || < REF, REF' > ] 
+		fi .
 		
-	op opgoal : @Operation @Operation @ModelType @ModelType -> BoolPair .
-	eq opgoal(OP', OP, MT', MT) = 
+	op goal : @Attribute @Attribute @ModelType @ModelType -> BoolPairSet .
+	eq goal(ATT', ATT, MT', MT) = 
+		[ (type(ATT') :: @Enumeration) or-else ( ( isReadOnly(ATT') and-then subTypeOf(type(ATT'), type(ATT)) ) or-else (type(ATT) == type(ATT')) ) || < ATT, ATT' > ] .
+	
+	op goal : @Operation @Operation @ModelType @ModelType -> BoolPairSet .
+	eq goal(OP', OP, MT', MT) = goal$(OP', OP, MT', MT), 
+		goalParameters(OP', OP, parameters(OP'), parameters(OP), MT', MT) .
+		
+	op goal$ : @Operation @Operation @ModelType @ModelType -> BoolPairSet .
+	eq goal$(OP', OP, MT', MT) = 
 		if ((type(OP') == null) and-then (type(OP) == null)) then
-			[ true || < OP', OP > ]
-		else if ((type(OP') inside MT') and-then (type(OP) inside MT)) then
-				[ true || < OP', OP > ]
-			else
-				[ type(OP') == type(OP) || < OP', OP > ] 
+			[ true || < OP, OP' > ]
+		else if ((type(OP') :: @DataType) and-then (type(OP) :: @DataType)) then
+				[ subTypeOf(type(OP), type(OP')) || < OP, OP' > ]
+			else if ((type(OP') inside MT') and-then (type(OP) inside MT)) then
+					[ null || < type(OP), type(OP') > ], [ true || < OP, OP' > ]
+				else
+					[ type(OP) == type(OP') || < OP, OP' > ] 
+				fi 
 			fi 
 		fi .
 
-	op paramgoal : @Parameter @Parameter @ModelType @ModelType -> BoolPair .
-	eq paramgoal(P', P, MT', MT) = 
-		if ((type(P') inside MT') and-then (type(P) inside MT)) then
-			[ true || < type(P'), type(P) > ]
-		else
-			[ type(P') == type(P) || < containingOperation(P'), containingOperation(P) > ] 
+	op goalParameters : @Operation @Operation MyList MyList @ModelType @ModelType -> BoolPairSet .
+	eq goalParameters(OP', OP, null, null, MT', MT) = empty .
+	eq goalParameters(OP', OP, nil, nil, MT', MT)   = empty .
+	eq goalParameters(OP', OP, P' L', P L, MT', MT) = (goal(P', P, MT', MT), goalParameters(OP', OP, L', L, MT', MT)) .
+	eq goalParameters(OP', OP, L', L, MT', MT) = [ false || < OP, OP' >] [owise] .
+
+	op goal : @Parameter @Parameter @ModelType @ModelType -> BoolPairSet .
+	eq goal(P', P, MT', MT) = 
+		if ((type(P') :: @DataType) and-then (type(P) :: @DataType)) then
+			[ subTypeOf(type(P), type(P')) || < P, P' > ]
+		else if ((type(P') inside MT') and-then (type(P) inside MT)) then
+				[ null || < type(P), type(P') > ], [ true || < P, P' >]
+			else 
+				[ type(P) == type(P') || < containingOperation(P), containingOperation(P') > ], [ true || < P, P' >]
+			fi 
 		fi .
 
 	op lookupDependenciesSF : @StructuralFeature MyList -> BoolPairSet . --- @StructuralFeature
-	eq lookupDependenciesSF(SF, nil) = [] .
+	eq lookupDependenciesSF(SF, nil) = empty .
 	eq lookupDependenciesSF(SF, SF' L) = 
-		if(name(SF) == name(SF')) then --- should be generic over @SF
-			refgoal(SF, SF', metamodel(SF), metamodel(SF')) 
+		if(name(SF) == name(SF')) then
+			goal(SF, SF', metamodel(SF), metamodel(SF')) 
 		else 
 			lookupDependenciesSF(SF, L) 
 		fi .
 	
 	op lookupDependencies : MyList MyList -> BoolPairSet . --- @StructuralFeature, @StructuralFeature
-	eq lookupDependencies(nil, L) = [] .
-	eq lookupDependencies(SF L, L') = lookupDependenciesSF(SF, L') lookupDependencies(L, L') .
-	
-	op computeReferencesDependencies : Pair -> BoolPairSet .
-	eq computeReferencesDependencies( < C', C > ) = lookupDependencies(references(C), references(C')) . 
-	
-	op computeOperationsDependencies : Pair -> BoolPairSet .
-	eq computeOperationsDependencies(G) = [] .
-	
-	op computeDependencies : Pair -> BoolPairSet .
-	eq computeDependencies (G) = computeReferencesDependencies(G) .
+	eq lookupDependencies(nil, L) = empty .
+	eq lookupDependencies(SF L, L') = lookupDependenciesSF(SF, L'), lookupDependencies(L, L') .
+ 
+ 	op computeDependencies : Pair -> BoolPairSet .
+	eq computeDependencies (< C', C >) = lookupDependencies(references(C), references(C')), 
+		lookupDependencies(attributes(C), attributes(C')), 
+		lookupDependencies(operations(C), operations(C')) .
 
-	op _<##_ : @Class @Class -> BoolPairSet .
-	eq C' <## C = computeDependencies( < C', C > ) .
+	sort Config .
+	op <|_;_|> : ClassPair BoolPairSet -> Config .
+
+	var CFG CFG' : Config .
+
+	op verdict : Config -> Bool .
+	eq verdict(<| CLASSPAIR ; [ false || PAIR ], BPS |>) = false .
+	eq verdict(CFG) = true [owise] .
+
+	op eval : Config -> Config .
+	eq eval(<| <<>>      ; ([ null  || CLASSPAIR ], BPS) |>) = <| CLASSPAIR ; BPS |> .
+	eq eval(<| < C', C > ;                          BPS  |>) = <| <<>> ; [ (isCorrespondingClasses(C', C)) || < C', C > ], BPS, computeDependencies(< C', C >) |> .
+	eq eval(CFG) = CFG [owise] .
+
+	op check : Config -> Bool .
+	ceq check(CFG) = if(CFG' == CFG) then verdict(CFG') else check(CFG') fi 
+		if CFG' := eval(CFG) .
+	
+	op _<#_ : @Class @Class -> Bool .
+	eq C' <# C = check(<| < C', C > ; empty |>) .
+	
+	op _<#_ : @ModelType @ModelType -> Bool .
+
 endm

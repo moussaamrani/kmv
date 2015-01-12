@@ -1,4 +1,4 @@
-cd /cygdrive/f/Workspace/KMV/
+cd /cygdrive/z/Workspace/Maude/KMV/
 load syntax/model-checker.maude 
 load syntax/mmOdCL.maude
 load syntax/MMGDefinitions.maude
