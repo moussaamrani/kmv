@@ -1,0 +1,122 @@
+cd /cygdrive/w/Workspace/KMV/trunk/KMV
+load syntax/model-checker.maude 
+load syntax/mmOdCL.maude
+load syntax/MMGDefinitions.maude
+
+view @Class from TRIV to METAMODEL-CTORS is
+  sort Elt to @Class .
+endv
+
+mod KERMETA-STMT-PREP is
+	sort @Statement .
+endm
+
+mod KERMETA-SL-CTORS is
+	pr METAMODEL-PROP .
+	pr MGLIST{@NamedElement} * (sort MGList{@NamedElement} to MyList) .
+
+	pr MGMAYBE{@Class} . 
+
+	--- Operation & Parameters signature
+	sort @Operation @Parameter @Variable @LocalVariable .
+	subsort @Variable @Parameter < @LocalVariable < Vid .
+	subsort @Operation @Parameter @LocalVariable < @StructuralFeature .
+	op self : -> @LocalVariable .
+	op isReadOnly : @Attribute -> Bool . --- Added for compatibility
+	op isReadOnly : @Reference -> Bool . --- Added for compatibility
+	op operations : @Class -> MyList . --- of @Operation
+	op isAbstract : @Operation -> Bool .
+	op from : @StructuralFeature -> Maybe{@Class} .
+	op containingOperation : @Parameter -> @Operation .
+	op containingOperation : @Variable  -> @Operation .
+   	op parameters : @Operation -> MyList . --- of @Parameter
+	op variables : @Operation -> MyList .  --- of @Variable
+					
+	--- Label
+	sort @Label @LabelNxt .
+	op [_,_,_,_] : @Package @Class @Operation Nat -> @Label [ctor] .
+	--- default label
+	op [] : -> @Label .
+	op <_,_> : @Label @Label -> @LabelNxt [ctor] .
+	op nxt : @Label -> @LabelNxt .
+	op labels : @Operation -> MyList . --- of @Label
+	
+	var LV : @LocalVariable .
+	op defaultValue : @LocalVariable -> OCL-Type .
+	eq defaultValue(LV) = 
+		if isMany(LV) then
+			if isOrdered(LV) then
+				if isUnique(LV) then
+					OrderedSet{}
+				else
+					Sequence{}
+				fi
+			else
+				if isUnique(LV) then
+					Set{}
+				else
+					Bag{}
+				fi
+			fi
+		else 
+			if type(LV) :: @DataType then
+				defaultValue(type(LV))
+			else
+				null
+			fi
+		fi .
+endm
+
+view @Label from TRIV to KERMETA-SL-CTORS is
+  	sort Elt to @Label .
+endv
+
+view @Statement from TRIV to KERMETA-STMT-PREP is
+ 	sort Elt to @Statement .
+endv
+
+view @Operation from TRIV to KERMETA-SL-CTORS is
+ 	sort Elt to @Operation .
+endv
+
+view @LocalVariable from TRIV to KERMETA-SL-CTORS is
+	sort Elt to @LocalVariable .	
+endv
+
+view OCL-Type from TRIV to MGmOdCL is
+    sort Elt to OCL-Type .
+endv
+
+mod KERMETA-STATEMENTS-MAP is
+	pr MAP{@Label, @Statement} .
+	pr MAP{@LocalVariable, OCL-Type} .
+endm
+
+mod KERMETA-MT is
+	pr MGMAYBE{@Reference} .
+	--- pr BOOLPAIRSET .
+	pr KERMETA-SL-CTORS .
+	pr KERMETA-STATEMENTS-MAP .
+	
+	sorts @Transformation @ModelType .
+	subsort @Metamodel < @ModelType .
+	op transformations : @ModelType -> MyList . --- of @Transformation
+	op isAbstract : @Transformation -> Bool .
+	op containingModelType : @Transformation -> @ModelType .
+	op containingTransformation : @Parameter -> @Transformation .
+	op containingTransformation : @Variable -> @Transformation .
+	op parameters : @Transformation -> MyList . --- of @Parameter
+	op variables  : @Transformation -> MyList . --- of @Variable
+	op statements : @Transformation -> Map{@Label, @Statement} .
+
+
+
+	var C C'     : @Class .
+	var MT MT'   : @ModelType .
+
+	
+	op _inside_ : @Class @ModelType -> Bool .
+	eq C inside MT = (C in allClasses(MT)) .
+
+
+endm
