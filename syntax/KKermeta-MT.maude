@@ -1,4 +1,4 @@
-cd /cygdrive/z/Workspace/Maude/KMV/
+cd /cygdrive/w/Workspace/KMV/trunk/KMV
 load syntax/model-checker.maude 
 load syntax/mmOdCL.maude
 load syntax/MMGDefinitions.maude
@@ -168,14 +168,20 @@ mod KERMETA-MT is
 	eq isCorrespondingEnumerations$(EXP, mt-ord) = false .
 	eq isCorrespondingEnumerations$(EXP, EXP' # EL) = (name(EXP') == name(EXP)) or-else isCorrespondingEnumerations$(EXP, EL) .
 
-	op isCorrespondingProperties : @StructuralFeature @StructuralFeature -> Bool .
-	eq isCorrespondingProperties(SF', SF) = (name(SF') == name(SF)) and-then 
-		(isReadOnly(SF') implies isReadOnly(SF))  and-then
-		(isUnique(SF')     ==    isUnique(SF))    and-then
-		(isOrdered(SF)   implies isOrdered(SF'))  and-then 
+	op isCorrespondingMultiplicities : @StructuralFeature @StructuralFeature -> Bool .
+	eq isCorrespondingMultiplicities(SF', SF) = 
 		(lowerBound(SF)    ==    lowerBound(SF')) and-then
-		(upperBound(SF)    ==    upperBound(SF')) .
-
+		(upperBound(SF)    ==    upperBound(SF')) and-then
+		(isUnique(SF')     ==    isUnique(SF))    and-then
+		(isOrdered(SF)   implies isOrdered(SF')) 
+	.
+	
+	op isCorrespondingProperties : @StructuralFeature @StructuralFeature -> Bool .
+	eq isCorrespondingProperties(SF', SF) = (name(SF') == name(SF)) and-then
+		isCorrespondingMultiplicities(SF', SF) and-then 
+		(isReadOnly(SF') implies isReadOnly(SF))
+	.
+	
 	op requiredReferences : @Class -> @MyList . --- of @Reference
 	eq requiredReferences(C) = requiredReferences(references(C)) .
 	
@@ -193,7 +199,7 @@ mod KERMETA-MT is
 	eq ATT' <# ATT = ( isCorrespondingProperties(ATT', ATT) ) and-then
 		if(type(ATT') :: @Enumeration and-then type(ATT) :: @Enumeration) then
 			type(ATT') <# type(ATT')
-		else 
+		else
 			( (type(ATT') == type(ATT)) or-else ( isReadOnly(ATT) and-then subTypeOf(type(ATT'), type(ATT)) ) ) 
 		fi .
 
@@ -201,10 +207,12 @@ mod KERMETA-MT is
 	eq REF' <# REF =  isCorrespondingProperties(REF', REF) and-then
 		(isContainment(REF') == isContainment(REF)) and-then 
 		( not(opposite(REF) == null) implies not(opposite(REF') == null) ) and-then 
-		(name(opposite(REF)) == name(opposite(REF'))) .
+		( name(opposite(REF)) == name(opposite(REF')) ) and-then
+		( (type(REF') in meta(REF)) and-then (type(REF) in meta(REF)) and-then (type(REF') <# type(REF)) ).
 
 	op _<#_ : @Operation @Operation -> Bool .
 	eq OP' <# OP = (name(OP') == name(OP)) and-then
+		( ( (type(OP') in meta(OP)) and-then (type(OP) in meta(OP)) and-then (type(OP') <# type(OP)) ) or-else (isSubType(type(OP'), type(OP))) )
 		isCorrespondingParameters(parameters(OP), parameters(OP')) .
 	
 	op isCorrespondingParameters : MyList MyList -> Bool . --- of @Parameter @Parameter
@@ -216,11 +224,7 @@ mod KERMETA-MT is
 	eq isCorrespondingParameters(L', L) = false [owise] .
 		
 	op isCorrespondingParameter : @Parameter @Parameter -> Bool .
-	eq isCorrespondingParameter(P', P) = 
-		(lowerBound(P')   ==    lowerBound(P)) and-then
-		(upperBound(P')   ==    upperBound(P)) and-then
-		(isUnique(P')     ==    isUnique(P))   and-then
-		(isOrdered(P')  implies isOrdered(P))  .
+	eq isCorrespondingParameter(P', P) = isCorrespondingMultiplicities(P, P) .
 
 	op lookupCorrespondingSF : @StructuralFeature MyList -> Bool . --- @StructuralFeature
 	eq lookupCorrespondingSF(SF, nil) = false .
