@@ -112,11 +112,130 @@ mod KERMETA-MT is
 
 
 	var C C'     : @Class .
+	var ATT ATT' : @Attribute .
+	var REF REF' : @Reference .
+	var SF SF'   : @StructuralFeature .
+	var OP OP'   : @Operation .
+	var P P'     : @Parameter .
+	var EXP EXP' : OCL-Exp .
+	var EL EL'   : List{OCL-Exp} .
+	var L L'     : MyList .
+---	var BP BP'   : BoolPair .
+--- var BPS BPS' : BoolPairSet .
+	var B B4     : Bool .
+--- var PAIR PAIR' : Pair .
+--- var CLASSPAIR CLASSPAIR' : ClassPair .
 	var MT MT'   : @ModelType .
-
+	var ENUM ENUM' : @Enumeration .
+	var EINST EINST' : @EnumerationInstance .
 	
 	op _inside_ : @Class @ModelType -> Bool .
 	eq C inside MT = (C in allClasses(MT)) .
 
+
+
+	---------------------------
+	--- STRUCTURAL FEATURES ---
+	---------------------------
+
+
+	op isCorrespondingProperties : @StructuralFeature @StructuralFeature -> Bool .
+	eq isCorrespondingProperties(SF', SF) = (name(SF') == name(SF)) and-then 
+		(isReadOnly(SF') implies isReadOnly(SF))  and-then
+		(isUnique(SF')     ==    isUnique(SF))    and-then
+		(isOrdered(SF)   implies isOrdered(SF'))  and-then 
+		(lowerBound(SF)    ==    lowerBound(SF')) and-then
+		(upperBound(SF)    ==    upperBound(SF')) .
+
+
+	--------------------
+	--- ENUMERATIONS ---
+	--------------------
+
+	op _<#_ : @Enumeration @Enumeration -> Bool .
+	eq ENUM' <# ENUM = (name(ENUM') == name(ENUM)) and-then 
+		isCorrespondingEnumerations(literals(ENUM'), literals(ENUM)) .
+	
+	op isCorrespondingEnumerations : List{OCL-Exp} List{OCL-Exp} -> Bool . --- @StructuralFeature, @StructuralFeature
+	eq isCorrespondingEnumerations(mt-ord, EL) = true .
+	eq isCorrespondingEnumerations(EXP # EL, EL') = isCorrespondingEnumerations$(EXP, EL') and-then isCorrespondingEnumerations(EL, EL') .
+	
+	op isCorrespondingEnumerations$ : OCL-Exp List{OCL-Exp} -> Bool .
+	eq isCorrespondingEnumerations$(EXP, mt-ord) = false .
+	eq isCorrespondingEnumerations$(EXP, EXP' # EL) = (name(EXP') == name(EXP)) or-else isCorrespondingEnumerations$(EXP, EL) .
+
+	------------------
+	--- ATTRIBUTES ---
+	------------------
+
+	op _<#_ : @Attribute @Attribute -> Bool .
+	eq ATT' <# ATT = ( isCorrespondingProperties(ATT', ATT) ) and-then
+		if(type(ATT') :: @Enumeration and-then type(ATT) :: @Enumeration) then
+			type(ATT') <# type(ATT')
+		else 
+			( (type(ATT') == type(ATT)) or-else ( isReadOnly(ATT) and-then subTypeOf(type(ATT'), type(ATT)) ) ) 
+		fi .
+
+	------------------
+	--- REFERENCES ---
+	------------------
+
+
+	op _<#_ : @Reference @Reference -> Bool .
+	eq REF' <# REF =  isCorrespondingProperties(REF', REF) and-then
+		(isContainment(REF') == isContainment(REF)) and-then 
+		( not(opposite(REF) == null) implies not(opposite(REF') == null) ) and-then 
+		(name(opposite(REF)) == name(opposite(REF'))) .
+
+	------------------
+	--- OPERATIONS ---
+	------------------
+
+	op _<#_ : @Operation @Operation -> Bool .
+	eq OP' <# OP = (name(OP') == name(OP)) and-then
+		isCorrespondingParameters(parameters(OP), parameters(OP')) .
+	
+	op isCorrespondingParameters : MyList MyList -> Bool . --- of @Parameter @Parameter
+	eq isCorrespondingParameters(null, null)   = true . --- empty parameter lists
+	eq isCorrespondingParameters(nil, nil)   = true .
+	eq isCorrespondingParameters(P' L', P L) = 
+		isCorrespondingParameter(P', P) and-then
+		isCorrespondingParameters(L', L) .
+	eq isCorrespondingParameters(L', L) = false [owise] .
+		
+	op isCorrespondingParameter : @Parameter @Parameter -> Bool .
+	eq isCorrespondingParameter(P', P) = 
+		(lowerBound(P')   ==    lowerBound(P)) and-then
+		(upperBound(P')   ==    upperBound(P)) and-then
+		(isUnique(P')     ==    isUnique(P))   and-then
+		(isOrdered(P')  implies isOrdered(P))  .
+
+	--------------
+	--- LOOKUP ---
+	--------------
+
+	op lookupCorrespondingSF : @StructuralFeature MyList -> Bool . --- @StructuralFeature
+	eq lookupCorrespondingSF(SF, nil) = false .
+	eq lookupCorrespondingSF(SF, SF' L) = (SF <# SF') or-else lookupCorrespondingSF(SF, L) .
+
+	op lookupCorresponding : MyList MyList -> Bool . --- @StructuralFeature, @StructuralFeature
+	eq lookupCorresponding(nil, L) = true .
+	eq lookupCorresponding(SF L, L') = lookupCorrespondingSF(SF, L') and-then lookupCorresponding(L, L') .
+	
+	op isCorrespondingClasses : @Class @Class -> Bool .
+	eq isCorrespondingClasses(C', C) = (name(C) == name(C')) and-then
+		lookupCorresponding(operations(C), operations(C')) and-then
+		lookupCorresponding(attributes(C), attributes(C')) and-then
+		lookupCorresponding(references(C), references(C')) .
+
+	---------------
+	--- CLASSES ---
+	---------------
+
+	op isCorrespondingClasses : @Class @Class -> Bool .
+	eq isCorrespondingClasses(C', C) = (name(C) == name(C')) and-then
+		lookupCorresponding(operations(C), operations(C')) and-then
+		lookupCorresponding(attributes(C), attributes(C')) and-then
+		lookupCorresponding(references(C), references(C')) .
 
 endm

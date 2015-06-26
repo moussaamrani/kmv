@@ -1,0 +1,212 @@
+load /cygdrive/w/Workspace/KMV/trunk/KMV/syntax/KermetaMT.maude
+
+mod ColoredGraphPrimaryMT is
+	protecting KERMETA-MT .
+
+	*** Metamodel & Package ***
+
+	--- Metamodel declaration	  
+	op ColoredGraphMT : -> @Metamodel .
+	eq name(ColoredGraphMT) = "ColoredGraphMT" .
+	eq packages (ColoredGraphMT) = ColoredGraphPkg .
+	
+	--- Package declaration
+	op ColoredGraphPkg : -> @Package .
+	eq name(ColoredGraphPkg) = "ColoredGraph" .
+	eq metamodel(ColoredGraphPkg) = ColoredGraphMT .
+	eq superPackage(ColoredGraphPkg) = null .
+	eq subPackages(ColoredGraphPkg) = nil .
+	eq classes(ColoredGraphPkg) = __(ColoredGraph@ColoredGraphPkg, ColoredNode@ColoredGraphPkg, Edge@ColoredGraphPkg, Color@ColoredGraphPkg) .
+	
+	*** Classes ***
+	
+	--- ColoredGraph
+	
+	sort ColoredGraph@ColoredGraphPkg .
+	subsort ColoredGraph@ColoredGraphPkg < @Class .
+	op ColoredGraph@ColoredGraphPkg : -> ColoredGraph@ColoredGraphPkg .
+	eq name(ColoredGraph@ColoredGraphPkg) = "ColoredGraph" .
+	eq isAbstract(ColoredGraph@ColoredGraphPkg) = false .
+	eq package(ColoredGraph@ColoredGraphPkg) = ColoredGraphPkg .
+	eq superTypes (ColoredGraph@ColoredGraphPkg) = nil .
+	eq references (ColoredGraph@ColoredGraphPkg) = nodes@ColoredGraph@ColoredGraphPkg edges@ColoredGraph@ColoredGraphPkg .
+	eq attributes (ColoredGraph@ColoredGraphPkg) = nil . 
+	
+	op nodes@ColoredGraph@ColoredGraphPkg : -> @Reference .
+	eq name (nodes@ColoredGraph@ColoredGraphPkg) = "nodes" .
+	eq opposite (nodes@ColoredGraph@ColoredGraphPkg) = null .
+	eq type (nodes@ColoredGraph@ColoredGraphPkg) = ColoredNode@ColoredGraphPkg .
+	eq lowerBound (nodes@ColoredGraph@ColoredGraphPkg) = 0 .
+	eq upperBound (nodes@ColoredGraph@ColoredGraphPkg) = * .
+	eq containingClass (nodes@ColoredGraph@ColoredGraphPkg) = ColoredGraph@ColoredGraphPkg .
+	eq isOrdered (nodes@ColoredGraph@ColoredGraphPkg) = false .
+	eq isUnique (nodes@ColoredGraph@ColoredGraphPkg) = true .
+	eq isContainment (nodes@ColoredGraph@ColoredGraphPkg) = true .
+	eq isReadOnly (nodes@ColoredGraph@ColoredGraphPkg) = false .
+
+	op edges@ColoredGraph@ColoredGraphPkg : -> @Reference .
+	eq name (edges@ColoredGraph@ColoredGraphPkg) = "edges" .
+	eq opposite (edges@ColoredGraph@ColoredGraphPkg) = null .
+	eq type (edges@ColoredGraph@ColoredGraphPkg) = Edge@ColoredGraphPkg .
+	eq lowerBound (edges@ColoredGraph@ColoredGraphPkg) = 0 .
+	eq upperBound (edges@ColoredGraph@ColoredGraphPkg) = * .
+	eq containingClass (edges@ColoredGraph@ColoredGraphPkg) = ColoredGraph@ColoredGraphPkg .
+	eq isOrdered (edges@ColoredGraph@ColoredGraphPkg) = false .
+	eq isUnique (edges@ColoredGraph@ColoredGraphPkg) = true .
+	eq isContainment (edges@ColoredGraph@ColoredGraphPkg) = true .
+	eq isReadOnly (edges@ColoredGraph@ColoredGraphPkg) = false .
+
+	eq operations(ColoredGraph@ColoredGraphPkg) = nil . 
+	
+	--- ColoredNode
+	
+	sort ColoredNode@ColoredGraphPkg .
+	subsort ColoredNode@ColoredGraphPkg < @Class .
+	op ColoredNode@ColoredGraphPkg : -> ColoredNode@ColoredGraphPkg .
+	eq name(ColoredNode@ColoredGraphPkg) = "ColoredNode" .
+	eq isAbstract(ColoredNode@ColoredGraphPkg) = false .
+	eq package(ColoredNode@ColoredGraphPkg) = ColoredGraphPkg .
+	eq superTypes (ColoredNode@ColoredGraphPkg) = nil .
+	eq references (ColoredNode@ColoredGraphPkg) = in@ColoredNode@ColoredGraphPkg out@ColoredNode@ColoredGraphPkg color@ColoredNode@ColoredGraphPkg .
+	eq attributes (ColoredNode@ColoredGraphPkg) = nil . 
+
+	op color@ColoredNode@ColoredGraphPkg : -> @Reference .
+	eq name (color@ColoredNode@ColoredGraphPkg) = "color" .
+	eq opposite (color@ColoredNode@ColoredGraphPkg) = null .
+	eq type (color@ColoredNode@ColoredGraphPkg) = Color@ColoredGraphPkg .
+	eq lowerBound (color@ColoredNode@ColoredGraphPkg) = 0 .
+	eq upperBound (color@ColoredNode@ColoredGraphPkg) = 1 .
+	eq containingClass (color@ColoredNode@ColoredGraphPkg) = ColoredNode@ColoredGraphPkg .
+	eq isOrdered (color@ColoredNode@ColoredGraphPkg) = true .
+	eq isUnique (color@ColoredNode@ColoredGraphPkg) = true .
+	eq isContainment (color@ColoredNode@ColoredGraphPkg) = false .
+	eq isReadOnly (color@ColoredNode@ColoredGraphPkg) = false .
+
+	op in@ColoredNode@ColoredGraphPkg : -> @Reference .
+	eq name (in@ColoredNode@ColoredGraphPkg) = "in" .
+	eq opposite (in@ColoredNode@ColoredGraphPkg) = target@Edge@ColoredGraphPkg .
+	eq type (in@ColoredNode@ColoredGraphPkg) = Edge@ColoredGraphPkg .
+	eq lowerBound (in@ColoredNode@ColoredGraphPkg) = 0 .
+	eq upperBound (in@ColoredNode@ColoredGraphPkg) = * .
+	eq containingClass (in@ColoredNode@ColoredGraphPkg) = ColoredNode@ColoredGraphPkg .
+	eq isOrdered (in@ColoredNode@ColoredGraphPkg) = false .
+	eq isUnique (in@ColoredNode@ColoredGraphPkg) = true .
+	eq isContainment (in@ColoredNode@ColoredGraphPkg) = false .
+	eq isReadOnly (in@ColoredNode@ColoredGraphPkg) = false .
+
+	op out@ColoredNode@ColoredGraphPkg : -> @Reference .
+	eq name (out@ColoredNode@ColoredGraphPkg) = "out" .
+	eq opposite (out@ColoredNode@ColoredGraphPkg) = source@Edge@ColoredGraphPkg .
+	eq type (out@ColoredNode@ColoredGraphPkg) = Edge@ColoredGraphPkg .
+	eq lowerBound (out@ColoredNode@ColoredGraphPkg) = 0 .
+	eq upperBound (out@ColoredNode@ColoredGraphPkg) = * .
+	eq containingClass (out@ColoredNode@ColoredGraphPkg) = ColoredNode@ColoredGraphPkg .
+	eq isOrdered (out@ColoredNode@ColoredGraphPkg) = false .
+	eq isUnique (out@ColoredNode@ColoredGraphPkg) = true .
+	eq isContainment (out@ColoredNode@ColoredGraphPkg) = false .
+	eq isReadOnly (out@ColoredNode@ColoredGraphPkg) = false .
+
+	eq operations(ColoredNode@ColoredGraphPkg) = get@ColoredNode@ColoredGraphPkg set@ColoredNode@ColoredGraphPkg .
+	
+	sort get@ColoredNode@ColoredGraphPkg .
+	subsort get@ColoredNode@ColoredGraphPkg < @Operation .
+	op get@ColoredNode@ColoredGraphPkg : -> get@ColoredNode@ColoredGraphPkg . 
+	eq name(get@ColoredNode@ColoredGraphPkg) = "getColor" .
+	eq isAbstract(get@ColoredNode@ColoredGraphPkg) = false .
+	eq from(get@ColoredNode@ColoredGraphPkg) = null .
+	eq type(get@ColoredNode@ColoredGraphPkg) = Color@ColoredGraphPkg .
+	eq lowerBound(get@ColoredNode@ColoredGraphPkg) = 1 .
+	eq upperBound(get@ColoredNode@ColoredGraphPkg) = 1 .
+	eq isOrdered(get@ColoredNode@ColoredGraphPkg) = true .
+	eq isUnique(get@ColoredNode@ColoredGraphPkg) = true .
+	eq containingClass (get@ColoredNode@ColoredGraphPkg) = ColoredNode@ColoredGraphPkg .
+	eq parameters(get@ColoredNode@ColoredGraphPkg) = null .
+	
+	sort set@ColoredNode@ColoredGraphPkg .
+	subsort set@ColoredNode@ColoredGraphPkg < @Operation .
+	op set@ColoredNode@ColoredGraphPkg : -> set@ColoredNode@ColoredGraphPkg . 
+	eq name(set@ColoredNode@ColoredGraphPkg) = "setColor" .
+	eq isAbstract(set@ColoredNode@ColoredGraphPkg) = false .
+	eq from(set@ColoredNode@ColoredGraphPkg) = null .
+	eq type(set@ColoredNode@ColoredGraphPkg) = null .
+	eq lowerBound(set@ColoredNode@ColoredGraphPkg) = 1 .
+	eq upperBound(set@ColoredNode@ColoredGraphPkg) = 1 .
+	eq isOrdered(set@ColoredNode@ColoredGraphPkg) = true .
+	eq isUnique(set@ColoredNode@ColoredGraphPkg) = true .
+	eq containingClass (set@ColoredNode@ColoredGraphPkg) = ColoredNode@ColoredGraphPkg .
+	eq parameters(set@ColoredNode@ColoredGraphPkg) = newColor@set@ColoredNode@ColoredGraphPkg .
+
+	sort newColor@set@ColoredNode@ColoredGraphPkg .
+	subsort newColor@set@ColoredNode@ColoredGraphPkg < @Parameter .
+	op newColor@set@ColoredNode@ColoredGraphPkg : -> newColor@set@ColoredNode@ColoredGraphPkg .
+	eq name(newColor@set@ColoredNode@ColoredGraphPkg) = "newColor" .
+	eq type(newColor@set@ColoredNode@ColoredGraphPkg) = Color@ColoredGraphPkg .
+	eq lowerBound(newColor@set@ColoredNode@ColoredGraphPkg) = 1 .
+	eq upperBound(newColor@set@ColoredNode@ColoredGraphPkg) = 1 .
+	eq isOrdered(newColor@set@ColoredNode@ColoredGraphPkg) = true .
+	eq isUnique(newColor@set@ColoredNode@ColoredGraphPkg) = true .
+
+	--- Color
+	
+	sort Color@ColoredGraphPkg .
+	subsort Color@ColoredGraphPkg < @Class .
+	op Color@ColoredGraphPkg : -> Color@ColoredGraphPkg .
+	eq name(Color@ColoredGraphPkg) = "Color" .
+	eq isAbstract(Color@ColoredGraphPkg) = false .
+	eq package(Color@ColoredGraphPkg) = ColoredGraphPkg .
+	eq superTypes (Color@ColoredGraphPkg) = nil .
+	eq references (Color@ColoredGraphPkg) = nil .
+	eq attributes (Color@ColoredGraphPkg) = name@Color@ColoredGraphPkg . 
+
+	op name@Color@ColoredGraphPkg  : -> @Attribute .
+  	eq name (name@Color@ColoredGraphPkg) = "name" .
+  	eq type (name@Color@ColoredGraphPkg) = @String .
+  	eq lowerBound (name@Color@ColoredGraphPkg) = 1 .
+  	eq upperBound (name@Color@ColoredGraphPkg) = 1 .
+  	eq containingClass (name@Color@ColoredGraphPkg) = Color@ColoredGraphPkg .
+  	eq isOrdered (name@Color@ColoredGraphPkg) = true .
+  	eq isUnique (name@Color@ColoredGraphPkg) = true .
+  	eq isId (name@Color@ColoredGraphPkg) = true .
+	eq isReadOnly (name@Color@ColoredGraphPkg) = true .
+
+	eq operations(Color@ColoredGraphPkg) = nil . 
+
+	--- Edge
+	
+	sort Edge@ColoredGraphPkg .
+	subsort Edge@ColoredGraphPkg < @Class .
+	op Edge@ColoredGraphPkg : -> Edge@ColoredGraphPkg .
+	eq name(Edge@ColoredGraphPkg) = "Edge" .
+	eq isAbstract(Edge@ColoredGraphPkg) = false .
+	eq package(Edge@ColoredGraphPkg) = ColoredGraphPkg .
+	eq superTypes (Edge@ColoredGraphPkg) = nil .
+	eq references (Edge@ColoredGraphPkg) = source@Edge@ColoredGraphPkg target@Edge@ColoredGraphPkg .
+	eq attributes (Edge@ColoredGraphPkg) = nil . 
+
+	op target@Edge@ColoredGraphPkg : -> @Reference .
+	eq name (target@Edge@ColoredGraphPkg) = "target" .
+	eq opposite (target@Edge@ColoredGraphPkg) = in@ColoredNode@ColoredGraphPkg .
+	eq type (target@Edge@ColoredGraphPkg) = ColoredNode@ColoredGraphPkg .
+	eq lowerBound (target@Edge@ColoredGraphPkg) = 1 .
+	eq upperBound (target@Edge@ColoredGraphPkg) = 1 .
+	eq containingClass (target@Edge@ColoredGraphPkg) = Edge@ColoredGraphPkg .
+	eq isOrdered (target@Edge@ColoredGraphPkg) = true .
+	eq isUnique (target@Edge@ColoredGraphPkg) = true .
+	eq isContainment (target@Edge@ColoredGraphPkg) = false .
+	eq isReadOnly (target@Edge@ColoredGraphPkg) = false .
+
+	op source@Edge@ColoredGraphPkg : -> @Reference .
+	eq name (source@Edge@ColoredGraphPkg) = "source" .
+	eq opposite (source@Edge@ColoredGraphPkg) = out@ColoredNode@ColoredGraphPkg .
+	eq type (source@Edge@ColoredGraphPkg) = ColoredNode@ColoredGraphPkg .
+	eq lowerBound (source@Edge@ColoredGraphPkg) = 1 .
+	eq upperBound (source@Edge@ColoredGraphPkg) = 1 .
+	eq containingClass (source@Edge@ColoredGraphPkg) = Edge@ColoredGraphPkg .
+	eq isOrdered (source@Edge@ColoredGraphPkg) = true .
+	eq isUnique (source@Edge@ColoredGraphPkg) = true .
+	eq isContainment (source@Edge@ColoredGraphPkg) = false .
+	eq isReadOnly (source@Edge@ColoredGraphPkg) = false .
+	
+	eq operations(Edge@ColoredGraphPkg) = nil . 
+	
+endm 
