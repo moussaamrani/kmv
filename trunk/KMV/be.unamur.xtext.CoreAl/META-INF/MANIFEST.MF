@@ -1,0 +1,30 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: be.unamur.xtext.CoreAl
+Bundle-Vendor: My Company
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: be.unamur.xtext.CoreAl; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext;visibility:=reexport,
+ org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.xtext.util,
+ org.eclipse.emf.ecore,
+ org.eclipse.emf.common,
+ org.eclipse.xtext.xbase.lib,
+ org.antlr.runtime,
+ org.eclipse.xtext.common.types,
+ org.objectweb.asm;bundle-version="[5.0.1,6.0.0)";resolution:=optional,
+ org.eclipse.xtext.xbase
+Import-Package: org.apache.log4j
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: be.unamur.xtext,
+ be.unamur.xtext.services,
+ be.unamur.xtext.coreAl,
+ be.unamur.xtext.coreAl.impl,
+ be.unamur.xtext.coreAl.util,
+ be.unamur.xtext.serializer,
+ be.unamur.xtext.parser.antlr,
+ be.unamur.xtext.parser.antlr.internal,
+ be.unamur.xtext.validation,
+ be.unamur.xtext.formatting,
+ be.unamur.xtext.jvmmodel

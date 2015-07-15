@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/be.unamur.xtext.CoreAl/src-gen" editDirectory="/be.unamur.xtext.CoreAl.edit/src"
+    editorDirectory="/be.unamur.xtext.CoreAl.editor/src" modelPluginID="be.unamur.xtext.CoreAl"
+    forceOverwrite="true" modelName="CoreAl" updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    complianceLevel="6.0" copyrightFields="false" editPluginID="be.unamur.xtext.CoreAl.edit"
+    editorPluginID="be.unamur.xtext.CoreAl.editor" runtimeVersion="2.11" usedGenPackages="platform:/resource/org.eclipse.xtext.xbase/model/Xbase.genmodel#//xbase platform:/resource/org.eclipse.xtext.xbase/model/Xbase.genmodel#//xtype">
+  <genPackages prefix="CoreAl" basePackage="be.unamur.xtext" disposableProviderFactory="true"
+      fileExtensions="al" ecorePackage="CoreAl.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="CoreAl.ecore#//PrimitiveType">
+      <genEnumLiterals ecoreEnumLiteral="CoreAl.ecore#//PrimitiveType/INTEGER"/>
+      <genEnumLiterals ecoreEnumLiteral="CoreAl.ecore#//PrimitiveType/BOOLEAN"/>
+      <genEnumLiterals ecoreEnumLiteral="CoreAl.ecore#//PrimitiveType/STRING"/>
+      <genEnumLiterals ecoreEnumLiteral="CoreAl.ecore#//PrimitiveType/REAL"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="CoreAl.ecore#//Collection">
+      <genEnumLiterals ecoreEnumLiteral="CoreAl.ecore#//Collection/SET"/>
+      <genEnumLiterals ecoreEnumLiteral="CoreAl.ecore#//Collection/SEQ"/>
+      <genEnumLiterals ecoreEnumLiteral="CoreAl.ecore#//Collection/OSET"/>
+      <genEnumLiterals ecoreEnumLiteral="CoreAl.ecore#//Collection/BAG"/>
+    </genEnums>
+    <genClasses ecoreClass="CoreAl.ecore#//Metamodel">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Metamodel/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Metamodel/imports"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Metamodel/types"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//Type"/>
+    <genClasses ecoreClass="CoreAl.ecore#//Enumeration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Enumeration/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Enumeration/literals"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//Class">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Class/isAbstract"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Class/name"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Class/super"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Class/features"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//Feature">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Feature/name"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//StructuralProperty"/>
+    <genClasses ecoreClass="CoreAl.ecore#//Attribute">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Attribute/type"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//Reference">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Reference/type"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Reference/opposite"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//Operation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Operation/parameters"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Operation/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Operation/statements"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Operation/isAbstract"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//Parameter">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Parameter/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference CoreAl.ecore#//Parameter/type"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//ReturnType"/>
+    <genClasses ecoreClass="CoreAl.ecore#//CollectionType">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//CollectionType/multiplicity"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//ReferenceableTypeReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//ReferenceableTypeReference/collection"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference CoreAl.ecore#//ReferenceableTypeReference/type"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//ReferenceableType"/>
+    <genClasses ecoreClass="CoreAl.ecore#//PrimitiveTypeReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//PrimitiveTypeReference/collection"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//PrimitiveTypeReference/type"/>
+    </genClasses>
+    <genClasses ecoreClass="CoreAl.ecore#//Multiplicity">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Multiplicity/lowerbound"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute CoreAl.ecore#//Multiplicity/upperbound"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

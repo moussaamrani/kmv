@@ -1,0 +1,95 @@
+grammar be.unamur.xtext.CoreAl with org.eclipse.xtext.xbase.Xbase
+
+generate coreAl "http://www.unamur.be/xtext/CoreAl"
+
+Metamodel:
+	('package' name = QualifiedName ';')?
+	(imports = XImportSection)?
+	(types += Type)*
+;
+
+Type:
+	Enumeration | Class
+;
+
+
+Enumeration:
+	'enumeration' name = ValidID '{' (literals += EnumLiteral ';')+ '}'
+;
+EnumLiteral:
+	ValidID
+;
+
+
+Class:
+	(isAbstract ?= 'abstract')? 'class' name = ValidID ('inherits' super = [Class])? '{'
+		(features += Feature)*
+	'}'
+;
+
+Feature:
+	StructuralProperty | Operation
+;
+
+StructuralProperty:
+	Attribute | Reference
+;
+
+Attribute:
+	'attribute' name = ValidID ':' type = CollectionType
+;
+
+
+
+Reference:
+	'reference' name = ValidID ':' type = ReferenceableTypeReference ('#' opposite = [Reference|QualifiedName])?
+;
+
+Operation:
+	'operation' name=ValidID '(' 
+		(parameters += Parameter (',' parameters += Parameter)*)? 
+		')' ':' 
+		type = ReturnType 'is' ('do' (statements += XExpression)*  'end' | isAbstract ?= 'abstract') 
+;
+
+Parameter:
+	name = ValidID ':' type = CollectionType
+;
+
+ReturnType:
+	{ReturnType} 'void' | CollectionType
+;
+CollectionType:
+	PrimitiveTypeReference | ReferenceableTypeReference
+;
+
+ReferenceableTypeReference:
+	(collection ?= Collection)? type = ([ReferenceableType]) (multiplicity ?= Multiplicity)? 
+;
+ReferenceableType:
+	Class | Enumeration
+;
+//DatatypeTypeReference:
+//	PrimitiveTypeReference | EnumerationTypeReference
+//;
+PrimitiveTypeReference:
+	(collection = Collection)? type = PrimitiveType (multiplicity ?= Multiplicity)? 
+;
+//EnumerationTypeReference:
+//	(collection = Collection)? type = [Enumeration] (multiplicity ?= Multiplicity)? 
+//;
+
+Multiplicity:
+	'[' lowerbound=INT '..' upperbound=MultiplicityUpperBound ']'
+;
+MultiplicityUpperBound:
+	INT | '*'
+;
+
+enum PrimitiveType:
+	INTEGER = 'Integer' | BOOLEAN = 'Boolean' | STRING = 'String' | REAL = 'Real'
+;
+
+enum Collection:
+	SET = 'set' | SEQ = 'seq' | OSET = 'oset' | BAG = 'bag'
+;
