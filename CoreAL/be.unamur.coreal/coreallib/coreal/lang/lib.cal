@@ -1,0 +1,17 @@
+package coreal.lang;
+
+class Object{
+	operation equals(Object o){
+		// 
+		return false;
+	}
+	
+	operation toString(){
+		return "not implemented yet!";
+	}
+}
+
+class String  extends Object{}
+class Integer extends Object{}
+class Real    extends Object{}
+class Boolean extends Object{}

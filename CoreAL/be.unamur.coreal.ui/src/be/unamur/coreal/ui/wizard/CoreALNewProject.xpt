@@ -1,0 +1,14 @@
+«IMPORT be::unamur::coreal::ui::wizard»
+
+«DEFINE main FOR CoreALProjectInfo»
+«EXPAND model FOR this»
+«ENDDEFINE»
+
+«DEFINE model FOR CoreALProjectInfo»
+«FILE "src/model/Model.coreal"-»
+/*
+ * This is an example model
+ */
+Hello Xtext!
+«ENDFILE»
+«ENDDEFINE»
