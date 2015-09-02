@@ -1,0 +1,243 @@
+grammar be.unamur.coreal.CoreAL // with org.eclipse.xtext.Xtext
+	with org.eclipse.xtext.common.Terminals
+
+generate coreAL "http://www.unamur.be/coreal/CoreAL"
+
+Metamodel:
+	('package' name=QualifiedName ';')?
+	imports += Import*
+	types += Type*
+;
+
+Import:
+	'import' importedNamespace = QualifiedNameWithWildcard ';' 
+;
+
+Type:
+	Class | Enumeration
+;
+
+Enumeration:
+	'enumeration' name=ValidID '{'
+		(literals += EnumLiteral ';')+
+	'}'
+;
+EnumLiteral:
+	name = ValidID
+;
+
+Class:
+	(isAbstract ?= 'abstract')? 'class' name=ValidID 
+	('inherits' superClass=[Class|QualifiedName])?
+	'{' features += Feature* '}'
+;
+
+Feature:
+	StructuralProperty | Operation
+;
+
+StructuralProperty:
+	Attribute | Reference
+;
+
+Attribute:
+	'attribute' name=ValidID ':' collectionType = CollectionType
+;
+
+Reference:
+	'reference' (isContainment ?= '<>')? name=ValidID ':' collectionType = CollectionType 
+		('#' opposite = [Reference])?  
+;
+Operation:
+	(main ?= '@Main')?
+	(isAbstract ?= 'abstract')? 'operation' name=ValidID '(' 
+		(parameters += Parameter (',' parameters += Parameter)*)? 
+		')' ':' 
+		type = ReturnType (body=Body)?
+;
+Body:
+	{Body} '{' declarations += Variable* statements += Statement* '}' 
+;
+
+Parameter:
+	name = ValidID ':' collectionType = CollectionType
+;
+
+ReturnType:
+	{VoidType} 'void' | CollectionType
+;
+
+CollectionType:
+	(collection = Collection)? type=TypeReference (multiplicity = Multiplicity)?
+;
+TypeReference:
+	kind = PrimitiveType | ref = [Type|QualifiedName]
+;
+
+Multiplicity:
+	'[' lowerbound=INT '..' upperbound=UpperBound ']'
+;
+UpperBound:
+	value=INT | isWildcard ?= '*'
+;
+PrimitiveType:
+	IntegerType | BooleanType | StringType | RealType
+;
+IntegerType: {IntegerType} "Integer";
+BooleanType: {BooleanType} "Boolean";
+StringType:  {StringType}  "String";
+RealType:    {RealType} "Real";
+
+Collection:
+	Set | Sequence| OrderedSet | Bag
+;
+Set:        {Set} 'set';
+Sequence:   {Sequence} 'seq';
+OrderedSet: {OrderedSet} 'oset';
+Bag:        {Bag} 'bag';
+
+Local:
+	Variable | Parameter
+;
+
+Variable:
+	'var' name=ValidID ':' collectionType=CollectionType
+;
+
+Statement:
+	ConditionalStmt |
+	LoopStmt        |
+	ReturnStmt      |
+	ExpressionStmt ';'
+;
+
+LoopStmt: 
+	'while' '(' expression=ExpressionStmt ')' body=ConditionalBlock
+;
+ConditionalStmt:
+	'if' '(' expression=ExpressionStmt ')' then=ConditionalBlock (=> 'else' else=ConditionalBlock)
+;
+ConditionalBlock:
+	statements += Statement |
+	'{' statements += Statement+ '}'
+;
+
+ReturnStmt:
+	{ReturnStmt} 'return' (expression = ExpressionStmt)? ';'
+;
+
+ExpressionStmt : AssignmentExpression;
+
+AssignmentExpression returns ExpressionStmt:
+	 Expression ({AssignmentExpression.left=current} '=' right=Expression)?
+;
+
+Expression: OrExpression;
+
+OrExpression returns Expression:
+		AndExpression ({OrExpression.left=current} "||" right=AndExpression)*
+;
+
+AndExpression returns Expression:
+	EqualityExpression ({AndExpression.left=current} "&&"  right=EqualityExpression)*
+;
+
+EqualityExpression returns Expression:
+	RelationalExpression ({EqualityExpression.left=current} op=("=="|"!=") right=RelationalExpression)*
+;
+
+RelationalExpression returns Expression:
+	AdditiveExpression (
+		  {InstanceofExpression.expression=current} 'instanceof' type=[Class|QualifiedName] 
+	    | {ComparativeExpression.left=current} op=("<"|">"|"<="|">=") right=AdditiveExpression
+	)*
+;
+
+AdditiveExpression returns Expression:
+	MultiplicativeExpression ({AdditiveExpression.left=current} op=("+"|"-") right=MultiplicativeExpression)*
+;
+
+MultiplicativeExpression returns Expression:
+	UnaryExpression ({MultiplicativeExpression.left=current} op=("*"|"/") right=UnaryExpression)*
+;
+
+UnaryExpression returns Expression:
+	  {UnaryExpression} op=("!"|"+"|"-") operand=UnaryExpression
+	| SelectionExpression
+;
+
+SelectionExpression returns Expression:
+	PrimaryExpression (
+		  {FeatureSelection.receiver=current} ('.') 
+		  	(coll=FeatureCollection | feature=[Feature]) 
+		  	(methodinvocation ?= '(' (args += ExpressionStmt (',' args += ExpressionStmt)* )?  ')' )? 
+		)*
+;
+
+FeatureCollection:
+	{SizeCollectionFeature} 'size' |
+	{AddCollectionFeature}  'add'  |
+	{DelCollectionFeature}  'del'  |
+	{IsEmptyCollectionFeature} 'isEmpty' |
+	{AtCollectionFeature} 'at'
+;
+
+PrimaryExpression returns Expression:
+	SelfExpression          |
+	SuperExpression         |
+	LocalReference          |
+//	EnumerationReference    |
+	NewInstanceExpression   |
+	ParenthesizedExpression |
+	LiteralExpression       
+;
+
+SelfExpression:
+	{SelfExpression} 'self'
+;	
+
+SuperExpression:
+	{SuperExpression} 'super'
+;	
+
+LocalReference:
+	ref=[Local]
+;
+
+
+NewInstanceExpression:
+	'new' type=[Class|QualifiedName] 
+;
+
+ParenthesizedExpression returns Expression:
+	'(' Expression ')'
+;
+
+LiteralExpression returns LiteralExpression:
+	CollectionLiteral |
+	{IntegerLiteral} value=INT |
+	{StringLiteral} value=STRING |
+	{NullLiteral} 'null' |
+	{BooleanLiteral} ('false' | isTrue ?= 'true') 
+;
+CollectionLiteral:
+	SetLiteral | ListLiteral
+;
+SetLiteral:
+	{SetLiteral} '#' '{' (elements+=Expression (',' elements+=Expression )*)? '}'
+;
+ListLiteral:
+	{ListLiteral} '#' '[' (elements+=Expression (',' elements+=Expression )*)? ']'
+;
+
+QualifiedNameWithWildcard:
+	QualifiedName ".*"?
+;
+
+QualifiedName:
+  ValidID (=>'.' ValidID)*
+;
+
+ValidID:
+	ID
+;
