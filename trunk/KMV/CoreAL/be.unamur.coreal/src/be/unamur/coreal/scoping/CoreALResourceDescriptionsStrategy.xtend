@@ -2,6 +2,7 @@ package be.unamur.coreal.scoping
 
 import be.unamur.coreal.coreAL.Metamodel
 import com.google.inject.Inject
+import com.google.inject.Singleton
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.EObjectDescription
@@ -9,6 +10,7 @@ import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy
 import org.eclipse.xtext.util.IAcceptor
 
+@Singleton
 class CoreALResourceDescriptionsStrategy extends DefaultResourceDescriptionStrategy {
 	
 	@Inject extension IQualifiedNameProvider

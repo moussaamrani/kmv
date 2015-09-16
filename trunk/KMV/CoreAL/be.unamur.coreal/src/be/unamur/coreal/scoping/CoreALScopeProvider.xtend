@@ -5,7 +5,8 @@ package be.unamur.coreal.scoping
 
 import be.unamur.coreal.coreAL.Class
 import be.unamur.coreal.coreAL.Enumeration
-import be.unamur.coreal.coreAL.FeatureSelection
+import be.unamur.coreal.coreAL.EnumerationLiteral
+import be.unamur.coreal.coreAL.MemberSelection
 import be.unamur.coreal.coreAL.Reference
 import be.unamur.coreal.lib.CoreALLib
 import be.unamur.coreal.typing.CoreALTypeProvider
@@ -22,7 +23,7 @@ import static extension be.unamur.coreal.util.CoreALModelUtil.*
  * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
  * on how and when to use it.
- *
+ * 
  */
 class CoreALScopeProvider extends AbstractDeclarativeScopeProvider {
 
@@ -38,37 +39,30 @@ class CoreALScopeProvider extends AbstractDeclarativeScopeProvider {
 			return parentScope
 	}
 
-	def scope_Feature(FeatureSelection sel, EReference ref) {
+	def scope_MemberSelection_member(MemberSelection sel, EReference ref) {
 		var parentScope = IScope::NULLSCOPE
-		val type = sel.receiver.typeFor
-
+		var type = sel.receiver.typeFor
 		if (type == null || type.isPrimitiveType)
 			return parentScope
-		if (type instanceof Enumeration)
-			return Scopes::scopeFor(type.literals, parentScope)
 		if (type instanceof Class) {
-			if (type.isPrimitiveType)
-				return parentScope
-			else{
-				val features = (type as Class).selectedFeatures(sel)
-				for (c : type.classHierarchyWithObject.reverseView) {
-					parentScope = Scopes::scopeFor(c.selectedFeatures(sel), parentScope)
-				}
-				return Scopes::scopeFor(features, parentScope)
+			val features = (type as Class).selectedFeatures(sel)
+			for (c : type.classHierarchyWithObject.reverseView) {
+				parentScope = Scopes::scopeFor(c.selectedFeatures(sel), parentScope)
 			}
+			return Scopes::scopeFor(features, parentScope)
 		}
 	}
 
-//	def scope_EnumLiteral(EnumerationLiteral lit, EReference ref){
-//		var parentScope = IScope::NULLSCOPE
-//		if(lit.receiver instanceof Enumeration)
-//			return Scopes::scopeFor((lit.receiver as Enumeration).literals, parentScope)
-//		else
-//			return parentScope
-//	}
-	
-	def selectedFeatures(Class type, FeatureSelection sel){
-		if(sel.methodinvocation)
+	def scope_EnumLiteral(EnumerationLiteral lit, EReference ref) {
+		var parentScope = IScope::NULLSCOPE
+		if (lit.enumeration instanceof Enumeration)
+			return Scopes::scopeFor((lit.enumeration as Enumeration).literals, parentScope)
+		else
+			return parentScope
+	}
+
+	def selectedFeatures(Class type, MemberSelection sel) {
+		if (sel.methodinvocation)
 			type.operations + type.properties
 		else
 			type.properties + type.operations

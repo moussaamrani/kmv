@@ -1,4 +1,4 @@
-grammar be.unamur.coreal.CoreAL // with org.eclipse.xtext.Xtext
+grammar be.unamur.coreal.CoreAL // with org.eclipse.xtext.xbase.Xbase //Xtext
 	with org.eclipse.xtext.common.Terminals
 
 generate coreAL "http://www.unamur.be/coreal/CoreAL"
@@ -46,7 +46,7 @@ Attribute:
 
 Reference:
 	'reference' (isContainment ?= '<>')? name=ValidID ':' collectionType = CollectionType 
-		('#' opposite = [Reference])?  
+		('#' opposite = [Reference|QualifiedName])?  
 ;
 Operation:
 	(main ?= '@Main')?
@@ -105,17 +105,26 @@ Variable:
 ;
 
 Statement:
-	ConditionalStmt |
-	LoopStmt        |
-	ReturnStmt      |
+	BranchingStmt |
+	ReturnStmt    |
 	ExpressionStmt ';'
 ;
 
-LoopStmt: 
+BranchingStmt: 
+	LoopStmt | ConditionalStmt
+;
+LoopStmt:
+	WhileLoopStmt | RepeatLoopStmt 
+;
+WhileLoopStmt:
 	'while' '(' expression=ExpressionStmt ')' body=ConditionalBlock
 ;
+RepeatLoopStmt:
+	'do' body=ConditionalBlock 'until' '(' expression=ExpressionStmt ')'
+;
+
 ConditionalStmt:
-	'if' '(' expression=ExpressionStmt ')' then=ConditionalBlock (=> 'else' else=ConditionalBlock)
+	'if' '(' expression=ExpressionStmt ')' then=ConditionalBlock (=> 'else' else=ConditionalBlock)?
 ;
 ConditionalBlock:
 	statements += Statement |
@@ -167,17 +176,18 @@ UnaryExpression returns Expression:
 ;
 
 SelectionExpression returns Expression:
-	PrimaryExpression (
-		  {FeatureSelection.receiver=current} ('.') 
-		  	(coll=FeatureCollection | feature=[Feature]) 
-		  	(methodinvocation ?= '(' (args += ExpressionStmt (',' args += ExpressionStmt)* )?  ')' )? 
+	PrimaryExpression ( =>(
+		  {MemberSelection.receiver=current} '.') member=[Feature]  
+		  	(methodinvocation ?= '(' (args += Expression (',' args += Expression)* )?  ')' )?
+		| => ({MemberSelection.receiver=current} '->') coll = CollectionOperation  
+		  	(methodinvocation ?= '(' (args += Expression (',' args += Expression)* )?  ')' )?
 		)*
 ;
 
-FeatureCollection:
-	{SizeCollectionFeature} 'size' |
-	{AddCollectionFeature}  'add'  |
-	{DelCollectionFeature}  'del'  |
+CollectionOperation:
+	{SizeCollectionFeature} 'size'       |
+	{AddCollectionFeature}  'add'        |
+	{DelCollectionFeature}  'del'        |
 	{IsEmptyCollectionFeature} 'isEmpty' |
 	{AtCollectionFeature} 'at'
 ;
@@ -186,7 +196,6 @@ PrimaryExpression returns Expression:
 	SelfExpression          |
 	SuperExpression         |
 	LocalReference          |
-//	EnumerationReference    |
 	NewInstanceExpression   |
 	ParenthesizedExpression |
 	LiteralExpression       
@@ -201,7 +210,7 @@ SuperExpression:
 ;	
 
 LocalReference:
-	ref=[Local]
+	ref=[Local|ValidID]
 ;
 
 
@@ -218,10 +227,14 @@ LiteralExpression returns LiteralExpression:
 	{IntegerLiteral} value=INT |
 	{StringLiteral} value=STRING |
 	{NullLiteral} 'null' |
+	{EnumerationLiteral} enumeration=[Enumeration|QualifiedName] '::' literal=[EnumLiteral] |
 	{BooleanLiteral} ('false' | isTrue ?= 'true') 
 ;
 CollectionLiteral:
-	SetLiteral | ListLiteral
+	BagLiteral | SetLiteral | ListLiteral | OrderedSetLiteral
+;
+BagLiteral:
+	{BagLiteral} '#' '<<' (elements+=Expression (',' elements+=Expression )*)? '>>'
 ;
 SetLiteral:
 	{SetLiteral} '#' '{' (elements+=Expression (',' elements+=Expression )*)? '}'
@@ -229,7 +242,9 @@ SetLiteral:
 ListLiteral:
 	{ListLiteral} '#' '[' (elements+=Expression (',' elements+=Expression )*)? ']'
 ;
-
+OrderedSetLiteral:
+	{OrderedSetLiteral} '#' '{[' (elements+=Expression (',' elements+=Expression )*)? ']}'
+;
 QualifiedNameWithWildcard:
 	QualifiedName ".*"?
 ;

@@ -26,8 +26,8 @@ public class CoreALRuntimeModule extends be.unamur.coreal.AbstractCoreALRuntimeM
 	 * If you enable this strategy, the NamesAreUniqueValidator will not
 	 * work as expected.
 	 */
-//	public Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
-//		return CoreALResourceDescriptionsStrategy.class;
-//	}
+	public Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
+		return CoreALResourceDescriptionsStrategy.class;
+	}
 
 }
