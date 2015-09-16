@@ -1,5 +1,5 @@
 package be.unamur.coreal.util
-
+ 
 import be.unamur.coreal.coreAL.Attribute
 import be.unamur.coreal.coreAL.BooleanType
 import be.unamur.coreal.coreAL.Class
@@ -21,9 +21,11 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.xbase.XBlockExpression
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import be.unamur.coreal.services.CoreALGrammarAccess.QualifiedNameElements
+
 
 class CoreALModelUtil {
-		def static enumerations(Metamodel MM) {
+	def static enumerations(Metamodel MM) {
 		MM.types.filter(typeof(Enumeration))
 	}
 
@@ -96,7 +98,7 @@ class CoreALModelUtil {
 		if(t.ref != null)
 			result = t.ref 
 		if(t.kind != null)
-			result = t.kind.typeOf 
+			result = t.kind.typeOf
 		return result	
 	}
 

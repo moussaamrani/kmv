@@ -6,16 +6,22 @@ package be.unamur.coreal.validation
 import be.unamur.coreal.coreAL.AtCollectionFeature
 import be.unamur.coreal.coreAL.Attribute
 import be.unamur.coreal.coreAL.Class
+import be.unamur.coreal.coreAL.CollectionType
 import be.unamur.coreal.coreAL.CoreALPackage
 import be.unamur.coreal.coreAL.EnumLiteral
 import be.unamur.coreal.coreAL.Enumeration
+import be.unamur.coreal.coreAL.Expression
 import be.unamur.coreal.coreAL.Feature
-import be.unamur.coreal.coreAL.FeatureSelection
+import be.unamur.coreal.coreAL.MemberSelection
 import be.unamur.coreal.coreAL.Operation
+import be.unamur.coreal.coreAL.Parameter
 import be.unamur.coreal.coreAL.Reference
+import be.unamur.coreal.coreAL.SelfExpression
 import be.unamur.coreal.coreAL.StructuralProperty
+import be.unamur.coreal.coreAL.SuperExpression
 import be.unamur.coreal.coreAL.Variable
 import be.unamur.coreal.scoping.CoreALIndex
+import be.unamur.coreal.typing.CoreALTypeProvider
 import com.google.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.validation.Check
@@ -23,6 +29,7 @@ import org.eclipse.xtext.validation.CheckType
 
 import static extension be.unamur.coreal.util.CoreALModelUtil.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import be.unamur.coreal.typing.CoreALTypeConformance
 
 /**
  * This class contains custom validation rules. 
@@ -32,6 +39,8 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 class CoreALValidator extends AbstractCoreALValidator {
 	@Inject extension CoreALIndex
 	@Inject extension IQualifiedNameProvider
+	@Inject extension CoreALTypeProvider
+	@Inject extension CoreALTypeConformance
 
 	public static val HIERARCHY_CYCLE = "HIERARCHY_CYCLE_DETECTED"
 	public static val DUPLICATE_CLASS = "DUPLICATE_CLASS" 
@@ -39,7 +48,11 @@ class CoreALValidator extends AbstractCoreALValidator {
 	public static val WRONG_TYPE = "WRONG_TYPE"
 	public static val PROPERTY_SELECTION_ON_METHOD = "FIELD_SELECTION_ON_METHOD"
 	public static val WRONG_SUPER_USAGE = "WRONG_SUPER_USAGE"
-
+	public static val WRONG_SELF_USAGE = "WRONG_SELF_USAGE"
+	public static val MULTIPLICITY_INCONSISTENCY="MULTIPLICITY_INCONSISTENCY"
+	public static val ABSTRACT_OP_INSIDE_NONABSTRACT_CLASS = "ABSTRACT_OP_INSIDE_NONABSTRACT_CLASS" 
+	public static val INCOMPATIBLE_TYPES = "INCOMPATIBLE_TYPES"
+	
 	@Check
 	def void checkClassHierarchy(Class c) {
 		if (c.classHierarchy.contains(c)) {
@@ -115,6 +128,14 @@ class CoreALValidator extends AbstractCoreALValidator {
 	}
 	
 	@Check
+	def void checkNoDuplicateParameter(Parameter param){
+		val duplicate = param.containingOperation.parameters.findFirst[it != param && it.name == param.name]
+		if(duplicate != null)
+			error("Duplicate variable declaration '" + param.name + "'",
+				CoreALPackage::eINSTANCE.local_Name)
+	}
+
+	@Check
 	def void checkNoDuplicateVariable(Variable variable){
 		val duplicate = variable.containingOperation.body.
 			getAllContentsOfType(typeof(Variable)).findFirst[it != variable && it.name == variable.name]
@@ -138,28 +159,98 @@ class CoreALValidator extends AbstractCoreALValidator {
 	}
 	
 	@Check
-	def void checkFeatureSelection(FeatureSelection sel){
-		val feature = sel
-		if(feature != null){
-			if(feature.coll != null && !sel.methodinvocation){
-				error("Collection Operation invocation without correct parentheses",
-					CoreALPackage::eINSTANCE.featureSelection_Methodinvocation,
+	def void checkMemberSelection(MemberSelection sel){
+		if(sel != null){
+//			if(sel.coll != null && !sel.methodinvocation){
+//				error("Collection Operation invocation without correct parentheses",
+//					CoreALPackage::eINSTANCE.memberSelection_Methodinvocation,
+//					PROPERTY_SELECTION_ON_METHOD)
+//			}
+			if(sel.member != null && sel.member instanceof StructuralProperty && sel.methodinvocation)
+				error("Operation invocation on Property '" + sel.member.name + "'",
+					CoreALPackage::eINSTANCE.memberSelection_Member,
 					PROPERTY_SELECTION_ON_METHOD)
-			}
-			if(feature.coll != null && feature.coll instanceof AtCollectionFeature && sel.args.empty)
-				error("Collection Operation 'at' invocation without index parameter",
-					CoreALPackage::eINSTANCE.featureSelection_Methodinvocation,
-					PROPERTY_SELECTION_ON_METHOD)
-			if(feature.feature != null && feature.feature instanceof StructuralProperty && sel.methodinvocation)
-				error("Operation invocation on Property '" + feature.feature.name + "'",
-					CoreALPackage::eINSTANCE.featureSelection_Feature,
-					PROPERTY_SELECTION_ON_METHOD)
-			
-			if(feature.feature != null && feature.feature instanceof Operation && !sel.methodinvocation)
-				error("Property selection on the Operation '" + feature.feature.name + "'",
-					CoreALPackage::eINSTANCE.featureSelection_Methodinvocation,
+			if(sel.member != null && sel.member instanceof Operation && !sel.methodinvocation)
+				error("Property selection on the Operation '" + sel.member.name + "'",
+					CoreALPackage::eINSTANCE.memberSelection_Methodinvocation,
 					PROPERTY_SELECTION_ON_METHOD)
 		}
 	}
 
+	@Check
+	def void checkCollectionType(CollectionType ctype){
+		val boundsCondition = !(ctype.multiplicity.upperbound.isIsWildcard) && 
+			ctype.multiplicity.lowerbound > ctype.multiplicity.upperbound.value
+		val boundsConsistentWithCollection = ctype.collection == null ||
+			(ctype.multiplicity.upperbound.isIsWildcard || 
+				ctype.multiplicity.upperbound.value > 1)
+		if(boundsCondition)
+			error("Multiplicity Bounds not correct", 
+				CoreALPackage::eINSTANCE.collectionType_Multiplicity,
+				MULTIPLICITY_INCONSISTENCY)
+		if(!boundsConsistentWithCollection)
+			error("Multiplicity not consistent with collection declaration",
+				CoreALPackage::eINSTANCE.collectionType_Multiplicity,
+				MULTIPLICITY_INCONSISTENCY)
+		
+	}
+
+	@Check
+	def void checkSuperAsReceiverOnly(SuperExpression e){
+		if(e.eContainingFeature != CoreALPackage::eINSTANCE.memberSelection_Receiver)
+			error("'super' can only be used as a selection receiver (e.g., super.toString())",
+				null, WRONG_SUPER_USAGE)
+	}
+
+	@Check
+	def void checkSelfAsReceiverOnly(SelfExpression e){
+		if(e.eContainingFeature != CoreALPackage::eINSTANCE.memberSelection_Receiver)
+			error("'self' can only be used as a selection receiver (e.g., super.toString())",
+				null, WRONG_SELF_USAGE)
+	}
+	
+	@Check
+	def void checkAbstractOperationInAbstractClass(Operation op){
+		if(op.isIsAbstract && op.body != null)
+			error("Abstract operation '" + op.name + " contains a body",
+				CoreALPackage::eINSTANCE.operation_Body,
+				ABSTRACT_OP_INSIDE_NONABSTRACT_CLASS)
+		if(op.isIsAbstract && !op.containingClass.isIsAbstract)
+			error("Abstract operation '" + op.name + 
+				" inside the non-abstract class '" + op.containingClass.name + "'.",
+				CoreALPackage::eINSTANCE.operation_IsAbstract,
+				ABSTRACT_OP_INSIDE_NONABSTRACT_CLASS)	
+	}
+	
+	@Check
+	def void checkValidArgumentForCollectionOperation(MemberSelection sel){
+		if(sel.coll != null && sel.coll instanceof AtCollectionFeature){
+			if(sel.args == null)
+				error("Collection operation 'at' should have one argument of type integer",
+					CoreALPackage::eINSTANCE.memberSelection_Args,
+					WRONG_TYPE)
+			if(sel.args != null && sel.args.size > 1)
+				error("Collection operation 'at' should have only one argument of type integer",
+					CoreALPackage::eINSTANCE.memberSelection_Args,
+					WRONG_TYPE)
+			if(sel.args != null && sel.args.get(0).typeFor != CoreALTypeProvider.integerType)
+				error("Collection operation 'at' should have an argument of type integer",
+					CoreALPackage::eINSTANCE.memberSelection_Args,
+					WRONG_TYPE)
+		}
+	}
+	
+	@Check
+	def void checkCompatibleTypes(Expression exp) {
+		val actualType = exp.typeFor
+		val expectedType = exp.expectedType
+		if (expectedType == null || actualType == null)
+			return; // nothing to check
+//		if (!actualType.isConformant(expectedType)) {
+//			error("Incompatible types. Expected '" + expectedType?.name
+//					+ "' but was '" + actualType?.name + "'", null,
+//					INCOMPATIBLE_TYPES);
+//		}
+	}
+	
 }
