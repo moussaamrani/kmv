@@ -3,15 +3,18 @@ grammar be.unamur.coreal.CoreAL // with org.eclipse.xtext.xbase.Xbase //Xtext
 
 generate coreAL "http://www.unamur.be/coreal/CoreAL"
 
+
+// TODO: Test Operation with Void return type
+
 Metamodel:
 	('package' name=QualifiedName ';')?
-	imports += Import*
+//	imports += Import*
 	types += Type*
 ;
-
-Import:
-	'import' importedNamespace = QualifiedNameWithWildcard ';' 
-;
+//
+//Import:
+//	'import' importedNamespace = QualifiedNameWithWildcard ';' 
+//;
 
 Type:
 	Class | Enumeration
@@ -53,10 +56,11 @@ Operation:
 	(isAbstract ?= 'abstract')? 'operation' name=ValidID '(' 
 		(parameters += Parameter (',' parameters += Parameter)*)? 
 		')' ':' 
-		type = ReturnType (body=Body)?
+		type = ReturnType (body = Body)?
 ;
+
 Body:
-	{Body} '{' declarations += Variable* statements += Statement* '}' 
+	{Body} '{' statements += Statement* '}'
 ;
 
 Parameter:
@@ -97,17 +101,18 @@ OrderedSet: {OrderedSet} 'oset';
 Bag:        {Bag} 'bag';
 
 Local:
-	Variable | Parameter
-;
-
-Variable:
-	'var' name=ValidID ':' collectionType=CollectionType
+	VariableDeclaration | Parameter
 ;
 
 Statement:
+	VariableDeclaration |
 	BranchingStmt |
 	ReturnStmt    |
 	ExpressionStmt ';'
+;
+
+VariableDeclaration:
+	'var' name=ValidID ':' collectionType=CollectionType
 ;
 
 BranchingStmt: 
@@ -129,6 +134,10 @@ ConditionalStmt:
 ConditionalBlock:
 	statements += Statement |
 	'{' statements += Statement+ '}'
+;
+
+Block:
+	ConditionalBlock | Body
 ;
 
 ReturnStmt:
@@ -179,17 +188,21 @@ SelectionExpression returns Expression:
 	PrimaryExpression ( =>(
 		  {MemberSelection.receiver=current} '.') member=[Feature]  
 		  	(methodinvocation ?= '(' (args += Expression (',' args += Expression)* )?  ')' )?
-		| => ({MemberSelection.receiver=current} '->') coll = CollectionOperation  
+		| => ({MemberSelection.receiver=current} isCollectionOperation ?= '->') coll = CollectionOperation  
 		  	(methodinvocation ?= '(' (args += Expression (',' args += Expression)* )?  ')' )?
 		)*
 ;
 
 CollectionOperation:
-	{SizeCollectionFeature} 'size'       |
-	{AddCollectionFeature}  'add'        |
-	{DelCollectionFeature}  'del'        |
-	{IsEmptyCollectionFeature} 'isEmpty' |
-	{AtCollectionFeature} 'at'
+	{SizeCollectionFeature}    'size'       |
+	{AddCollectionFeature}     'add'        |
+	{IsEmptyCollectionFeature} 'isEmpty'    |
+	{DelCollectionFeature}     'del'        |
+	{AtCollectionFeature}      'at'         |
+	{AsSequence}               'asSequence' |
+	{AsSet}                    'asSet'      |
+	{AsBag}                    'asBag'      |
+	{AsOrderedSet}             'asOrderedSet'      	
 ;
 
 PrimaryExpression returns Expression:

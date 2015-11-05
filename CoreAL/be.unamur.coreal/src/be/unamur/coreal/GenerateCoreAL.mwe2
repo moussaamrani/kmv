@@ -113,6 +113,7 @@ Workflow {
     		// project wizard (optional)
     		fragment = projectWizard.SimpleProjectWizardFragment auto-inject {
     		      generatorProjectName = "${projectName}"
+    		      fileExtension = "cal"
     		}
      
     		// rename refactoring

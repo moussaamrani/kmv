@@ -6,6 +6,7 @@ import be.unamur.coreal.coreAL.AndExpression
 import be.unamur.coreal.coreAL.AssignmentExpression
 import be.unamur.coreal.coreAL.AtCollectionFeature
 import be.unamur.coreal.coreAL.BooleanLiteral
+import be.unamur.coreal.coreAL.BranchingStmt
 import be.unamur.coreal.coreAL.Class
 import be.unamur.coreal.coreAL.CollectionLiteral
 import be.unamur.coreal.coreAL.CollectionType
@@ -27,7 +28,6 @@ import be.unamur.coreal.coreAL.NullLiteral
 import be.unamur.coreal.coreAL.Operation
 import be.unamur.coreal.coreAL.OrExpression
 import be.unamur.coreal.coreAL.Parameter
-import be.unamur.coreal.coreAL.ReturnStmt
 import be.unamur.coreal.coreAL.SelfExpression
 import be.unamur.coreal.coreAL.SizeCollectionFeature
 import be.unamur.coreal.coreAL.StringLiteral
@@ -40,8 +40,6 @@ import be.unamur.coreal.lib.CoreALLib
 import com.google.inject.Inject
 
 import static extension be.unamur.coreal.util.CoreALModelUtil.*
-import be.unamur.coreal.coreAL.WhileLoopStmt
-import be.unamur.coreal.coreAL.BranchingStmt
 
 class CoreALTypeProvider {
 	@Inject extension CoreALLib
@@ -51,6 +49,7 @@ class CoreALTypeProvider {
 	public static val realType    = CoreALFactory::eINSTANCE.createClass => [name = "Real"]
 	public static val booleanType = CoreALFactory::eINSTANCE.createClass => [name = "Boolean"]
 	public static val nullType    = CoreALFactory::eINSTANCE.createClass => [name = "Null"]
+	public static val Void        = CoreALFactory::eINSTANCE.createClass => [name = "Void"]
 
 	val ep = CoreALPackage::eINSTANCE
 
@@ -101,11 +100,11 @@ class CoreALTypeProvider {
 						AtCollectionFeature: return e.receiver.typeFor
 					}
 				}else if (e.coll == null && e.member != null)
-					return e.member.typeOf
+					return e.member.type
 		}
 	}
 
-	def expectedType(Expression exp){
+	def Type expectedType(Expression exp){
 		val container = exp.eContainer
 		val feature   = exp.eContainingFeature
 		switch(container){
@@ -113,29 +112,27 @@ class CoreALTypeProvider {
 				container.left.typeFor
 			BranchingStmt case feature == ep.branchingStmt_Expression:
 				booleanType
-			ReturnStmt case feature == ep.returnStmt_Expression:
-				container.containingOperation.typeOf
 			MemberSelection case feature == ep.memberSelection_Args:
 				try{
-					(container.member as Operation).parameters.get(container.args.indexOf(exp)).typeOf
+					(container.member as Operation).parameters.get(container.args.indexOf(exp)).type
 				}catch(Throwable t){
 					null
 				}
 		}
 	}
 
-	def dispatch Type typeOf(Operation op) {
+	def dispatch Type type(Operation op) {
 		switch (op.type) {
 			VoidType: return nullType
 			CollectionType: return (op.type as CollectionType).typeOf
 		}
 	}
 
-	def dispatch Type typeOf(StructuralProperty prop) {
+	def dispatch Type type(StructuralProperty prop) {
 		return prop.collectionType.typeOf
 	}
 
-	def dispatch Type typeOf(Parameter param) {
+	def dispatch Type type(Parameter param) {
 		return param.collectionType.typeOf
 	}
 
@@ -148,4 +145,5 @@ class CoreALTypeProvider {
 		ctype.multiplicity.upperbound.value > 1  ||
 		ctype.collection != null
 	}
+	
 }
