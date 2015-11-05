@@ -1,0 +1,533 @@
+mod FSM-MM is
+	protecting KERMETA .
+
+	*** Metamodel & Package ***
+
+	--- Metamodel declaration	  
+	op FiniteStateMachine : -> @Metamodel .
+	eq name(FiniteStateMachine) = "FiniteStateMachine" .
+	eq packages (FiniteStateMachine) = FSM .
+
+	--- Package declaration
+	op FSM : -> @Package .
+	eq name(FSM) = "FSM" .
+	eq metamodel(FSM) = FiniteStateMachine .
+	eq superPackage(FSM) = null .
+	eq subPackages(FSM) = nil .
+	eq classes(FSM) = __(FSM@FSM, Label@FSM, State@FSM, Transition@FSM) .
+	
+	*** Enumerations ***	
+	--- Kind
+	
+	sort Kind@FSM .
+	subsorts Kind@FSM < @EnumerationInstance .
+	op Kind@FSM : -> @Enumeration . 
+	op NORMAL@Kind@FSM : -> Kind@FSM .
+	op START@Kind@FSM : -> Kind@FSM .
+	op STOP@Kind@FSM : -> Kind@FSM .
+	eq metaAux( X:Kind@FSM ) = Kind@FSM .
+	eq name( Kind@FSM ) = "Kind" .
+	eq package( Kind@FSM ) = FSM .
+	eq defaultValue( Kind@FSM ) = NORMAL@Kind@FSM .
+	eq literals( Kind@FSM ) = NORMAL@Kind@FSM # START@Kind@FSM # STOP@Kind@FSM  .
+
+
+
+	*** Classes ***
+	
+	--- Label
+	
+	sort Label@FSM .
+	subsort Label@FSM < @Class .
+	op Label@FSM : -> Label@FSM .
+	eq name(Label@FSM) = "Label" .
+	eq isAbstract(Label@FSM) = true .
+	eq package(Label@FSM) = FSM .
+	eq superTypes (Label@FSM) = nil .
+	eq references (Label@FSM) = nil .
+	eq attributes (Label@FSM) = label@Label@FSM . 
+	
+	op label@Label@FSM  : -> @Attribute .
+  	eq name (label@Label@FSM) = "label" .
+  	eq type (label@Label@FSM) = @String .
+  	eq lowerBound (label@Label@FSM) = 1 .
+  	eq upperBound (label@Label@FSM) = 1 .
+  	eq containingClass (label@Label@FSM) = Label@FSM .
+  	eq isOrdered (label@Label@FSM) = true .
+  	eq isUnique (label@Label@FSM) = true .
+  	eq isId (label@Label@FSM) = true .
+  	
+  	--- eq operations(Label@FSM) = nil .
+  	--- CLEAN IT!
+	eq operations(Label@FSM) = set@Label@FSM .
+	
+	sort set@Label@FSM .
+	subsort set@Label@FSM < @Operation .
+	op set@Label@FSM : -> set@Label@FSM . 
+	eq name(set@Label@FSM) = "set" .
+	eq isAbstract(set@Label@FSM) = false .
+	eq from(set@Label@FSM) = null .
+	eq type(set@Label@FSM) = null .
+	eq lowerBound(set@Label@FSM) = 1 .
+	eq upperBound(set@Label@FSM) = 1 .
+	eq isOrdered(set@Label@FSM) = false .
+	eq isUnique(set@Label@FSM) = false .
+	eq containingClass (set@Label@FSM) = Label@FSM .
+	eq parameters(set@Label@FSM) = label@set@Label@FSM .
+
+	sort label@set@Label@FSM .
+	subsort label@set@Label@FSM < @Parameter .
+	op label@set@Label@FSM : -> label@set@Label@FSM .
+	eq name(label@set@Label@FSM) = "label" .
+	eq type(label@set@Label@FSM) = @String .
+	eq lowerBound(label@set@Label@FSM) = 1 .
+	eq upperBound(label@set@Label@FSM) = 1 .
+	eq isOrdered(label@set@Label@FSM) = true .
+	eq isUnique(label@set@Label@FSM) = true .
+	
+	--- FSM
+	
+	sort FSM@FSM  .
+	subsort FSM@FSM < Label@FSM .
+	op FSM@FSM : -> FSM@FSM .
+	eq name(FSM@FSM) = "FSM" .
+	eq isAbstract(FSM@FSM) = false .
+	eq package(FSM@FSM) = FSM .
+	eq superTypes (FSM@FSM) = Label@FSM .
+	eq references (FSM@FSM) = __(states@FSM@FSM, transitions@FSM@FSM) .
+	eq attributes (FSM@FSM) = alphabet@FSM@FSM . 
+	
+	op alphabet@FSM@FSM  : -> @Attribute .
+  	eq name (alphabet@FSM@FSM) = "alphabet" .
+  	eq type (alphabet@FSM@FSM) = @String .
+  	eq lowerBound (alphabet@FSM@FSM) = 1 .
+  	eq upperBound (alphabet@FSM@FSM) = * .
+  	eq containingClass (alphabet@FSM@FSM) = FSM@FSM .
+  	eq isOrdered (alphabet@FSM@FSM) = false .
+  	eq isUnique (alphabet@FSM@FSM) = true .
+  	eq isId (alphabet@FSM@FSM) = false .
+
+	op states@FSM@FSM : -> @Reference .
+	eq name (states@FSM@FSM) = "states" .
+	eq opposite (states@FSM@FSM) = fsm@State@FSM .
+	eq type (states@FSM@FSM) = State@FSM .
+	eq lowerBound (states@FSM@FSM) = 1 .
+	eq upperBound (states@FSM@FSM) = * .
+	eq containingClass (states@FSM@FSM) = FSM@FSM .
+	eq isOrdered (states@FSM@FSM) = true .
+	eq isUnique (states@FSM@FSM) = true .
+	eq isContainment (states@FSM@FSM) = true .
+
+	op transitions@FSM@FSM : -> @Reference .
+	eq name (transitions@FSM@FSM) = "transitions" .
+	eq opposite (transitions@FSM@FSM) = fsm@Transition@FSM .
+	eq type (transitions@FSM@FSM) = Transition@FSM .
+	eq lowerBound (transitions@FSM@FSM) = 0 .
+	eq upperBound (transitions@FSM@FSM) = * .
+	eq containingClass (transitions@FSM@FSM) = FSM@FSM .
+	eq isOrdered (transitions@FSM@FSM) = true .
+	eq isUnique (transitions@FSM@FSM) = true .
+	eq isContainment (transitions@FSM@FSM) = true .
+
+	--- CLEAN IT! simplify@FSM@FSM
+	eq operations(FSM@FSM) = accept@FSM@FSM getStart@FSM@FSM getFinal@FSM@FSM 
+							simplify@FSM@FSM .
+	
+	sort getStart@FSM@FSM .
+	subsort getStart@FSM@FSM < @Operation .
+	op getStart@FSM@FSM : -> getStart@FSM@FSM . 
+	eq name(getStart@FSM@FSM) = "getStart" .
+	eq isAbstract(getStart@FSM@FSM) = false .
+	eq from(getStart@FSM@FSM) = null .
+	eq type(getStart@FSM@FSM) = State@FSM .
+	eq lowerBound(getStart@FSM@FSM) = 1 .
+	eq upperBound(getStart@FSM@FSM) = 1 .
+	eq isOrdered(getStart@FSM@FSM) = false .
+	eq isUnique(getStart@FSM@FSM) = false .
+	eq containingClass (getStart@FSM@FSM) = FSM@FSM .
+	eq parameters(getStart@FSM@FSM) = null .
+	
+	eq variables(getStart@FSM@FSM) = i@getStart@FSM@FSM .
+	
+	sort i@getStart@FSM@FSM .
+	op i@getStart@FSM@FSM : -> i@getStart@FSM@FSM .
+	subsort i@getStart@FSM@FSM < @Variable .
+	eq name(i@getStart@FSM@FSM) = "i" .
+	eq type(i@getStart@FSM@FSM) = @Int .
+	eq lowerBound(i@getStart@FSM@FSM) = 1 .
+	eq upperBound(i@getStart@FSM@FSM) = 1 .
+	eq isOrdered(i@getStart@FSM@FSM) = false .
+	eq isUnique(i@getStart@FSM@FSM) = false .
+	eq containingOperation(i@getStart@FSM@FSM) = getStart@FSM@FSM .
+	
+	sort getFinal@FSM@FSM .
+	subsort getFinal@FSM@FSM < @Operation .
+	op getFinal@FSM@FSM : -> getFinal@FSM@FSM .
+	eq name(getFinal@FSM@FSM) = "getFinal" .
+	eq isAbstract(getFinal@FSM@FSM) = false .
+	eq from(getFinal@FSM@FSM) = null .
+	eq type(getFinal@FSM@FSM) = State@FSM .
+	eq lowerBound(getFinal@FSM@FSM) = 1 .
+	eq upperBound(getFinal@FSM@FSM) = 1 .
+	eq isOrdered(getFinal@FSM@FSM) = false .
+	eq isUnique(getFinal@FSM@FSM) = false .
+	eq containingClass (getFinal@FSM@FSM) = FSM@FSM .
+	eq parameters(getFinal@FSM@FSM) = null .
+	
+	eq variables(getFinal@FSM@FSM) = i@getFinal@FSM@FSM .
+	
+	sort i@getFinal@FSM@FSM .
+	op i@getFinal@FSM@FSM : -> i@getFinal@FSM@FSM .
+	subsort i@getFinal@FSM@FSM < @Variable .
+	eq name(i@getFinal@FSM@FSM) = "i" .
+	eq type(i@getFinal@FSM@FSM) = @Int .
+	eq lowerBound(i@getFinal@FSM@FSM) = 1 .
+	eq upperBound(i@getFinal@FSM@FSM) = 1 .
+	eq isOrdered(i@getFinal@FSM@FSM) = false .
+	eq isUnique(i@getFinal@FSM@FSM) = false .
+	eq containingOperation(i@getFinal@FSM@FSM) = getFinal@FSM@FSM .
+	
+	
+	sort accept@FSM@FSM .
+	subsort accept@FSM@FSM < @Operation .
+	op accept@FSM@FSM  : -> accept@FSM@FSM .
+	eq name(accept@FSM@FSM) = "accept" .
+	eq isAbstract(accept@FSM@FSM) = false .
+	eq from(accept@FSM@FSM) = null .
+	eq type(accept@FSM@FSM) = @Bool .
+	eq lowerBound(accept@FSM@FSM) = 1 .
+	eq upperBound(accept@FSM@FSM) = 1 .
+	eq isOrdered(accept@FSM@FSM) = false .
+	eq isUnique(accept@FSM@FSM) = false .
+	eq containingClass (accept@FSM@FSM)  = FSM@FSM .
+	eq containingOperation(word@accept@FSM@FSM)	= accept@FSM@FSM .
+	eq parameters(accept@FSM@FSM) = word@accept@FSM@FSM .
+	eq variables(accept@FSM@FSM) = i@accept@FSM@FSM 
+		current@accept@FSM@FSM final@accept@FSM@FSM toEval@accept@FSM@FSM 
+		isNull@accept@FSM@FSM .
+
+	sort word@accept@FSM@FSM .
+	subsort word@accept@FSM@FSM < @Parameter .
+	op word@accept@FSM@FSM : -> word@accept@FSM@FSM .
+	eq name(word@accept@FSM@FSM) = "word" .
+	eq type(word@accept@FSM@FSM) = @String .
+	eq lowerBound(word@accept@FSM@FSM) = 0 .
+	eq upperBound(word@accept@FSM@FSM) = * .
+	eq isOrdered(word@accept@FSM@FSM) = true .
+	eq isUnique(word@accept@FSM@FSM) = true .
+	
+	
+	sort i@accept@FSM@FSM .
+	op i@accept@FSM@FSM : -> i@accept@FSM@FSM .
+	subsort i@accept@FSM@FSM < @Variable .
+	eq name(i@accept@FSM@FSM) = "i" .
+	eq type(i@accept@FSM@FSM) = @Int .
+	eq lowerBound(i@accept@FSM@FSM) = 1 .
+	eq upperBound(i@accept@FSM@FSM) = 1 .
+	eq isOrdered(i@accept@FSM@FSM) = false .
+	eq isUnique(i@accept@FSM@FSM) = false .
+	eq containingOperation(i@accept@FSM@FSM) = accept@FSM@FSM .
+	
+	sort final@accept@FSM@FSM .
+	op final@accept@FSM@FSM : -> final@accept@FSM@FSM .
+	subsort final@accept@FSM@FSM < @Variable .
+	eq name(final@accept@FSM@FSM) = "final" .
+	eq type(final@accept@FSM@FSM) = State@FSM .
+	eq lowerBound(final@accept@FSM@FSM) = 1 .
+	eq upperBound(final@accept@FSM@FSM) = 1 .
+	eq isOrdered(final@accept@FSM@FSM) = false .
+	eq isUnique(final@accept@FSM@FSM) = false .
+	eq containingOperation(final@accept@FSM@FSM) = accept@FSM@FSM .
+	
+	sort current@accept@FSM@FSM .
+	op current@accept@FSM@FSM : -> current@accept@FSM@FSM .
+	subsort current@accept@FSM@FSM < @Variable .
+	eq name(current@accept@FSM@FSM) = "current" .
+	eq type(current@accept@FSM@FSM) = State@FSM .
+	eq lowerBound(current@accept@FSM@FSM) = 1 .
+	eq upperBound(current@accept@FSM@FSM) = 1 .
+	eq isOrdered(current@accept@FSM@FSM) = false .
+	eq isUnique(current@accept@FSM@FSM) = false .
+	eq containingOperation(current@accept@FSM@FSM) = accept@FSM@FSM .
+	
+	sort toEval@accept@FSM@FSM .
+	op toEval@accept@FSM@FSM : -> toEval@accept@FSM@FSM .
+	subsort toEval@accept@FSM@FSM < @Variable .
+	eq name(toEval@accept@FSM@FSM) = "toEval" .
+	eq type(toEval@accept@FSM@FSM) = @String .
+	eq lowerBound(toEval@accept@FSM@FSM) = 0 .
+	eq upperBound(toEval@accept@FSM@FSM) = * .
+	eq isOrdered(toEval@accept@FSM@FSM) = true .
+	eq isUnique(toEval@accept@FSM@FSM) = false .
+	eq containingOperation(toEval@accept@FSM@FSM) = accept@FSM@FSM .
+	
+	sort isNull@accept@FSM@FSM .
+	op isNull@accept@FSM@FSM : -> isNull@accept@FSM@FSM .
+	subsort isNull@accept@FSM@FSM < @Variable .
+	eq name(isNull@accept@FSM@FSM) = "isNull" .
+	eq type(isNull@accept@FSM@FSM) = @Bool .
+	eq lowerBound(isNull@accept@FSM@FSM) = 1 .
+	eq upperBound(isNull@accept@FSM@FSM) = 1 .
+	eq isOrdered(isNull@accept@FSM@FSM) = false .
+	eq isUnique(isNull@accept@FSM@FSM) = false .
+	eq containingOperation(isNull@accept@FSM@FSM) = accept@FSM@FSM .
+	
+	--- CLEAN IT!
+	sort simplify@FSM@FSM .
+	subsort simplify@FSM@FSM < @Operation .
+	op simplify@FSM@FSM  : -> simplify@FSM@FSM .
+	eq name(simplify@FSM@FSM) = "simplify" .
+	eq isAbstract(simplify@FSM@FSM) = false .
+	eq from(simplify@FSM@FSM) = null .
+	eq type(simplify@FSM@FSM) = @Bool .
+	eq lowerBound(simplify@FSM@FSM) = 1 .
+	eq upperBound(simplify@FSM@FSM) = 1 .
+	eq isOrdered(simplify@FSM@FSM) = false .
+	eq isUnique(simplify@FSM@FSM) = false .
+	eq containingClass (simplify@FSM@FSM)  = FSM@FSM .
+	eq parameters(simplify@FSM@FSM) = null .
+	
+	
+	
+	--- Transition
+	
+	sort Transition@FSM .
+	subsort Transition@FSM < Label@FSM .
+	op Transition@FSM : -> Transition@FSM .
+	eq name(Transition@FSM) = "Transition" .
+	eq isAbstract(Transition@FSM) = false .
+	eq package(Transition@FSM) = FSM .
+	eq superTypes (Transition@FSM) = Label@FSM .
+	eq references (Transition@FSM) = __(src@Transition@FSM, tgt@Transition@FSM, 
+									fsm@Transition@FSM) .
+	eq attributes (Transition@FSM) = nil . 
+	
+	op src@Transition@FSM : -> @Reference .
+	eq name (src@Transition@FSM) = "src" .
+	eq opposite (src@Transition@FSM) = out@State@FSM .
+	eq type (src@Transition@FSM) = State@FSM .
+	eq lowerBound (src@Transition@FSM) = 1 .
+	eq upperBound (src@Transition@FSM) = 1 .
+	eq containingClass (src@Transition@FSM) = Transition@FSM .
+	eq isOrdered (src@Transition@FSM) = true .
+	eq isUnique (src@Transition@FSM) = true .
+	eq isContainment (src@Transition@FSM) = false .
+
+	op tgt@Transition@FSM : -> @Reference .
+	eq name (tgt@Transition@FSM) = "tgt" .
+	eq opposite (tgt@Transition@FSM) = in@State@FSM .
+	eq type (tgt@Transition@FSM) = State@FSM .
+	eq lowerBound (tgt@Transition@FSM) = 1 .
+	eq upperBound (tgt@Transition@FSM) = 1 .
+	eq containingClass (tgt@Transition@FSM) = Transition@FSM .
+	eq isOrdered (tgt@Transition@FSM) = true .
+	eq isUnique (tgt@Transition@FSM) = true .
+	eq isContainment (tgt@Transition@FSM) = false .
+	
+	op fsm@Transition@FSM : -> @Reference .
+	eq name (fsm@Transition@FSM) = "fsm" .
+	eq opposite (fsm@Transition@FSM) = transitions@FSM@FSM .
+	eq type (fsm@Transition@FSM) = FSM@FSM .
+	eq lowerBound (fsm@Transition@FSM) = 1 .
+	eq upperBound (fsm@Transition@FSM) = 1 .
+	eq containingClass (fsm@Transition@FSM) = Transition@FSM .
+	eq isOrdered (fsm@Transition@FSM) = true .
+	eq isUnique (fsm@Transition@FSM) = true .
+	eq isContainment (fsm@Transition@FSM) = false .
+	
+	eq operations(Transition@FSM) = nil .   
+
+	--- State
+		
+	sort State@FSM .
+	subsort State@FSM < Label@FSM .
+	op State@FSM : -> State@FSM .
+	eq name(State@FSM) = "State" .
+	eq isAbstract(State@FSM) = false .
+	eq package(State@FSM) = FSM .
+	eq superTypes (State@FSM) = Label@FSM .
+	eq references (State@FSM) = __(in@State@FSM, out@State@FSM, 
+									fsm@State@FSM) .
+	eq attributes (State@FSM) = kind@State@FSM . 
+	  
+	op in@State@FSM : -> @Reference .
+	eq name (in@State@FSM) = "in" .
+	eq opposite (in@State@FSM) = tgt@Transition@FSM .
+	eq type (in@State@FSM) = Transition@FSM .
+	eq lowerBound (in@State@FSM) = 0 .
+	eq upperBound (in@State@FSM) = * .
+	eq containingClass (in@State@FSM) = State@FSM .
+	eq isOrdered (in@State@FSM) = false .
+	eq isUnique (in@State@FSM) = true .
+	eq isContainment (in@State@FSM) = false .
+	
+	op out@State@FSM : -> @Reference .
+	eq name (out@State@FSM) = "out" .
+	eq opposite (out@State@FSM) = src@Transition@FSM .
+	eq type (out@State@FSM) = Transition@FSM .
+	eq lowerBound (out@State@FSM) = 0 .
+	eq upperBound (out@State@FSM) = * .
+	eq containingClass (out@State@FSM) = State@FSM .
+	eq isOrdered (out@State@FSM) = false .
+	eq isUnique (out@State@FSM) = true .
+	eq isContainment (out@State@FSM) = false .
+
+	op fsm@State@FSM : -> @Reference .
+	eq name (fsm@State@FSM) = "fsm" .
+	eq opposite (fsm@State@FSM) = states@FSM@FSM .
+	eq type (fsm@State@FSM) = FSM@FSM .
+	eq lowerBound (fsm@State@FSM) = 1 .
+	eq upperBound (fsm@State@FSM) = 1 .
+	eq containingClass (fsm@State@FSM) = State@FSM .
+	eq isOrdered (fsm@State@FSM) = true .
+	eq isUnique (fsm@State@FSM) = true .
+	eq isContainment (fsm@State@FSM) = false .
+
+	op kind@State@FSM : -> @Attribute .
+	eq name (kind@State@FSM) = "kind" .
+	eq type (kind@State@FSM) = Kind@FSM .
+	eq lowerBound (kind@State@FSM) = 1 .
+	eq upperBound (kind@State@FSM) = 1 .
+	eq containingClass (kind@State@FSM) = State@FSM .
+	eq isOrdered (kind@State@FSM) = true .
+	eq isUnique (kind@State@FSM) = true .
+  	eq isId (kind@State@FSM) = false .
+
+	sort fire@State@FSM letter@fire@State@FSM .
+	subsort fire@State@FSM < @Operation .
+	subsort letter@fire@State@FSM < @Parameter .
+	op fire@State@FSM : -> fire@State@FSM .
+	op letter@fire@State@FSM : -> letter@fire@State@FSM .
+	
+	eq operations(State@FSM) = fire@State@FSM .
+	eq name(fire@State@FSM) = "fire" .
+	eq name(letter@fire@State@FSM) = "letter" .
+	eq isAbstract(fire@State@FSM) = false .
+	eq from(fire@State@FSM) = null .
+	eq type(fire@State@FSM) = State@FSM .
+	eq type(letter@fire@State@FSM) = @String .
+	eq lowerBound(fire@State@FSM) = 0 .
+	eq upperBound(fire@State@FSM) = 1 .
+	eq isOrdered(fire@State@FSM) = false .
+	eq isUnique(fire@State@FSM) = false .
+	eq lowerBound(letter@fire@State@FSM) = 1 .
+	eq upperBound(letter@fire@State@FSM) = 1 .
+	eq isOrdered(letter@fire@State@FSM) = false .
+	eq isUnique(letter@fire@State@FSM) = false .
+	eq containingClass (fire@State@FSM)  = State@FSM .
+	eq parameters(fire@State@FSM) = letter@fire@State@FSM .
+	
+	eq variables(fire@State@FSM) = trans@fire@State@FSM 
+		i@fire@State@FSM current@fire@State@FSM .
+	
+	sort trans@fire@State@FSM .
+	op trans@fire@State@FSM : -> trans@fire@State@FSM .
+	subsort trans@fire@State@FSM < @Variable .
+	eq type(trans@fire@State@FSM) = Transition@FSM .
+	eq lowerBound(trans@fire@State@FSM) = 0 .
+	eq upperBound(trans@fire@State@FSM) = * .
+	eq isOrdered(trans@fire@State@FSM) = true .
+	eq isUnique(trans@fire@State@FSM) = false .
+	eq containingOperation(trans@fire@State@FSM) = fire@State@FSM .
+
+	sort i@fire@State@FSM .
+	op i@fire@State@FSM : -> i@fire@State@FSM .
+	subsort i@fire@State@FSM < @Variable .
+	eq type(i@fire@State@FSM) = @Int .
+	eq lowerBound(i@fire@State@FSM) = 1 .
+	eq upperBound(i@fire@State@FSM) = 1 .
+	eq isOrdered(i@fire@State@FSM) = false .
+	eq isUnique(i@fire@State@FSM) = false .
+	eq containingOperation(i@fire@State@FSM) = fire@State@FSM .
+	 
+	sort current@fire@State@FSM .
+	op current@fire@State@FSM : -> current@fire@State@FSM .
+	subsort current@fire@State@FSM < @Variable .
+	eq type(current@fire@State@FSM) = Transition@FSM .
+	eq lowerBound(current@fire@State@FSM) = 1 .
+	eq upperBound(current@fire@State@FSM) = 1 .
+	eq isOrdered(current@fire@State@FSM) = false .
+	eq isUnique(current@fire@State@FSM) = false .
+	eq containingOperation(current@fire@State@FSM) = fire@State@FSM .
+	
+	eq statements(FiniteStateMachine) = 
+--- CLEAN IT!
+[FSM, Label@FSM, set@Label@FSM,   1] |-> self . label@Label@FSM .:=. label@set@Label@FSM,
+
+[FSM, FSM@FSM, getStart@FSM@FSM,  1] |-> i@getStart@FSM@FSM .:=. 0,
+[FSM, FSM@FSM, getStart@FSM@FSM,  2] |-> i@getStart@FSM@FSM .:=. i@getStart@FSM@FSM + 1,
+[FSM, FSM@FSM, getStart@FSM@FSM,  3] |-> iff( (i@getStart@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getStart@FSM@FSM) . kind@State@FSM .=. START@Kind@FSM)),
+[FSM, FSM@FSM, getStart@FSM@FSM,  4] |-> iff(i@getStart@FSM@FSM > states@FSM@FSM -> size()),
+[FSM, FSM@FSM, getStart@FSM@FSM,  5] |-> return null,
+[FSM, FSM@FSM, getStart@FSM@FSM,  6] |-> return (states@FSM@FSM -> at(i@getStart@FSM@FSM)),
+	 	 
+[FSM, FSM@FSM, getFinal@FSM@FSM,  1] |-> i@getFinal@FSM@FSM .:=. 0,
+[FSM, FSM@FSM, getFinal@FSM@FSM,  2] |-> i@getFinal@FSM@FSM .:=. i@getFinal@FSM@FSM + 1,
+[FSM, FSM@FSM, getFinal@FSM@FSM,  3] |-> iff( (i@getFinal@FSM@FSM .=. states@FSM@FSM -> size()) or (states@FSM@FSM -> at(i@getFinal@FSM@FSM) . kind@State@FSM .=. STOP@Kind@FSM)),
+[FSM, FSM@FSM, getFinal@FSM@FSM,  4] |-> iff(i@getFinal@FSM@FSM > states@FSM@FSM -> size()),
+[FSM, FSM@FSM, getFinal@FSM@FSM,  5] |-> return null,
+[FSM, FSM@FSM, getFinal@FSM@FSM,  6] |-> return (states@FSM@FSM -> at(i@getFinal@FSM@FSM)),
+		 
+[FSM, FSM@FSM, accept@FSM@FSM,    1] |-> current@accept@FSM@FSM .:=. self . "getStart" <>,
+[FSM, FSM@FSM, accept@FSM@FSM,    2] |-> final@accept@FSM@FSM .:=. self . "getFinal" <>,
+[FSM, FSM@FSM, accept@FSM@FSM,    3] |-> toEval@accept@FSM@FSM .:=. word@accept@FSM@FSM,
+[FSM, FSM@FSM, accept@FSM@FSM,    4] |-> isNull@accept@FSM@FSM .:=. false,		 
+[FSM, FSM@FSM, accept@FSM@FSM,    5] |-> i@accept@FSM@FSM .:=. 1,
+[FSM, FSM@FSM, accept@FSM@FSM,    6] |-> current@accept@FSM@FSM .:=. current@accept@FSM@FSM . "fire" < toEval@accept@FSM@FSM -> at(i@accept@FSM@FSM) >, --- toEval@accept@FSM@FSM -> at(i@accept@FSM@FSM)   
+[FSM, FSM@FSM, accept@FSM@FSM,    7] |-> iff(current@accept@FSM@FSM .=. null),
+[FSM, FSM@FSM, accept@FSM@FSM,    8] |-> isNull@accept@FSM@FSM .:=. true,
+[FSM, FSM@FSM, accept@FSM@FSM,    9] |-> i@accept@FSM@FSM .:=. i@accept@FSM@FSM + 1,
+[FSM, FSM@FSM, accept@FSM@FSM,   10] |-> iff((i@accept@FSM@FSM > toEval@accept@FSM@FSM -> size()) or (isNull@accept@FSM@FSM)),
+[FSM, FSM@FSM, accept@FSM@FSM,   11] |-> return (current@accept@FSM@FSM .=. final@accept@FSM@FSM),
+		 
+[FSM, State@FSM, fire@State@FSM,  1] |-> trans@fire@State@FSM .:=. self . out@State@FSM -> asSequence(),
+[FSM, State@FSM, fire@State@FSM,  2] |-> iff(trans@fire@State@FSM .=. null),
+[FSM, State@FSM, fire@State@FSM,  3] |-> return null,
+[FSM, State@FSM, fire@State@FSM,  4] |-> current@fire@State@FSM .:=. trans@fire@State@FSM -> at(1),
+[FSM, State@FSM, fire@State@FSM,  5] |-> i@fire@State@FSM .:=. 0,
+[FSM, State@FSM, fire@State@FSM,  6] |-> i@fire@State@FSM .:=. i@fire@State@FSM + 1,
+[FSM, State@FSM, fire@State@FSM,  7] |-> iff((i@fire@State@FSM > trans@fire@State@FSM -> size()) or (trans@fire@State@FSM -> at(i@fire@State@FSM) . label@Label@FSM .=. letter@fire@State@FSM)),
+[FSM, State@FSM, fire@State@FSM,  8] |-> iff(i@fire@State@FSM > trans@fire@State@FSM -> size()),
+[FSM, State@FSM, fire@State@FSM,  9] |-> return null,
+[FSM, State@FSM, fire@State@FSM, 10] |-> return (trans@fire@State@FSM -> at(i@fire@State@FSM) . tgt@Transition@FSM),
+--- CLEAN IT!
+[FSM, FSM@FSM, simplify@FSM@FSM, 1] |-> self . states@FSM@FSM .:=. self . states@FSM@FSM -> at(1)
+.
+	
+	var N : Nat .
+--- CLEAN IT!
+eq nxt([FSM, Label@FSM, set@Label@FSM,     1]) = <[], []> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  3]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  4], [FSM, FSM@FSM, getStart@FSM@FSM,  2]> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  4]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  5], 
+												[FSM, FSM@FSM, getStart@FSM@FSM,  6]> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  5]) = <[], []> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  6]) = <[], []> .
+eq nxt([FSM, FSM@FSM, getStart@FSM@FSM,  N]) = <[FSM, FSM@FSM, getStart@FSM@FSM,  (N + 1) ], []> [owise] .
+
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  3]) = <[FSM, FSM@FSM, getFinal@FSM@FSM,  4], [FSM, FSM@FSM, getFinal@FSM@FSM,  2]> .
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  4]) = <[FSM, FSM@FSM, getFinal@FSM@FSM,  5], 
+												[FSM, FSM@FSM, getFinal@FSM@FSM,  6]> .
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  5]) = <[], []> .
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  6]) = <[], []> .
+eq nxt([FSM, FSM@FSM, getFinal@FSM@FSM,  N]) = <[FSM, FSM@FSM, getFinal@FSM@FSM,  (N + 1) ], []> [owise] .
+
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    7]) = <[FSM, FSM@FSM, accept@FSM@FSM,    8], 
+												[FSM, FSM@FSM, accept@FSM@FSM,    9]> .
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    8]) = <[FSM, FSM@FSM, accept@FSM@FSM,    9], 
+												[FSM, FSM@FSM, accept@FSM@FSM,   10]> .
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,   10]) = <[FSM, FSM@FSM, accept@FSM@FSM,   11], 
+												[FSM, FSM@FSM, accept@FSM@FSM,    6]> .
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,   11]) = <[], []> .												
+eq nxt([FSM, FSM@FSM, accept@FSM@FSM,    N]) = <[FSM, FSM@FSM, accept@FSM@FSM,  (N + 1) ], []> [owise] .
+	
+eq nxt([FSM, State@FSM, fire@State@FSM,    2]) = <[FSM, State@FSM, fire@State@FSM,    3], 
+												[FSM, State@FSM, fire@State@FSM,    4]> .
+eq nxt([FSM, State@FSM, fire@State@FSM,    3]) = <[], []> .
+eq nxt([FSM, State@FSM, fire@State@FSM,    7]) = <[FSM, State@FSM, fire@State@FSM,    8], 
+												  [FSM, State@FSM, fire@State@FSM,    6]> .
+eq nxt([FSM, State@FSM, fire@State@FSM,    8]) = <[FSM, State@FSM, fire@State@FSM,    9], 
+												[FSM, State@FSM, fire@State@FSM,   10]> .
+eq nxt([FSM, State@FSM, fire@State@FSM,    N]) = <[FSM, State@FSM, fire@State@FSM,  (N + 1) ], []> [owise] .	
+--- CLEAN IT!
+eq nxt([FSM, FSM@FSM, simplify@FSM@FSM,  1]) = <[], []> . 
+endm

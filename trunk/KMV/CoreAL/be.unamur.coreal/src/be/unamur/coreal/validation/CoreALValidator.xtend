@@ -6,6 +6,7 @@ package be.unamur.coreal.validation
 import be.unamur.coreal.coreAL.AtCollectionFeature
 import be.unamur.coreal.coreAL.Attribute
 import be.unamur.coreal.coreAL.Class
+import be.unamur.coreal.coreAL.CollectionLiteral
 import be.unamur.coreal.coreAL.CollectionType
 import be.unamur.coreal.coreAL.CoreALPackage
 import be.unamur.coreal.coreAL.EnumLiteral
@@ -16,11 +17,14 @@ import be.unamur.coreal.coreAL.MemberSelection
 import be.unamur.coreal.coreAL.Operation
 import be.unamur.coreal.coreAL.Parameter
 import be.unamur.coreal.coreAL.Reference
+import be.unamur.coreal.coreAL.ReturnStmt
 import be.unamur.coreal.coreAL.SelfExpression
 import be.unamur.coreal.coreAL.StructuralProperty
 import be.unamur.coreal.coreAL.SuperExpression
-import be.unamur.coreal.coreAL.Variable
+import be.unamur.coreal.coreAL.VariableDeclaration
+import be.unamur.coreal.coreAL.VoidType
 import be.unamur.coreal.scoping.CoreALIndex
+import be.unamur.coreal.typing.CoreALTypeConformance
 import be.unamur.coreal.typing.CoreALTypeProvider
 import com.google.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -29,7 +33,7 @@ import org.eclipse.xtext.validation.CheckType
 
 import static extension be.unamur.coreal.util.CoreALModelUtil.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import be.unamur.coreal.typing.CoreALTypeConformance
+import be.unamur.coreal.coreAL.ConditionalBlock
 
 /**
  * This class contains custom validation rules. 
@@ -50,8 +54,11 @@ class CoreALValidator extends AbstractCoreALValidator {
 	public static val WRONG_SUPER_USAGE = "WRONG_SUPER_USAGE"
 	public static val WRONG_SELF_USAGE = "WRONG_SELF_USAGE"
 	public static val MULTIPLICITY_INCONSISTENCY="MULTIPLICITY_INCONSISTENCY"
+	public static val INVALID_ABSTRACT_OPERATION = "INVALID_ABSTRACT_OPERATION"
 	public static val ABSTRACT_OP_INSIDE_NONABSTRACT_CLASS = "ABSTRACT_OP_INSIDE_NONABSTRACT_CLASS" 
-	public static val INCOMPATIBLE_TYPES = "INCOMPATIBLE_TYPES"
+	public static val INCOMPATIBLE_TYPES = "INCOMPATIBLE_TYPES"	
+	public static val OPPOSITE_INCONSISTENCY = "OPPOSITE_INCONSISTENCY"
+	public static val DECLARATION_WITHIN_BLOCK = "DECLARATION_WITHIN_BLOCK"
 	
 	@Check
 	def void checkClassHierarchy(Class c) {
@@ -81,9 +88,8 @@ class CoreALValidator extends AbstractCoreALValidator {
 					desc.EObjectURI.trimFragment != c.eResource.URI) {
 				error(
 					"The type " + c.name + " is already defined in another file. Check imports...",
-					CoreALPackage.Literals.TYPE__NAME,
+					CoreALPackage::eINSTANCE.type_Name,
 					DUPLICATE_CLASS)
-				return
 			}
 		]
 	}
@@ -93,7 +99,7 @@ class CoreALValidator extends AbstractCoreALValidator {
 		if(p.containingClass.properties.exists[
 			it != p && 
 			it.name == p.name])
-			error("Duplicate Structural Property '" + p.collectionType + "'",
+			error("Duplicate structural property '" + p.name + "'",
 				CoreALPackage::eINSTANCE.feature_Name,
 				DUPLICATE_ELEMENT)
 	}
@@ -105,7 +111,7 @@ class CoreALValidator extends AbstractCoreALValidator {
 			it.eClass == op.eClass 
 			&& it.name == op.name] 
 		if(duplicate != null)
-			error("Duplicate Operation '" + op.name + "'",
+			error("Duplicate operation '" + op.name + "'",
 				CoreALPackage::eINSTANCE.feature_Name,
 				DUPLICATE_ELEMENT)
 	}
@@ -113,7 +119,7 @@ class CoreALValidator extends AbstractCoreALValidator {
 	@Check
 	def void checkNoDuplicateEnumeration(Enumeration e){
 		if(e.containingMetamodel.enumerations.exists[it != e && it.name == e.name])
-			error("Duplicate Enumeration '" + e.name + "'",
+			error("Duplicate enumeration '" + e.name + "'",
 				CoreALPackage::eINSTANCE.type_Name,
 				DUPLICATE_ELEMENT
 			)
@@ -122,7 +128,7 @@ class CoreALValidator extends AbstractCoreALValidator {
 	@Check
 	def void checkNoDuplicateEnumerationLiteral(EnumLiteral lit) {
 		if (lit.containingEnumeration.literals.exists[it != lit && it.name == lit.name])
-			error("Duplicate EEnumeration Literal '" + lit.name + "'",
+			error("Duplicate enumeration literal '" + lit.name + "'",
 					CoreALPackage::eINSTANCE.enumLiteral_Name,
 					DUPLICATE_ELEMENT)
 	}
@@ -131,28 +137,30 @@ class CoreALValidator extends AbstractCoreALValidator {
 	def void checkNoDuplicateParameter(Parameter param){
 		val duplicate = param.containingOperation.parameters.findFirst[it != param && it.name == param.name]
 		if(duplicate != null)
-			error("Duplicate variable declaration '" + param.name + "'",
-				CoreALPackage::eINSTANCE.local_Name)
+			error("Duplicate parameter declaration '" + param.name + "'",
+				CoreALPackage::eINSTANCE.local_Name,
+				DUPLICATE_ELEMENT)
 	}
 
 	@Check
-	def void checkNoDuplicateVariable(Variable variable){
-		val duplicate = variable.containingOperation.body.
-			getAllContentsOfType(typeof(Variable)).findFirst[it != variable && it.name == variable.name]
+	def void checkNoDuplicateVariable(VariableDeclaration variable){
+		val duplicate = variable.containingOperation.
+			getAllContentsOfType(typeof(VariableDeclaration)).findFirst[it != variable && it.name == variable.name]
 		if(duplicate != null)
 			error("Duplicate variable declaration '" + variable.name + "'",
-				CoreALPackage::eINSTANCE.local_Name)
+				CoreALPackage::eINSTANCE.local_Name,
+				DUPLICATE_ELEMENT)
 	}
 	
 	@Check
 	def void checkCorrectPropertyType(Feature feature){
 		switch(feature){
 			Attribute: if(!(feature.collectionType.type.kind != null || feature.collectionType.type.ref instanceof Enumeration))
-							error("Wrong Type for Attribute '" + feature.name + "'. Should be an enumeration or a primitive type",
+							error("Wrong type for Attribute '" + feature.name + "'. Should be an enumeration or a primitive type",
 								CoreALPackage::eINSTANCE.feature_Name,
 								WRONG_TYPE)
 			Reference: if(!(feature.collectionType.type.kind == null && feature.collectionType.type.ref instanceof Class))
-							error("Wrong Type for Reference '" + feature.name + "'. Should be a Class",
+							error("Wrong type for Reference '" + feature.name + "'. Should be a Class",
 								CoreALPackage::eINSTANCE.feature_Name,
 								WRONG_TYPE)
 		}
@@ -185,14 +193,35 @@ class CoreALValidator extends AbstractCoreALValidator {
 			(ctype.multiplicity.upperbound.isIsWildcard || 
 				ctype.multiplicity.upperbound.value > 1)
 		if(boundsCondition)
-			error("Multiplicity Bounds not correct", 
+			error("Multiplicity bounds not correct", 
 				CoreALPackage::eINSTANCE.collectionType_Multiplicity,
 				MULTIPLICITY_INCONSISTENCY)
 		if(!boundsConsistentWithCollection)
 			error("Multiplicity not consistent with collection declaration",
 				CoreALPackage::eINSTANCE.collectionType_Multiplicity,
-				MULTIPLICITY_INCONSISTENCY)
-		
+				MULTIPLICITY_INCONSISTENCY)	
+	}
+
+	@Check
+	def void checkOppositeReferences(Reference ref){
+		val ctype = ref.collectionType
+		if(ref.opposite != null){
+			val opp = ref.opposite
+			if(opp.opposite == null || opp.opposite != ref)
+				error("Reference '" + ref.name + "' is not declared as opposite of '" 
+					+ opp.name + "' in '" + ctype.type.typeOf.name + "'",
+					CoreALPackage::eINSTANCE.reference_Opposite,
+					OPPOSITE_INCONSISTENCY)
+			if(ref.isIsContainment && opp.isIsContainment)
+				error("The containment reference '" + ref.name + "' cannot have a containment as opposite",
+					CoreALPackage::eINSTANCE.reference_Opposite,
+					OPPOSITE_INCONSISTENCY)
+			if(opp.isIsContainment && ctype.multiplicity != null && (ctype.multiplicity.lowerbound != 0 || ctype.multiplicity.upperbound.value != 1 || ctype.multiplicity.upperbound.isWildcard))
+				error("Multiplicity should be [0..1] since '" + ref.name + 
+					"' is the opposite of the containment reference '" + opp.name + "' in '" + opp.collectionType.type.typeOf.name + "'",
+					CoreALPackage::eINSTANCE.structuralProperty_CollectionType,
+					OPPOSITE_INCONSISTENCY)
+		}
 	}
 
 	@Check
@@ -212,12 +241,12 @@ class CoreALValidator extends AbstractCoreALValidator {
 	@Check
 	def void checkAbstractOperationInAbstractClass(Operation op){
 		if(op.isIsAbstract && op.body != null)
-			error("Abstract operation '" + op.name + " contains a body",
+			error("Abstract operation '" + op.name + "' contains a body",
 				CoreALPackage::eINSTANCE.operation_Body,
-				ABSTRACT_OP_INSIDE_NONABSTRACT_CLASS)
+				INVALID_ABSTRACT_OPERATION)
 		if(op.isIsAbstract && !op.containingClass.isIsAbstract)
 			error("Abstract operation '" + op.name + 
-				" inside the non-abstract class '" + op.containingClass.name + "'.",
+				"' inside the non-abstract class '" + op.containingClass.name + "'",
 				CoreALPackage::eINSTANCE.operation_IsAbstract,
 				ABSTRACT_OP_INSIDE_NONABSTRACT_CLASS)	
 	}
@@ -242,15 +271,47 @@ class CoreALValidator extends AbstractCoreALValidator {
 	
 	@Check
 	def void checkCompatibleTypes(Expression exp) {
-		val actualType = exp.typeFor
+		val actualType   = exp.typeFor
 		val expectedType = exp.expectedType
 		if (expectedType == null || actualType == null)
 			return; // nothing to check
-//		if (!actualType.isConformant(expectedType)) {
-//			error("Incompatible types. Expected '" + expectedType?.name
-//					+ "' but was '" + actualType?.name + "'", null,
-//					INCOMPATIBLE_TYPES);
-//		}
+		if (!actualType.isConformant(expectedType)) {
+			error("Incompatible types. Expected '" + expectedType?.name
+					+ "' but was '" + actualType?.name + "'", null,
+					INCOMPATIBLE_TYPES);
+		}
 	}
+	
+	@Check
+	def void checkCorrectReturnUse(ReturnStmt stmt){
+		val returntype = stmt.containingOperation.type
+		switch(returntype){
+			VoidType:
+				if(stmt.expression != null)
+					error("Return statement should be empty within void return type operation '" + stmt.containingOperation.name + "'",
+						CoreALPackage::eINSTANCE.returnStmt_Expression,
+						WRONG_TYPE)
+			CollectionType:
+				if(stmt.expression == null)
+					error("Return statement should not be empty within operation '" + stmt.containingOperation.name + "'",
+						null,
+						WRONG_TYPE)	
+		}
+	}
+	
+	@Check
+	def void checkNoDeclarationOutsideOfOperationBlock(VariableDeclaration decl){
+		if(decl.containingBlock instanceof ConditionalBlock)
+			error("Variable declaration allowed only in operations' top-level block", 
+				CoreALPackage::eINSTANCE.local_Name, 
+				DECLARATION_WITHIN_BLOCK)
+	}
+	
+	
+	@Check
+	def void checkCollectionLiteralWithSameType(CollectionLiteral lit){
+		
+	}
+	
 	
 }

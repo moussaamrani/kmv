@@ -13,14 +13,14 @@ import be.unamur.coreal.scoping.CoreALResourceDescriptionsStrategy;
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
 public class CoreALRuntimeModule extends be.unamur.coreal.AbstractCoreALRuntimeModule {
-	@Override
-	public void configureIScopeProviderDelegate(com.google.inject.Binder binder) {
-		binder.bind(org.eclipse.xtext.scoping.IScopeProvider.class)
-				.annotatedWith(
-						com.google.inject.name.Names
-								.named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE))
-				.to(CoreALImportedNamespaceAwareLocalScopeProvider.class);
-	}
+//	@Override
+//	public void configureIScopeProviderDelegate(com.google.inject.Binder binder) {
+//		binder.bind(org.eclipse.xtext.scoping.IScopeProvider.class)
+//				.annotatedWith(
+//						com.google.inject.name.Names
+//								.named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE))
+//				.to(CoreALImportedNamespaceAwareLocalScopeProvider.class);
+//	}
 	
 	/*
 	 * If you enable this strategy, the NamesAreUniqueValidator will not

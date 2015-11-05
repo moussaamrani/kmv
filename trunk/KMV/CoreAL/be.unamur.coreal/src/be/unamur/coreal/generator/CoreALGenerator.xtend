@@ -3,9 +3,20 @@
  */
 package be.unamur.coreal.generator
 
+import be.unamur.coreal.coreAL.Attribute
+import be.unamur.coreal.coreAL.Class
+import be.unamur.coreal.coreAL.Metamodel
+import be.unamur.coreal.coreAL.Operation
+import be.unamur.coreal.coreAL.Reference
+import be.unamur.coreal.coreAL.Statement
+import java.util.Map.Entry
 import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtext.generator.IGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess
+import org.eclipse.xtext.generator.IGenerator
+
+import static be.unamur.coreal.generator.MaudeConstants.*
+
+import static extension be.unamur.coreal.util.CoreALModelUtil.*
 
 /**
  * Generates code from your model files on save.
@@ -13,12 +24,242 @@ import org.eclipse.xtext.generator.IFileSystemAccess
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
 class CoreALGenerator implements IGenerator {
+	extension MaudeNameProvider       mnp = new MaudeNameProvider
+	extension MaudeStatementGenerator msg = new MaudeStatementGenerator
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
-//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
-//			resource.allContents
-//				.filter(typeof(Greeting))
-//				.map[name]
-//				.join(', '))
+		for (MM : resource.allContents.toIterable.filter(typeof(Metamodel))) {
+			fsa.generateFile("maude/" + MM.name + ".maude", MM.compile)
+		}
+	}
+
+	/**
+	 * Returns the Maude representation for Upperbound
+	 */
+	private def static CharSequence upperbound(int up) {
+		if (up == -1)
+			return "*"
+		else
+			return up.toString
+	}
+
+	public def String generateOperationBodyRepresentation(Operation op){
+		var result = EQ + " statements (" + op.containingMetamodel.maudeName + MM_SUFFIX + ") = \n"
+		val OperationBodyNumberer obn = new OperationBodyNumberer(op)
+		result += obn.iterator.map[e|generateMaudeStatement(e.key, e.value)].join(STMT_SEP + "\n")
+		result += "\n.\n\n"
+		var cfi = obn.iteratorCF
+		while(cfi.hasNext){
+			val current = cfi.next
+			result += generateNextStatements(current, obn)
+		}
+		return result 
+	}
+
+	/**
+	 * Generate the Maude Statement entry 
+	 * for a given statement at a given index
+	 */
+	public def generateMaudeStatement(int index, Statement statement)'''
+		«generatePC(index, statement)» «MAPSTO»
+			«statement.generate»«««
+	'''
+	
+	public def generateNextStatements(Entry<Integer, Pair<Integer, Integer>> element, OperationBodyNumberer obn)'''
+		«EQ» nxt(«generatePC(element.key, obn.getStatement(element.key))») = < «generatePC(element.value.key, obn.getStatement(element.value.key))», «generatePC(element.value.value, obn.getStatement(element.value.value))» > .
+	'''
+
+	private def generatePC(int index, Statement statement)
+	'''«IF(index == OperationBodyNumberer.BOT)»[]«ELSE»[«statement.containingMetamodel.maudeName», «statement.containingClass.maudeName», «statement.containingOperation.maudeName», «IF(index<10)» «ELSE»«ENDIF»«index»]«ENDIF»'''
+
+
+//	/**
+//	 * Generate the Maude "Program Counter" (PC) representation
+//	 * for a given statement at the given index 
+//	 */
+//	private def String generatePC(int index, Statement statement)
+//	'''	«IF(index == OperationBodyNumberer.BOT)»
+//			[]
+//		«ELSE»
+//			[«statement.containingMetamodel.maudeName », «statement.containingClass.maudeName», «statement.containingOperation.maudeName», «IF(index <10)» «ELSE»«ENDIF»«index»]
+//		«ENDIF»
+//	'''
+
+//	public static def <T, E> T getKeyByValue(Map<T, E> map, E value) {
+//	    for (Entry<T, E> entry : map.entrySet()) {
+//    	    if (Objects.equals(value, entry.getValue())) {
+//        	    return entry.getKey();
+//        	}
+//    	}
+//    	return null;
+//	}
+//
+//	public def Map<Integer, Pair<Integer, Integer>> computeNext(Operation op, Map<Integer, Statement> rank){
+//		var map = new HashMap<Integer, Pair<Integer, Integer>> 
+//		for(stmt : op.body.statements){
+//			val stmtKey = rank.getKeyByValue(stmt)
+//			if(stmtKey != null){
+//				switch(stmt){
+//					ReturnStmt: map.put(stmtKey, Pair.of(OperationBodyNumberer.BOT, OperationBodyNumberer.BOT))
+//					ConditionalStmt: {
+//						val elseKey = if(stmt.^else != null) 
+//								rank.getKeyByValue(stmt.^else.statements.get(0)) 
+//							else 
+//								rank.getKeyByValue(stmt.^else.statements.get(0))  
+//						map.put(stmtKey, Pair.of(stmtKey+1, elseKey))
+//					}
+//					LoopStmt:{
+//						val bodyKey = rank.getKeyByValue(stmt.body.statements.get(0))
+////						val nextKey = 
+//					}  
+//				}
+//			}
+//		}
+//		return map
+//	}
+
+
+	def CharSequence compile(Metamodel MM) {
+		'''
+		mod «MM.maudeName + "-MM"» is
+			protecting KERMETA «SEP»
+			
+			--- Metamodel Declaration
+			«OP» «MM.maudeName+MM_SUFFIX» : -> @Metamodel «SEP»
+			«EQ» name («MM.maudeName+MM_SUFFIX») = "«MM.maudeName+MM_SUFFIX»" «SEP»
+			«EQ» packages («MM.maudeName+MM_SUFFIX») = «MM.maudeName» «SEP»
+			
+			*********************************
+			*******   Package         *******
+			*********************************
+
+			«OP» «MM.maudeName» : -> @Package «SEP»
+			«EQ» name («MM.maudeName») = "«MM.maudeName»" «SEP»
+			«EQ» metamodel («MM.maudeName») = «MM.maudeName+MM_SUFFIX» «SEP»
+			«EQ» superPackage («MM.maudeName») = null «SEP»
+			«EQ» subPackages («MM.maudeName»)  = nil «SEP»
+			«EQ» classes («MM.maudeName») = «IF(MM.types?.filter(typeof(Class)).empty)» nil «ELSE» __(«MM.types.filter(typeof(Class)).map[maudeName].join(", ")») «ENDIF» «SEP»
+			
+			*********************************
+			*******   Enumerations    *******
+			*********************************
+
+			«FOR enumeration : MM.enumerations»
+				-----------------------------
+				--- «enumeration.name»
+				-----------------------------
+				
+				«SORT» «enumeration.maudeName» «SEP»
+				«SUBSORT» «enumeration.maudeName» < @EnumerationInstance «SEP»
+				«OP» «enumeration.maudeName» : -> @Enumeration «SEP»
+				«FOR literal : enumeration.literals»
+				«OP» «literal.maudeName» : -> «enumeration.maudeName» «SEP»
+				«ENDFOR»
+				«EQ» metaAux (X:«enumeration.maudeName») = «enumeration.maudeName» «SEP»
+				«EQ» name(«enumeration.maudeName») = "«enumeration.name»" «SEP»
+				«EQ» package («enumeration.maudeName») = «MM.maudeName» «SEP»
+				«EQ» defaultvalue («enumeration.maudeName») = «enumeration.literals.get(0).maudeName» «SEP»
+				«EQ» literals («enumeration.maudeName») = «enumeration.literals.map[literal | literal.maudeName].join(" # ")» «SEP»
+			«ENDFOR»
+				
+			*********************************
+			*******    Classes        *******
+			*********************************
+			
+			«FOR _class : MM.classes» 
+			-----------------------------
+			--- «_class.name» 
+			-----------------------------
+
+			«SORT» «_class.maudeName» «SEP»
+			«SUBSORT» «_class.maudeName» < «IF(_class.superClass == null)» @Class «ELSE» «_class.superClass.maudeName» «ENDIF»«SEP»
+			«OP» «_class.maudeName» : -> «_class.maudeName» «SEP»
+			«EQ» name       («_class.maudeName») = "«_class.name»" «SEP»
+			«EQ» isAbstract («_class.maudeName») = «_class.isAbstract» «SEP»
+			«EQ» package    («_class.maudeName») = «MM.maudeName» «SEP»
+			«EQ» superType  («_class.maudeName») = «IF(_class.superClass == null)» nil «ELSE» «_class.superClass.maudeName» «ENDIF»«SEP»
+			«EQ» attributes («_class.maudeName») = «IF(_class?.features.filter(typeof(Attribute)).empty)» nil «ELSE» «_class.features.filter(typeof(Attribute)).map[maudeName].join(", ")» «ENDIF»«SEP»
+			«EQ» references («_class.maudeName») = «IF(_class?.features.filter(typeof(Reference)).empty)» nil «ELSE» __(«_class.features.filter(typeof(Reference)).map[maudeName].join(", ")») «ENDIF»«SEP»
+			«EQ» operations («_class.maudeName») = «IF(_class?.operations.empty)» nil «ELSE» «_class.operations.map[maudeName].join(" ")»«ENDIF» «SEP»
+			
+			«IF(!_class.properties.empty)»
+				«FOR prop : _class.properties»
+					«OP» «prop.maudeName» : -> «IF(prop instanceof Attribute)»@Attribute«ELSE»@Reference«ENDIF» «SEP»
+					«EQ» name («prop.maudeName») = "«prop.name»" «SEP»
+					«EQ» type («prop.maudeName») = «prop.collectionType.type.maudeName» «SEP»
+					«EQ» lowerBound («prop.maudeName») = «prop.collectionType.lowerbound.toString» «SEP»
+					«EQ» upperBound («prop.maudeName») = «upperbound(prop.collectionType.upperbound)» «SEP»
+					«EQ» isOrdered  («prop.maudeName») = «prop.collectionType.ordered» «SEP»
+					«EQ» isUnique   («prop.maudeName») = «prop.collectionType.unique» «SEP»
+					«EQ» containingClass («prop.maudeName») = «_class.maudeName» «SEP»
+					«IF(prop instanceof Attribute)» 
+						«EQ» isId («prop.maudeName») = false «SEP»
+					«ELSE»
+						«EQ» isContainment («prop.maudeName») = «(prop as Reference).isIsContainment» «SEP»
+						«EQ» opposite      («prop.maudeName») = «IF((prop as Reference).opposite == null)» nil «ELSE»«(prop as Reference).opposite.maudeName»«ENDIF» «SEP»
+					«ENDIF»
+							
+				«ENDFOR»
+			«ELSE»«ENDIF»
+			«IF(!_class.operations.empty)»
+				«FOR op : _class.operations»
+					«SORT» «op.maudeName» «SEP»
+					«SUBSORT» «op.maudeName» < @Operation «SEP»
+					«OP» «op.maudeName» : -> «op.maudeName» «SEP»
+					«EQ» name («op.maudeName») = "«op.name»" «SEP»
+					«EQ» isAbstract («op.maudeName») = «op.isIsAbstract» «SEP»
+					«EQ» from («op.maudeName») = null «SEP»
+					«EQ» type («op.maudeName») = «op.type.maudeName» «SEP»
+					«EQ» lowerBound («op.maudeName») = «op.type.lowerbound» «SEP»
+					«EQ» upperBound («op.maudeName») = «upperbound(op.type.upperbound)» «SEP»
+					«EQ» isOrdered  («op.maudeName») = «op.type.isOrdered» «SEP»
+					«EQ» isUnique   («op.maudeName») = «op.type.isUnique» «SEP»
+					«EQ» containingClass («op.maudeName») = «_class.maudeName» «SEP»
+					«EQ» parameters («op.maudeName») = «IF(op.parameters.empty)» null «ELSE» «op.parameters.map[maudeName].join(" ")»«ENDIF» «SEP»
+					«EQ» variables  («op.maudeName») = «IF(op.declarations.empty)» null «ELSE» «op.declarations.map[maudeName].join(" ")» «ENDIF»
+
+					«IF(!op.parameters.empty)»
+						«FOR param : op.parameters»
+							«SORT» «param.maudeName» «SEP»
+							«SUBSORT» «param.maudeName» < @Parameter «SEP»
+							«OP» «param.maudeName» : -> «param.maudeName» «SEP»
+							«EQ» name («param.maudeName») = "«param.name»" «SEP»
+							«EQ» type («param.maudeName») = «param.collectionType.type.maudeName» «SEP»
+							«EQ» lowerBound («param.maudeName») = «param.collectionType.lowerbound» «SEP»
+							«EQ» upperBound («param.maudeName») = «upperbound(param.collectionType.upperbound)» «SEP»
+							«EQ» isOrdered  («param.maudeName») = «param.collectionType.ordered» «SEP»
+							«EQ» isUnique   («param.maudeName») = «param.collectionType.unique» «SEP»
+							«EQ» containingOperation («param.maudeName») = «op.maudeName» «SEP»
+
+ 						«ENDFOR»
+					«ELSE»«ENDIF»
+					«IF(!op.declarations.empty)»
+						«FOR variable : op.declarations»
+							«SORT» «variable.maudeName» «SEP»
+							«SUBSORT» «variable.maudeName» < @Variable «SEP»
+							«OP» «variable.maudeName» : -> «variable.maudeName» «SEP»
+							«EQ» name («variable.maudeName») = "«variable.name»" «SEP»
+							«EQ» type («variable.maudeName») = «variable.collectionType.type.maudeName» «SEP»
+							«EQ» lowerBound («variable.maudeName») = «variable.collectionType.lowerbound» «SEP»
+							«EQ» upperBound («variable.maudeName») = «upperbound(variable.collectionType.upperbound)» «SEP»
+							«EQ» isOrdered («variable.maudeName») = «variable.collectionType.ordered» «SEP»
+							«EQ» isUnique («variable.maudeName») =  «variable.collectionType.unique» «SEP»		
+							«EQ» containingOperation («variable.maudeName») = «op.maudeName» «SEP»
+							
+						«ENDFOR»
+					«ELSE»«ENDIF»
+					«IF(!op.body.statements.empty)»«generateOperationBodyRepresentation(op)»«ELSE»«ENDIF»
+«««						«var OperationBodyNumberer obn = new OperationBodyNumberer(op)»
+«««						«var iterator = obn.iterator»
+«««						
+«««						«EQ» statements («MM.maudeName+MM_SUFFIX») =
+«««							«rank.entrySet.map[e|generateMaudeStatement(e.key, e.value)].join(STMT_SEP + "\n")»
+«««						«SEP» 
+
+				«ENDFOR»
+			«ELSE»«ENDIF»
+		«ENDFOR»
+		endm
+		'''
 	}
 }
